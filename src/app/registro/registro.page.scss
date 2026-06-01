@@ -1,0 +1,120 @@
+// Paleta de colores oficial extraída de tu prototipo
+$gold-base: #cda332;
+$gold-dark: #b18924;
+$text-dark: #222222;
+$text-muted: #8e8e93;
+$bg-smooth: #fafafa;
+
+// Forzar que el ion-content tenga una estética limpia
+.mobile-bg-content {
+  --background: #ffffff;
+}
+
+// Envoltorio simulador de App Móvil Premium
+.app-screen-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  padding: 24px 20px;
+  background: #ffffff; 
+}
+
+// Botón de atrás flotante minimalista
+.nav-header-floating {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+
+  .back-btn-gold {
+    --color: #{$text-dark};
+    font-size: 20px;
+  }
+}
+
+// Cabecera con tipografía idéntica a tu logo
+.brand-brandup {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  .brand-logo-text {
+    font-size: 34px;
+    font-weight: 300;
+    letter-spacing: 7px;
+    color: var(--ion-text-color, #222);
+    margin: 0;
+  }
+
+  .brand-sub-text {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: $gold-base;
+    margin: 4px 0 0 0;
+  }
+}
+
+// Tarjeta contenedora del formulario
+.form-card-mobile {
+  background: #ffffff;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .form-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0 0 6px 0;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+    color: $text-muted;
+    line-height: 1.4;
+    margin: 0 0 28px 0;
+  }
+}
+
+// Items de entradas de texto premium e independientes
+.input-custom-holder {
+  margin-bottom: 16px;
+  width: 100%;
+
+  .input-premium-item {
+    --background: #{$bg-smooth};
+    --border-radius: 8px;
+    border: 1px solid #e5e5ea;
+    padding: 2px 8px;
+    color: #222222;
+    
+    // Cambiar el color del label flotante enfocado al color dorado corporativo
+    &.item-has-focus {
+      border-color: $gold-base;
+    }
+  }
+}
+
+// Mensaje de validación interactivo
+.error-msg-text {
+  font-size: 12px;
+  text-align: center;
+  font-weight: 500;
+  margin: 4px 0 16px 0;
+}
+
+// El botón estrella dorado de tus capturas (LOG IN / SIGN UP)
+.btn-gold-submit {
+  --background: #{$gold-base};
+  --background-activated: #{$gold-dark};
+  --color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 1px;
+  --border-radius: 4px; // Bordes cuadrados semi-suaves como tu botón LOG IN
+  height: 48px;
+  margin-top: 12px;
+  box-shadow: 0 4px 10px rgba(205, 163, 50, 0.2);
+}

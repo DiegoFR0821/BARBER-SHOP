@@ -1,0 +1,133 @@
+/* Cabecera y Navegación */
+.navbar-premium {
+  --background: #ffffff;
+  .brand-title {
+    font-size: 16px; font-weight: 700; letter-spacing: 2px;
+    color: #aa8529; text-align: center;
+  }
+  
+  .cart-btn {
+    position: relative; overflow: visible;
+    ion-icon { color: #333333; font-size: 24px; }
+    .cart-badge {
+      position: absolute; top: -2px; right: -4px;
+      font-size: 10px; padding: 3px 5px; border-radius: 50%;
+      border: 2px solid #ffffff; background: #aa8529; /* Dorado */
+    }
+  }
+}
+
+/* Buscador */
+.search-toolbar {
+  --background: #ffffff;
+  padding: 0 8px;
+  .custom-searchbar {
+    --background: #f5f5f5; --color: #333333; --placeholder-color: #888888;
+    --icon-color: #aa8529; --border-radius: 12px; --box-shadow: none;
+    padding-bottom: 0;
+  }
+}
+
+/* Selector de Categorías (Scrollable) */
+.segment-toolbar {
+  --background: #ffffff;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.gold-segment {
+  --background: transparent;
+  margin: 0 16px;
+  ion-segment-button {
+    --color: #888888;
+    --color-checked: #ffffff;
+    --indicator-color: #aa8529; /* Fondo dorado al seleccionar */
+    --indicator-height: 100%;
+    --border-radius: 20px;
+    margin-right: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    min-width: 90px;
+    min-height: 32px;
+    transition: 0.3s ease;
+  }
+}
+
+/* Cuerpo de la Tienda */
+.background-light { --background: #fcfbf8; }
+
+.empty-state {
+  text-align: center; color: #888; margin-top: 40px; font-weight: 500;
+}
+
+.products-grid {
+  padding: 0;
+  margin-top: 10px;
+}
+
+/* Tarjeta de Producto */
+.product-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid #f2edd9;
+  
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    background: #eaeaea;
+    
+    img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    
+    .btn-favorite {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(255,255,255,0.8);
+      border: none; border-radius: 50%;
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      ion-icon { color: #333; font-size: 16px; }
+    }
+  }
+
+  .product-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .product-title {
+      font-size: 13px; font-weight: 700; color: #333333;
+      margin: 0 0 4px 0; line-height: 1.2;
+    }
+
+    .product-desc {
+      font-size: 11px; color: #7e7e7e; margin: 0 0 12px 0;
+      line-height: 1.3; flex-grow: 1;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .product-action {
+      display: flex; justify-content: space-between; align-items: center;
+      
+      .product-price {
+        font-weight: 700; color: #aa8529; font-size: 14px;
+      }
+
+      .btn-add {
+        background: transparent; border: none; padding: 0; display: flex;
+        ion-icon { color: #333333; font-size: 26px; transition: 0.2s; }
+        &:active ion-icon { color: #aa8529; transform: scale(1.1); }
+      }
+    }
+  }
+}

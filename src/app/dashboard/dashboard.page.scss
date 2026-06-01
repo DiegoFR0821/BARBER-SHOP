@@ -1,0 +1,17 @@
+/* ======================================================================
+   ESTILOS ESPECÍFICOS PARA LA CARCASA DEL DASHBOARD (TABS BAR)
+   ====================================================================== */
+
+/* Modificamos el contenedor general de la barra inferior de botones */
+ion-tab-bar {
+  /* Sustituimos el color gris de fábrica por un fondo blanco premium impecable */
+  --background: #ffffff;
+  /* Dibujamos un borde superior sutil en tono crema para separar el menú del contenido */
+  border-top: 1px solid #f2edd9;
+}
+
+/* Aplicamos estilos avanzados al botón cuando Ionic detecta que la pestaña está activa */
+ion-tab-button.tab-selected {
+  /* Pintamos el icono y la etiqueta de texto con nuestro dorado insignia de Comas */
+  color: #735c00;
+}

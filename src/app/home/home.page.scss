@@ -1,0 +1,311 @@
+/* =======================================
+   1. VARIABLES Y ESTILOS GLOBALES
+   ======================================= */
+:host {
+  --dorado-oscuro: #735c00;
+  --dorado-claro: #d4af37;
+  --blanco-fondo: #faf9f9;
+  --texto-oscuro: #1a1c1c;
+  --texto-claro: #4d4635;
+  
+  font-family: 'Manrope', sans-serif;
+  color: var(--texto-oscuro);
+}
+
+ion-content {
+  --background: var(--blanco-fondo);
+}
+
+/* =======================================
+   2. TIPOGRAFÍAS Y CABECERA
+   ======================================= */
+.cabecera-titulo {
+  text-align: center; 
+  color: var(--dorado-oscuro); 
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.boton-cabecera {
+  color: var(--dorado-oscuro);
+  font-weight: bold;
+}
+
+.titulo-principal {
+  font-family: 'Noto Serif', serif;
+  font-size: 3rem;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  color: #1a1c1c;
+}
+
+.titulo-seccion {
+  font-family: 'Noto Serif', serif;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #1a1c1c;
+}
+
+.etiqueta-dorada {
+  color: var(--dorado-oscuro);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.texto-parrafo {
+  color: var(--texto-claro);
+  line-height: 1.6;
+}
+
+/* =======================================
+   3. ESTRUCTURA (Layout)
+   ======================================= */
+.contenedor-principal {
+  padding: 20px;
+}
+
+.seccion-centrada {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.block {
+  display: block;
+}
+
+/* =======================================
+   4. SECCIÓN HERO (Banner)
+   ======================================= */
+.hero-section {
+  position: relative;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  padding: 20px;
+  background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1;
+}
+
+.hero-contenido {
+  position: relative;
+  z-index: 2;
+}
+
+/* =======================================
+   5. TARJETAS (Servicios y Testimonios)
+   ======================================= */
+.tarjeta-servicio {
+  margin: 0;
+  height: 250px;
+  position: relative;
+  border-radius: 12px;
+}
+
+.tarjeta-servicio img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tarjeta-titulo-flotante {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 20px 10px;
+}
+
+.etiqueta-tarjeta {
+  color: white;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.titulo-tarjeta {
+  margin: 5px 0 0 0;
+  font-family: 'Noto Serif', serif;
+}
+
+.tarjeta-testimonio {
+  box-shadow: none;
+  border: 1px solid #eee;
+  margin-top: 20px;
+  border-radius: 12px;
+}
+
+.estrellas {
+  color: var(--dorado-claro);
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.texto-testimonio {
+  font-style: italic;
+  color: var(--texto-claro);
+  font-size: 1.1rem;
+}
+
+.autor-testimonio {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+/* =======================================
+   6. LISTA DE PRECIOS
+   ======================================= */
+.seccion-precios {
+  margin: 50px 0;
+}
+
+.fila-precio {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  align-items: flex-end;
+}
+
+.nombre-servicio {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #4d4635;
+}
+
+.precio-servicio {
+  color: var(--dorado-oscuro);
+  font-weight: bold;
+}
+
+.linea-punteada {
+  border-bottom: 1px dotted #d0c5af;
+  flex-grow: 1;
+  margin: 0 10px;
+  position: relative;
+  top: -6px;
+}
+
+/* =======================================
+   7. SECCIÓN DE CONTACTO
+   ======================================= */
+.seccion-contacto {
+  margin: 50px 0;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+}
+
+.lista-transparente {
+  background: transparent;
+}
+
+.lista-transparente ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  margin-bottom: 10px;
+}
+
+.icono-dorado {
+  color: var(--dorado-claro);
+  font-size: 24px;
+}
+
+.contacto-titulo {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--texto-claro);
+}
+
+.contacto-detalle {
+  font-size: 1rem;
+  color: var(--texto-oscuro);
+}
+
+/* =======================================
+   8. FOOTER Y MENÚ MÓVIL
+   ======================================= */
+.pie-pagina {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: white;
+  border-top: 1px solid #eee;
+}
+
+.logo-pie {
+  font-family: 'Noto Serif', serif;
+  color: var(--dorado-oscuro);
+  letter-spacing: 0.3em;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.pie-pagina p {
+  color: gray;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+.espacio-footer {
+  height: 70px;
+}
+
+.boton-dorado {
+  --background: var(--dorado-oscuro);
+  --color: white;
+  margin-top: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.menu-inferior {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+  z-index: 100;
+}
+
+.boton-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: gray;
+  cursor: pointer;
+}
+
+.boton-menu ion-icon {
+  font-size: 24px;
+}
+
+.boton-menu span {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.boton-menu.activo {
+  color: var(--dorado-oscuro);
+  font-weight: bold;
+}

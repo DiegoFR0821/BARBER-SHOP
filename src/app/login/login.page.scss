@@ -1,0 +1,124 @@
+// Paleta de colores oficial unificada
+$gold-base: #cda332;
+$gold-dark: #b18924;
+$text-dark: #222222;
+$text-muted: #8e8e93;
+$bg-smooth: #fafafa;
+
+.mobile-bg-content {
+  --background: #ffffff;
+}
+
+// Contenedor elástico estilo app móvil
+.app-screen-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  padding: 24px 20px;
+  background: #ffffff; 
+}
+
+.nav-header-floating {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+
+  .back-btn-gold {
+    --color: #{$text-dark};
+    font-size: 20px;
+  }
+}
+
+// Logotipo institucional
+.brand-brandup {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  .brand-logo-text {
+    font-size: 34px;
+    font-weight: 300;
+    letter-spacing: 7px;
+    color: #222222;
+    margin: 0;
+  }
+
+  .brand-sub-text {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: $gold-base;
+    margin: 4px 0 0 0;
+  }
+}
+
+// Formulario reactivo
+.form-card-mobile {
+  background: #ffffff;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .form-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0 0 6px 0;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+    color: $text-muted;
+    line-height: 1.4;
+    margin: 0 0 28px 0;
+  }
+}
+
+.input-custom-holder {
+  margin-bottom: 16px;
+  width: 100%;
+
+  .input-premium-item {
+    --background: #{$bg-smooth};
+    --border-radius: 8px;
+    border: 1px solid #e5e5ea;
+    padding: 2px 8px;
+    color: #222222;
+    
+    &.item-has-focus {
+      border-color: $gold-base;
+    }
+  }
+}
+
+.error-msg-text {
+  font-size: 12px;
+  text-align: center;
+  font-weight: 500;
+  margin: 4px 0 16px 0;
+}
+
+// Botón premium rectangular
+.btn-gold-submit {
+  --background: #{$gold-base};
+  --background-activated: #{$gold-dark};
+  --color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 1px;
+  --border-radius: 4px; 
+  height: 48px;
+  margin-top: 12px;
+  box-shadow: 0 4px 10px rgba(205, 163, 50, 0.2);
+}
+
+// Enlace de texto inferior
+.btn-link-registro {
+  --color: #{$text-muted};
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+  --ripple-color: transparent;
+}

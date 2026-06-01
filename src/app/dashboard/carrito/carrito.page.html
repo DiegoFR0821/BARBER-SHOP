@@ -1,0 +1,82 @@
+<ion-header class="ion-no-border navbar-premium">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard/tienda" text="" class="btn-back-gold"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="brand-title">MI CARRITO</ion-title>
+    <ion-buttons slot="end" class="empty-slot-end"></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding background-light">
+
+  <div class="empty-state" *ngIf="itemsCarrito.length === 0">
+    <ion-icon name="cart-outline"></ion-icon>
+    <p>Tu carrito está vacío.</p>
+    <ion-button fill="outline" class="btn-outline-gold mt-2" routerLink="/dashboard/tienda">Volver a la Tienda</ion-button>
+  </div>
+
+  <div class="cart-items-container" *ngIf="itemsCarrito.length > 0">
+    <div class="cart-item-card" *ngFor="let item of itemsCarrito">
+      <div class="item-image">
+        <img [src]="item.imagen" [alt]="item.nombre">
+      </div>
+      
+      <div class="item-details">
+        <h4>{{ item.nombre }}</h4>
+        <p class="item-price">S/ {{ item.precio | number:'1.2-2' }}</p>
+        
+        <div class="quantity-controls">
+          <button (click)="disminuirCantidad(item)"><ion-icon name="remove-outline"></ion-icon></button>
+          <span>{{ item.cantidad }}</span>
+          <button (click)="aumentarCantidad(item)"><ion-icon name="add-outline"></ion-icon></button>
+        </div>
+      </div>
+
+      <button class="btn-delete" (click)="eliminarItem(item.id)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="itemsCarrito.length > 0" class="payment-section mt-4">
+    <h3 class="section-title">Método de Pago</h3>
+    
+    <ion-radio-group [(ngModel)]="metodoPagoSeleccionado">
+      <ion-item lines="none" class="payment-option">
+        <ion-icon name="card-outline" slot="start"></ion-icon>
+        <ion-label>Tarjeta de Crédito / Débito</ion-label>
+        <ion-radio slot="end" value="tarjeta" color="warning"></ion-radio>
+      </ion-item>
+
+      <ion-item lines="none" class="payment-option">
+        <ion-icon name="phone-portrait-outline" slot="start"></ion-icon>
+        <ion-label>Billetera Digital (Yape / Plin)</ion-label>
+        <ion-radio slot="end" value="billetera" color="warning"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </div>
+
+</ion-content>
+
+<ion-footer class="ion-no-border" *ngIf="itemsCarrito.length > 0">
+  <div class="checkout-summary">
+    <div class="summary-row">
+      <span>Subtotal</span>
+      <span>S/ {{ subtotal | number:'1.2-2' }}</span>
+    </div>
+    <div class="summary-row">
+      <span>IGV (18%)</span>
+      <span>S/ {{ impuestos | number:'1.2-2' }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-row total-row">
+      <span>Total a Pagar</span>
+      <span>S/ {{ total | number:'1.2-2' }}</span>
+    </div>
+
+    <ion-button expand="block" class="btn-gold mt-2" (click)="procesarPago()">
+      Pagar Ahora
+    </ion-button>
+  </div>
+</ion-footer>

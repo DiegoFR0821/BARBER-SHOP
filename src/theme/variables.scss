@@ -1,0 +1,20 @@
+// For information on how to create your own theme, please refer to:
+// https://ionicframework.com/docs/theming/
+
+/* ======================================================================
+   PALETA DE COLORES GLOBAL - ÉTNICA SALÓN
+   ====================================================================== */
+/* El selector :root hace que estas variables existan en toda la aplicación */
+:root {
+  /* Forzamos a Ionic a olvidar su azul por defecto y usar nuestro dorado */
+  --ion-color-primary: #735c00;
+  --ion-color-primary-rgb: 115,92,0;
+  
+  /* El color del texto dentro del botón (Blanco) */
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  
+  /* Efectos automáticos al hacer clic */
+  --ion-color-primary-shade: #655100;
+  --ion-color-primary-tint: #816c1a;
+}

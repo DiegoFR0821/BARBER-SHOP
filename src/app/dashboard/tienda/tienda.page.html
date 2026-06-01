@@ -1,0 +1,74 @@
+<ion-header class="ion-no-border navbar-premium">
+  <ion-toolbar>
+    <ion-title class="brand-title">CATÁLOGO</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="cart-btn" (click)="irAlCarrito()">
+        <ion-icon slot="icon-only" name="cart-outline"></ion-icon>
+        <ion-badge color="danger" class="cart-badge" *ngIf="cantidadCarrito > 0">
+          {{ cantidadCarrito }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar 
+      mode="ios"
+      placeholder="Buscar productos de belleza..." 
+      (ionInput)="buscarProducto($event)"
+      class="custom-searchbar">
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <ion-toolbar class="segment-toolbar">
+    <ion-segment scrollable="true" mode="ios" [value]="categoriaSeleccionada" (ionChange)="filtrarCategoria($event)" class="gold-segment">
+      <ion-segment-button value="todos">
+        <ion-label>Todos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cabello">
+        <ion-label>Cabello</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="unas">
+        <ion-label>Uñas</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cuidado">
+        <ion-label>Cuidado Piel</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding background-light">
+
+  <div class="empty-state" *ngIf="productosMostrados.length === 0">
+    <p>No se encontraron productos.</p>
+  </div>
+
+  <ion-grid class="products-grid">
+    <ion-row>
+      <ion-col size="6" *ngFor="let producto of productosMostrados">
+        <div class="product-card">
+          <div class="image-wrapper">
+            <img [src]="producto.imagen" [alt]="producto.nombre" />
+            <button class="btn-favorite">
+              <ion-icon name="heart-outline"></ion-icon>
+            </button>
+          </div>
+          
+          <div class="product-info">
+            <h3 class="product-title">{{ producto.nombre }}</h3>
+            <p class="product-desc">{{ producto.descripcion }}</p>
+            
+            <div class="product-action">
+              <span class="product-price">S/ {{ producto.precio | number:'1.2-2' }}</span>
+              <button class="btn-add" (click)="agregarAlCarrito(producto)">
+                <ion-icon name="add-circle-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

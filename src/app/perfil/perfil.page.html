@@ -1,0 +1,85 @@
+<div class="ion-page">
+  <ion-header class="ion-no-border navbar-premium">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/dashboard/resumen" text="" class="btn-back-gold"></ion-back-button>
+      </ion-buttons>
+      <ion-title class="brand-title">MI PERFIL</ion-title>
+      <ion-buttons slot="end" class="empty-slot-end"></ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding background-light">
+    <div class="profile-main-container">
+      
+      <div class="avatar-wrapper">
+        <div class="profile-avatar-frame">
+          <img [src]="usuarioPerfil.avatarUrl" alt="Foto de perfil" />
+        </div>
+        <button class="btn-edit-avatar" (click)="obtenerImagen()">
+          <ion-icon name="camera-outline"></ion-icon>
+        </button>
+      </div>
+
+      <h1 class="user-display-name">{{ usuarioPerfil.nombre }}</h1>
+      
+      <div class="membership-badge-holder">
+        <span class="badge-gold">👑 GOLD MEMBERSHIP</span>
+        <span class="member-since">MEMBER SINCE 2024</span>
+      </div>
+
+      <div class="personal-info-card">
+        <ion-list lines="full" class="bg-transparent">
+          <ion-item class="info-item">
+            <ion-label position="stacked">Nombre Completo</ion-label>
+            <ion-input type="text" [(ngModel)]="usuarioPerfil.nombre"></ion-input>
+          </ion-item>
+
+          <ion-item class="info-item">
+            <ion-label position="stacked">Correo Electrónico</ion-label>
+            <ion-input type="email" [(ngModel)]="usuarioPerfil.correo" readonly="true"></ion-input>
+          </ion-item>
+
+          <ion-item class="info-item">
+            <ion-label position="stacked">Teléfono</ion-label>
+            <ion-input type="tel" [(ngModel)]="usuarioPerfil.telefono"></ion-input>
+          </ion-item>
+
+          <ion-item class="info-item" lines="none">
+            <ion-label position="stacked">Preferencias de Estilo</ion-label>
+            <ion-textarea rows="3" [(ngModel)]="usuarioPerfil.bio"></ion-textarea>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <ion-button expand="block" class="btn-gold mt-4" (click)="guardarCambiosPerfil()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+      </ion-button>
+    </div>
+
+    <ion-modal [isOpen]="abrirRecortador" class="modal-recorte-premium">
+      <ng-template>
+        <div class="cropper-wrapper">
+          <div class="cropper-header">
+            <h3>Ajustar Foto</h3>
+          </div>
+          <div class="cropper-body">
+            <image-cropper
+              [imageBase64]="imagenOriginalBase64"
+              [maintainAspectRatio]="true"
+              [aspectRatio]="1 / 1"
+              [roundCropper]="true"
+              format="jpeg"
+              (imageCropped)="fotoRecortadaEfectuada($event)">
+            </image-cropper>
+          </div>
+          <div class="cropper-footer">
+            <ion-button fill="clear" color="light" (click)="abrirRecortador = false">Cancelar</ion-button>
+            <ion-button class="btn-confirm-crop" (click)="aplicarRecorteCircular()">Aplicar</ion-button>
+          </div>
+        </div>
+      </ng-template>
+    </ion-modal>
+
+  </ion-content>
+</div>

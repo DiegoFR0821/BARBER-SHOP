@@ -1,0 +1,312 @@
+/* Fondo muy sutil para que las tarjetas resalten */
+.background-light {
+  --background: #fcfbf8; 
+}
+
+/* Sección de Saludo */
+.greeting-section {
+  margin-top: 10px;
+  margin-bottom: 25px;
+
+  h2 {
+    font-size: 28px;
+    margin: 0;
+    color: #333333;
+    font-weight: 400;
+
+    strong {
+      color: #000000;
+      font-weight: 700;
+    }
+    
+    .wave {
+      display: inline-block;
+      animation: wave-animation 2.5s infinite;
+      transform-origin: 70% 70%;
+    }
+  }
+
+  p {
+    margin-top: 5px;
+    color: #666666;
+    font-size: 15px;
+  }
+}
+
+/* Tarjeta Dorada de Puntos */
+.gold-card {
+  background: linear-gradient(135deg, #d4af37 0%, #aa8529 100%);
+  color: white;
+  border-radius: 16px;
+  margin: 0 0 25px 0;
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+
+  ion-card-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  ion-card-title {
+    color: white;
+    font-size: 26px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-icon {
+      color: #fff8db;
+    }
+  }
+}
+
+/* Cabeceras de Sección (Ej: Tu Próxima Cita) */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333333;
+  }
+
+  a {
+    color: #aa8529;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+.mt-4 { margin-top: 25px; }
+
+/* Tarjeta de Próxima Cita */
+.appointment-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  
+  .icon-avatar {
+    background: #f2edd9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    
+    ion-icon {
+      font-size: 24px;
+      color: #aa8529;
+    }
+  }
+
+  h3 { font-weight: 600; color: #333; }
+  p { color: #888; font-size: 13px; }
+}
+
+/* Tarjeta de Inspiración / Promociones */
+.promo-card {
+  margin: 0 0 20px 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  img {
+    height: 180px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  ion-card-title {
+    font-size: 18px;
+    color: #333;
+  }
+}
+
+/* Animación del emoji saludando */
+@keyframes wave-animation {
+  0% { transform: rotate( 0.0deg) }
+  10% { transform: rotate(14.0deg) }  
+  20% { transform: rotate(-8.0deg) }
+  30% { transform: rotate(14.0deg) }
+  40% { transform: rotate(-4.0deg) }
+  50% { transform: rotate(10.0deg) }
+  60% { transform: rotate( 0.0deg) }  
+  100% { transform: rotate( 0.0deg) }
+}
+
+
+/* Ajustes para el botón de notificaciones */
+.notification-btn {
+  position: relative;
+  overflow: visible;
+
+  .notification-badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    font-size: 10px;
+    padding: 3px 5px;
+    border-radius: 50%;
+    border: 2px solid #ffffff; /* Borde blanco para que resalte sobre el icono */
+  }
+}
+
+/* NUEVA Tarjeta de Recordatorio */
+.reminder-card {
+  margin: 0 0 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  background: #fffdf5; /* Fondo crema muy suave, alusivo al dorado */
+  border-left: 4px solid #aa8529; /* Borde dorado corporativo a la izquierda */
+
+  .reminder-item {
+    --background: transparent;
+    
+    .reminder-icon {
+      color: #aa8529;
+      font-size: 28px;
+    }
+
+    h3 {
+      font-weight: 700;
+      color: #333333;
+      margin-bottom: 2px;
+      font-size: 15px;
+    }
+
+    p {
+      color: #555555;
+      font-size: 13px;
+      white-space: normal; /* Permite que el texto se adapte a varias líneas */
+    }
+  }
+}
+
+/* ==================== ESTILOS BASE Y CABECERA ==================== */
+.background-light { --background: #fcfbf8; }
+
+.navbar-premium {
+  --background: #ffffff;
+  border-bottom: 1px solid #f5f5f5;
+  
+  .brand-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #aa8529;
+    text-align: center;
+  }
+
+  .user-avatar-nav-trigger {
+    width: 34px;
+    height: 34px;
+    margin-left: 12px;
+    border: 2px solid #eaeaea;
+    cursor: pointer;
+  }
+}
+
+.notification-btn {
+  position: relative;
+  overflow: visible;
+  .notification-badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    font-size: 10px;
+    padding: 3px 5px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+  }
+}
+
+/* ==================== SECCIONES DE RESUMEN ==================== */
+.greeting-section {
+  margin-top: 10px;
+  margin-bottom: 25px;
+  h2 { font-size: 28px; margin: 0; color: #333; font-weight: 400; }
+  h2 strong { color: #000; font-weight: 700; }
+  p { margin-top: 5px; color: #666; font-size: 15px; }
+  .wave { display: inline-block; animation: wave-animation 2.5s infinite; transform-origin: 70% 70%; }
+}
+
+@keyframes wave-animation {
+  0% { transform: rotate( 0.0deg) }
+  10% { transform: rotate(14.0deg) }  
+  20% { transform: rotate(-8.0deg) }
+  30% { transform: rotate(14.0deg) }
+  40% { transform: rotate(-4.0deg) }
+  50% { transform: rotate(10.0deg) }
+  60% { transform: rotate( 0.0deg) }  
+  100% { transform: rotate( 0.0deg) }
+}
+
+.reminder-card {
+  margin: 0 0 20px 0; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  background: #fffdf5; border-left: 4px solid #aa8529;
+  .reminder-item {
+    --background: transparent;
+    .reminder-icon { color: #aa8529; font-size: 28px; }
+    h3 { font-weight: 700; color: #333; margin-bottom: 2px; font-size: 15px; }
+    p { color: #555; font-size: 13px; white-space: normal; }
+  }
+}
+
+.gold-card {
+  background: linear-gradient(135deg, #d4af37 0%, #aa8529 100%);
+  color: white; border-radius: 16px; margin: 0 0 25px 0; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+  ion-card-subtitle { color: rgba(255, 255, 255, 0.8); letter-spacing: 1px; font-weight: 600; }
+  ion-card-title { color: white; font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 8px; ion-icon { color: #fff8db; } }
+}
+
+.section-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+  h3 { margin: 0; font-size: 18px; font-weight: 600; color: #333; }
+  a { color: #aa8529; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; }
+}
+
+.appointment-card {
+  margin: 0; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  .icon-avatar { background: #f2edd9; display: flex; align-items: center; justify-content: center; border-radius: 12px; ion-icon { font-size: 24px; color: #aa8529; } }
+  h3 { font-weight: 600; color: #333; }
+  p { color: #888; font-size: 13px; }
+}
+
+/* ==================== MENÚ LATERAL ==================== */
+.menu-title { font-weight: 700; color: #aa8529; text-transform: uppercase; letter-spacing: 1px;}
+.menu-list {
+  padding: 16px 0;
+  ion-item { --padding-start: 24px; font-size: 15px; font-weight: 500; color: #444; margin-bottom: 8px;}
+  .menu-icon { font-size: 20px; margin-right: 16px; }
+  .menu-divider { height: 1px; background: #eee; margin: 16px 24px; }
+}
+
+/* ==================== MODAL DE PROMOCIÓN (CÓDIGO DE TU COMPAÑERO) ==================== */
+.modal-promocion-premium {
+  --height: auto;
+  --width: 90%;
+  --border-radius: 16px;
+  --box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  align-items: center;
+
+  .promo-wrapper { background: #ffffff; overflow: hidden; }
+  .promo-header {
+    background: #aa8529; color: #ffffff; text-align: center;
+    padding: 12px; font-size: 12px; font-weight: bold; letter-spacing: 1px;
+  }
+  .promo-body {
+    padding: 24px; text-align: center;
+    h3 { font-size: 22px; font-weight: 700; color: #333; margin: 0 0 8px 0; }
+    p { font-size: 14px; color: #7e7e7e; margin: 0 0 16px 0; }
+    .promo-badge {
+      display: inline-block; background: #fff3cd; color: #856404;
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 20px;
+    }
+    .btn-gold-action {
+      --background: #333333; --color: #ffffff; font-weight: 600; letter-spacing: 1px;
+    }
+  }
+}

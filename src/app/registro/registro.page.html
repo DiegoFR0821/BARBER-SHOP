@@ -1,0 +1,64 @@
+<ion-content [fullscreen]="true" class="mobile-bg-content">
+  
+  <div class="app-screen-wrapper">
+    
+    <div class="nav-header-floating">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home" text="" class="back-btn-gold"></ion-back-button>
+      </ion-buttons>
+    </div>
+
+    <div class="brand-brandup">
+      <h1 class="brand-logo-text">ÉTNICA</h1>
+      <h3 class="brand-sub-text">SALÓN</h3>
+    </div>
+
+    <div class="form-card-mobile">
+      <h2 class="form-title">Crear Cuenta</h2>
+      <p class="form-subtitle">Experience luxury hair and skin care curated for your unique essence.</p>
+
+      <div class="input-custom-holder">
+        <ion-item lines="none" class="input-premium-item">
+          <ion-input 
+            label="Nombre Completo" 
+            labelPlacement="floating" 
+            type="text"
+            [(ngModel)]="nombre">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="input-custom-holder">
+        <ion-item lines="none" class="input-premium-item">
+          <ion-input 
+            label="Correo Electrónico" 
+            labelPlacement="floating" 
+            type="email"
+            [(ngModel)]="correo">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="input-custom-holder">
+        <ion-item lines="none" class="input-premium-item">
+          <ion-input 
+            label="Contraseña" 
+            labelPlacement="floating" 
+            type="password"
+            [(ngModel)]="clave">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <ion-text color="danger" *ngIf="mensajeError">
+        <p class="error-msg-text">⚠️ {{ mensajeError }}</p>
+      </ion-text>
+
+      <ion-button expand="block" class="btn-gold-submit" (click)="registrarUsuario()" [disabled]="cargando">
+        {{ cargando ? 'CREANDO...' : 'SIGN UP' }}
+      </ion-button>
+    </div>
+
+  </div>
+
+</ion-content>

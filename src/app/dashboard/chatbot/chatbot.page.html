@@ -1,0 +1,54 @@
+<ion-header class="ion-no-border navbar-premium">
+  <ion-toolbar>
+    <ion-title class="brand-title">
+      <ion-icon name="sparkles" class="title-icon"></ion-icon>
+      ASISTENTE ÉTNICA
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="chat-container">
+  
+  <div class="messages-wrapper">
+    <div *ngFor="let msg of mensajes" 
+         class="message-row" 
+         [ngClass]="{'row-bot': msg.emisor === 'bot', 'row-user': msg.emisor === 'usuario'}">
+      
+      <ion-avatar class="bot-avatar" *ngIf="msg.emisor === 'bot'">
+        <img src="https://ui-avatars.com/api/?name=Mia&background=aa8529&color=fff" alt="Bot Avatar" />
+      </ion-avatar>
+
+      <div class="message-bubble" 
+           [ngClass]="{'bubble-bot': msg.emisor === 'bot', 'bubble-user': msg.emisor === 'usuario'}">
+        <p>{{ msg.texto }}</p>
+        <span class="message-time">{{ msg.hora }}</span>
+      </div>
+
+    </div>
+
+    <div class="message-row row-bot" *ngIf="escribiendo">
+      <ion-avatar class="bot-avatar">
+        <img src="https://ui-avatars.com/api/?name=Mia&background=aa8529&color=fff" alt="Bot Avatar" />
+      </ion-avatar>
+      <div class="message-bubble bubble-bot typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+</ion-content>
+
+<ion-footer class="ion-no-border chat-footer">
+  <div class="input-container">
+    <ion-input 
+      mode="md"
+      type="text" 
+      placeholder="Escribe tu mensaje aquí..." 
+      [(ngModel)]="nuevoMensaje"
+      (keyup.enter)="enviarMensaje()">
+    </ion-input>
+    <ion-button fill="clear" class="btn-send" (click)="enviarMensaje()" [disabled]="nuevoMensaje.trim() === ''">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+  </div>
+</ion-footer>

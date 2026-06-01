@@ -1,0 +1,153 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    
+    <ion-title class="cabecera-titulo">ÉTNICA SALÓN</ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/login']" class="boton-cabecera">Login</ion-button>
+      <ion-button [routerLink]="['/registro']" class="boton-cabecera">registrarse</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-contenido">
+      <span class="etiqueta-dorada">Excelencia y Arte</span>
+      <h1 class="titulo-principal">Descubre tu Belleza Única</h1>
+      <ion-button class="boton-dorado" shape="round">RESERVAR CITA</ion-button>
+    </div>
+  </div>
+
+  <div class="contenedor-principal">
+
+    <div class="seccion-centrada">
+      <span class="etiqueta-dorada">QUIÉNES SOMOS</span>
+      <h2 class="titulo-seccion">Nuestra Filosofía</h2>
+      <p class="texto-parrafo">
+        Nacido de la pasión por la estética atemporal, Étnica Salón redefine la experiencia de belleza a través de una lente de minimalismo cálido y precisión técnica.
+      </p>
+    </div>
+
+    <div class="seccion-centrada mb-20">
+      <span class="etiqueta-dorada">NUESTROS ESTILOS</span>
+      <h2 class="titulo-seccion">Experiencias Editoriales</h2>
+    </div>
+
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card class="tarjeta-servicio">
+            <img src="/assets/img/img1.jpg" />
+            <div class="tarjeta-titulo-flotante">
+              <span class="etique ta-tarjeta">SIGNATURE</span>
+              <h3 class="titulo-tarjeta">Coloración Artística</h3>
+            </div>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6">
+          <ion-card class="tarjeta-servicio">
+            <img src="/assets/img/img2.jpg" />
+            <div class="tarjeta-titulo-flotante">
+              <span class="etiqueta-tarjeta">PREMIUM</span>
+              <h3 class="titulo-tarjeta">Productos Élite</h3>
+            </div>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <div class="seccion-precios">
+      <h2 class="titulo-seccion text-center">Carta de Servicios</h2>
+      
+      <div class="fila-precio">
+        <span class="nombre-servicio">Corte & Peinado</span>
+        <div class="linea-punteada"></div>
+        <span class="precio-servicio">$45</span>
+      </div>
+
+      <div class="fila-precio">
+        <span class="nombre-servicio">Balayage Signature</span>
+        <div class="linea-punteada"></div>
+        <span class="precio-servicio">$120</span>
+      </div>
+    </div>
+
+    <div class="seccion-centrada">
+      <span class="etiqueta-dorada">CLIENTES FELICES</span>
+      <ion-card class="tarjeta-testimonio">
+        <ion-card-content>
+          <div class="estrellas">
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+          </div>
+          <p class="texto-testimonio">
+            "Una experiencia transformadora. El ambiente es tan sereno que sales sintiéndote renovada."
+          </p>
+          <div class="autor-testimonio">VALERIA MONTES</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div class="seccion-contacto">
+      <span class="etiqueta-dorada text-center block">VISÍTANOS</span>
+      <h2 class="titulo-seccion text-center">En el Corazón de Comas</h2>
+      
+      <ion-list lines="none" class="lista-transparente">
+        <ion-item>
+          <ion-icon name="location-outline" slot="start" class="icono-dorado"></ion-icon>
+          <ion-label>
+            <h3 class="contacto-titulo">DIRECCIÓN</h3>
+            <p class="contacto-detalle">Av. Principal 123, Comas, Lima</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-icon name="call-outline" slot="start" class="icono-dorado"></ion-icon>
+          <ion-label>
+            <h3 class="contacto-titulo">TELÉFONO / HORARIOS</h3>
+            <p class="contacto-detalle">+51 987 654 321</p>
+            <p class="contacto-detalle">Lun - Sáb: 9:00 - 20:00</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-icon name="logo-whatsapp" slot="start" style="color: #25D366; font-size: 24px;"></ion-icon>
+          <ion-label>
+            <h3 class="contacto-titulo">WHATSAPP</h3>
+            <p class="contacto-detalle">Reserva rápida por chat</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+  </div> <footer class="pie-pagina">
+    <div class="logo-pie">ÉTNICA SALÓN</div>
+    <p>© 2026 ÉTNICA SALÓN. TODOS LOS DERECHOS RESERVADOS.</p>
+  </footer>
+
+  <div class="espacio-footer"></div>
+
+</ion-content>
+
+<div class="menu-inferior ion-hide-md-up">
+  <div class="boton-menu activo">
+    <ion-icon name="home"></ion-icon>
+    <span>Inicio</span>
+  </div>
+  <div class="boton-menu" [routerLink]="['/login']">
+    <ion-icon name="person-outline"></ion-icon>
+    <span>Perfil</span>
+  </div>
+</div>
