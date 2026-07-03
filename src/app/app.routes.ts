@@ -70,6 +70,34 @@ export const routes: Routes = [
       },
     ],
   },
+
+  {
+    path: 'admin',
+    loadComponent: () => import('./admin/admin.page').then( m => m.AdminPage),
+    children: [
+      {
+        path: '',
+        redirectTo: 'resumen-admin',
+        pathMatch: 'full'
+      },
+      {
+        path: 'resumen-admin',
+        loadComponent: () => import('./admin/resumen-admin/resumen-admin.page').then( m => m.ResumenAdminPage)
+      },
+      {
+        path: 'citas',
+        loadComponent: () => import('./admin/citas/citas.page').then( m => m.CitasPage)
+      },
+      {
+        path: 'clientes',
+        loadComponent: () => import('./admin/clientes/clientes.page').then( m => m.ClientesPage)
+      },
+      {
+        path: 'inventario',
+        loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
+      }
+    ]
+  },
   {
     path: 'perfil',
     loadComponent: () => import('./perfil/perfil.page').then( m => m.PerfilPage)
@@ -78,5 +106,25 @@ export const routes: Routes = [
     path: 'carrito',
     // ¡AQUÍ ESTÁ LA CORRECCIÓN! Apuntamos a la carpeta correcta
     loadComponent: () => import('./dashboard/carrito/carrito.page').then( m => m.CarritoPage)
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./admin/admin.page').then( m => m.AdminPage)
+  },
+  {
+    path: 'resumen-admin',
+    loadComponent: () => import('./admin/resumen-admin/resumen-admin.page').then( m => m.ResumenAdminPage)
+  },
+  {
+    path: 'citas',
+    loadComponent: () => import('./admin/citas/citas.page').then( m => m.CitasPage)
+  },
+  {
+    path: 'clientes',
+    loadComponent: () => import('./admin/clientes/clientes.page').then( m => m.ClientesPage)
+  },
+  {
+    path: 'inventario',
+    loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
   },
 ];

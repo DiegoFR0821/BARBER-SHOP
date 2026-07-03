@@ -1,0 +1,92 @@
+/* Fondo general del menú */
+.admin-menu {
+  --background: #222222;
+  --color: #ffffff;
+}
+
+/* Sección de la foto de perfil del admin */
+.menu-header {
+  padding: 40px 20px 20px;
+  background: #1a1a1a;
+  border-bottom: 2px solid #aa8529; /* Acento dorado */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .avatar-admin {
+    width: 60px;
+    height: 60px;
+    background: #aa8529;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(170, 133, 41, 0.4);
+
+    .initial {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  }
+
+  .admin-greeting {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .admin-role {
+    color: #aa8529;
+    font-size: 14px;
+    letter-spacing: 1px;
+    display: block;
+  }
+}
+
+/* Estilos de los botones del menú */
+ion-list#admin-list {
+  background: transparent;
+  padding-top: 20px;
+}
+
+.menu-item {
+  --background: transparent;
+  --color: #bbbbbb;
+  margin: 0 10px 5px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+
+  ion-icon {
+    color: #888888;
+  }
+
+  /* Cuando el admin está en esta página, se ilumina en dorado */
+  &.selected {
+    --background: rgba(170, 133, 41, 0.15);
+    --color: #aa8529;
+
+    ion-icon {
+      color: #aa8529;
+    }
+  }
+}
+
+/* Botón de salida pegado al fondo */
+.menu-footer {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+
+  .logout-item {
+    --color: #ff6b6b;
+    ion-icon {
+      color: #ff6b6b;
+    }
+  }
+}

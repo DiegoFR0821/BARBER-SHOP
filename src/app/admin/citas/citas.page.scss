@@ -1,0 +1,190 @@
+$color-gold: #aa8529;
+$color-cream-bg: #faf9f6;
+
+.cream-bg {
+  --background: #{$color-cream-bg};
+}
+
+.premium-header {
+  ion-toolbar {
+    --background: #ffffff;
+    border-bottom: 1px solid #f2f2f7;
+  }
+}
+
+.clean-title {
+  font-weight: 700 !important;
+  color: #111111;
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.gold-burger {
+  color: $color-gold;
+}
+
+.header-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f2f2f7;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+// Estilos del Buscador Integrado
+.custom-searchbar-minimal {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  padding: 0 0 16px 0;
+  
+  &::part(container) {
+    border: 1px solid rgba(170, 133, 41, 0.15);
+    border-radius: 12px;
+  }
+}
+
+/* 📋 MULTI-TARJETAS DE CITAS ANCHO COMPLETO MINIMALISTAS */
+.minimalist-appointment-card {
+  display: flex;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px; /* Border radius sutil solicitado */
+  margin-bottom: 12px;
+  border: 1px solid rgba(170, 133, 41, 0.25); /* Borde fino dorado acorde al sistema */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06); /* Sombra minimalista más pronunciada */
+  align-items: center;
+  position: relative;
+
+  .card-icon-avatar-box {
+    flex-shrink: 0;
+  }
+
+  .icon-frame-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  .avatar-image-square {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(170, 133, 41, 0.15);
+  }
+
+  .card-body-content {
+    flex-grow: 1;
+    padding-left: 14px;
+    overflow: hidden;
+
+    .appointment-client-name {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #111111;
+    }
+
+    .appointment-service-detail {
+      margin: 4px 0 2px;
+      color: $color-gold;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .appointment-time-detail {
+      margin: 2px 0;
+      color: #555555;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .appointment-staff-detail {
+      margin: 2px 0 0;
+      color: #888888;
+      font-size: 11px;
+    }
+  }
+
+  .card-right-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 75px;
+    flex-shrink: 0;
+    padding-left: 6px;
+  }
+
+  .badge-status-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    /* 👇 Corrección aplicada aquí: */
+    &.status-confirmed { background: rgba(40, 167, 69, 0.12); color: #28a745; }
+    &.status-pending { background: rgba(255, 193, 7, 0.15); color: #b78103; }
+    &.status-cancelled { background: rgba(220, 53, 69, 0.12); color: #dc3545; }
+  }
+
+  .crud-btn-group {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .action-btn-item {
+    height: 28px;
+    margin: 0;
+    --padding-start: 4px;
+    --padding-end: 4px;
+
+    ion-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+// Colores utilitarios SASS
+.bg-gold-light { background-color: rgba(170, 133, 41, 0.08); }
+.color-gold { color: $color-gold; }
+.color-grey { --color: #777777; }
+.color-red { --color: #dc3545; }
+
+/* 🎯 CONFIGURACIÓN: FAB CUADRADO CON DESPLEGABLES */
+.premium-fab {
+  margin-bottom: 20px; /* Antes estaba en 70px por culpa de los tabs */
+  margin-right: 5px;
+  
+  .square-fab-btn {
+    --background: #{$color-gold};
+    --border-radius: 12px; /* Fuerza el factor cuadrado sutil solicitado */
+    box-shadow: 0 6px 16px rgba(170, 133, 41, 0.35);
+    height: 52px;
+    width: 52px;
+  }
+
+  ion-fab-list ion-fab-button {
+    --background: #ffffff;
+    --border-radius: 8px;
+    border: 1px solid rgba(170, 133, 41, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin: 6px 0;
+  }
+}

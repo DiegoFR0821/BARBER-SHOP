@@ -1,0 +1,112 @@
+<ion-header class="ion-no-border premium-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button class="gold-burger"></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="clean-title">ÉTNICA SALÓN ADMIN</ion-title>
+    <ion-buttons slot="end" class="ion-padding-end">
+      <ion-avatar style="width: 32px; height: 32px;">
+        <div class="header-avatar-placeholder">A</div>
+      </ion-avatar>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="cream-bg">
+  <div class="dashboard-wrapper">
+    
+    <div class="title-section">
+      <h1 class="main-page-title">PANEL PRINCIPAL</h1>
+      <p class="welcome-text">Bienvenido, Admin</p>
+    </div>
+
+    <ion-grid class="ion-no-padding metrics-grid">
+      <ion-row>
+        <ion-col size="12">
+          <div class="minimalist-card">
+            <div class="card-left">
+              <span class="card-title-lbl">Citas de hoy</span>
+              <h1 class="card-big-number">{{ totalCitas > 0 ? totalCitas : 12 }}</h1>
+              <span class="card-trend text-green">▲ 15% vs ayer</span>
+            </div>
+            <ion-icon name="calendar-outline" class="card-icon-overlay color-gold"></ion-icon>
+          </div>
+        </ion-col>
+
+        <ion-col size="12">
+          <div class="minimalist-card">
+            <div class="card-left">
+              <span class="card-title-lbl">Nuevos usuarios</span>
+              <h1 class="card-big-number">{{ totalClientes > 0 ? totalClientes : 5 }}</h1>
+              <span class="card-trend text-muted">Meta semanal: 10</span>
+            </div>
+            <ion-icon name="people-outline" class="card-icon-overlay color-gold"></ion-icon>
+          </div>
+        </ion-col>
+
+        <ion-col size="12">
+          <div class="minimalist-card">
+            <div class="card-left">
+              <span class="card-title-lbl">Bajo Stock</span>
+              <h1 class="card-big-number">{{ totalProductos > 0 ? totalProductos : 3 }}</h1>
+              <span class="card-trend text-red font-bold">Requiere acción inmediata</span>
+            </div>
+            <ion-icon name="cube-outline" class="card-icon-overlay color-gold"></ion-icon>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <h3 class="section-heading-title">Gestión Rápida</h3>
+    <ion-grid class="ion-no-padding quick-nav-grid">
+      <ion-row>
+        <ion-col size="4">
+          <div class="square-nav-btn" (click)="irA('/admin/citas')">
+            <div class="square-icon-box"><ion-icon name="calendar-outline" class="color-gold"></ion-icon></div>
+            <span class="square-btn-label">CITAS</span>
+          </div>
+        </ion-col>
+        <ion-col size="4">
+          <div class="square-nav-btn" (click)="irA('/admin/clientes')">
+            <div class="square-icon-box"><ion-icon name="people-outline" class="color-gold"></ion-icon></div>
+            <span class="square-btn-label">CLIENTES</span>
+          </div>
+        </ion-col>
+        <ion-col size="4">
+          <div class="square-nav-btn" (click)="irA('/admin/inventario')">
+            <div class="square-icon-box"><ion-icon name="cube-outline" class="color-gold"></ion-icon></div>
+            <span class="square-btn-label">STOCK</span>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <div class="activity-header-row">
+      <h3 class="section-heading-title ion-no-margin">Actividad Reciente</h3>
+      <a class="view-all-link" (click)="irA('/admin/citas')">VER TODO</a>
+    </div>
+
+    <div class="premium-activity-list">
+      <div class="activity-item-container" *ngFor="let act of actividadReciente">
+        <div class="activity-avatar-box">
+          <div class="avatar-icon-circle bg-gold-light">
+            <ion-icon [name]="act.icono" class="color-gold"></ion-icon>
+          </div>
+        </div>
+        <div class="activity-body-text">
+          <h4 class="activity-main-line">{{ act.titulo }}</h4>
+          <p class="activity-sub-line">{{ act.detalle }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="premium-fab">
+    <ion-fab-button class="square-fab-btn"><ion-icon name="add"></ion-icon></ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="irA('/admin/citas')" color="light"><ion-icon name="calendar-outline" class="color-gold"></ion-icon></ion-fab-button>
+      <ion-fab-button (click)="irA('/admin/clientes')" color="light"><ion-icon name="people-outline" class="color-gold"></ion-icon></ion-fab-button>
+      <ion-fab-button (click)="irA('/admin/inventario')" color="light"><ion-icon name="cube-outline" class="color-gold"></ion-icon></ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

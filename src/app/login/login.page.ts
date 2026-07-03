@@ -86,8 +86,10 @@ export class LoginPage implements OnInit {
      console.log('Ingreso exitoso. Rol detectado:', rol);
 
      if (rol === 'admin') {
-       alert('¡Bienvenido Administrador!');
-     } else {
+     console.log('Redirigiendo al Panel de Administración...');
+    // 👇 ¡AQUÍ ESTÁ LA SOLUCIÓN! Apuntamos a la sub-ruta del admin
+    this.router.navigate(['/admin/resumen-admin']);
+    }else {
        this.router.navigate(['/dashboard/resumen']);
      }
    } else {

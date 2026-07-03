@@ -1,0 +1,181 @@
+$color-gold: #aa8529;
+$color-cream-bg: #faf9f6;
+
+.cream-bg {
+  --background: #{$color-cream-bg};
+}
+
+.premium-header ion-toolbar {
+  --background: #ffffff;
+  border-bottom: 1px solid #f2f2f7;
+}
+
+.clean-title {
+  font-weight: 700 !important;
+  color: #111111;
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.gold-burger { color: $color-gold; }
+
+.header-avatar-placeholder {
+  width: 100%; height: 100%;
+  background: #f2f2f7; color: #555;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold;
+}
+
+.custom-searchbar-minimal {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  padding: 0 0 16px 0;
+  &::part(container) { border: 1px solid rgba(170, 133, 41, 0.15); border-radius: 12px; }
+}
+
+/* 📦 TARJETAS DE CUADRÍCULA (GRID CARDS) */
+.grid-product-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(170, 133, 41, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden; /* Clave para que la imagen respete el borde redondeado superior */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+}
+
+.product-image-container {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Hace que el área de la imagen sea perfectamente cuadrada */
+  position: relative;
+  background-color: #f7f7f9;
+  
+  .product-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Recorta la imagen para que llene el cuadrado sin deformarse */
+  }
+
+  .no-image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: #c7c7cc;
+    ion-icon { font-size: 50px; }
+  }
+
+  .stock-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+
+    &.bg-gold { background-color: $color-gold; }
+    &.bg-red { background-color: #ff3b30; }
+  }
+}
+
+.product-details {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  .prod-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111111;
+    line-height: 1.2;
+    // Truncar si es muy largo
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .prod-desc {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #888888;
+    // Mostrar solo 2 líneas
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .prod-footer-row {
+    margin-top: auto; /* Empuja el precio y botones al fondo */
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .prod-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: $color-gold;
+    }
+  }
+
+  .prod-crud-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    gap: 2px;
+    border-top: 1px solid #f2f2f7;
+    padding-top: 6px;
+
+    .btn-crud {
+      height: 28px;
+      margin: 0;
+      --padding-start: 6px;
+      --padding-end: 6px;
+      ion-icon { font-size: 18px; }
+    }
+  }
+}
+
+// Subida de imagen modal
+.image-upload-wrapper {
+  width: 120px;
+  height: 120px;
+  margin: 10px auto 20px;
+  border-radius: 16px;
+  border: 2px dashed rgba(170, 133, 41, 0.4);
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+
+  .preview-img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .upload-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: $color-gold;
+    ion-icon { font-size: 32px; margin-bottom: 5px; }
+    span { font-size: 11px; font-weight: 600; text-align: center; padding: 0 4px; }
+  }
+}
+
+// Colores utilitarios
+.color-grey { --color: #888888; }
+.color-red { --color: #ff3b30; }
+
+/* 🎯 BOTÓN FLOTANTE CUADRADO */
+.premium-fab {
+  margin-bottom: 20px;
+  margin-right: 4px;
+  .square-fab-btn {
+    --background: #{$color-gold};
+    --border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(170, 133, 41, 0.35);
+    height: 52px; width: 52px;
+  }
+}

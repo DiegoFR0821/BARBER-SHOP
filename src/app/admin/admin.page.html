@@ -1,0 +1,37 @@
+<ion-split-pane contentId="main-admin-content">
+  
+  <ion-menu contentId="main-admin-content" type="overlay" class="admin-menu">
+    <ion-content>
+      
+      <div class="menu-header">
+        <div class="avatar-admin">
+          <span class="initial">{{ nombreAdmin.charAt(0) | uppercase }}</span>
+        </div>
+        <ion-note class="admin-greeting">Hola, {{ nombreAdmin }}</ion-note>
+        <ion-note class="admin-role">👑 Panel de Control</ion-note>
+      </div>
+
+      <ion-list id="admin-list" lines="none">
+        <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
+          <ion-item [routerLink]="[p.url]" routerDirection="root" routerLinkActive="selected" class="menu-item">
+            <ion-icon slot="start" [name]="p.icon + '-outline'"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+
+      <div class="menu-footer">
+        <ion-menu-toggle auto-hide="false">
+          <ion-item button (click)="cerrarSesion()" class="menu-item logout-item">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            <ion-label>Cerrar Sesión</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </div>
+
+    </ion-content>
+  </ion-menu>
+
+  <ion-router-outlet id="main-admin-content"></ion-router-outlet>
+
+</ion-split-pane>
