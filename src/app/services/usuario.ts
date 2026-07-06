@@ -5,6 +5,7 @@ export interface DatosUsuario {
   nombre: string;
   correo: string;
   rol: string;
+  imagen?: string;
 }
 
 @Injectable({

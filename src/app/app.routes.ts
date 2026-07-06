@@ -95,6 +95,10 @@ export const routes: Routes = [
       {
         path: 'inventario',
         loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
+      },
+      {
+    path: 'anuncios-admin',
+    loadComponent: () => import('./admin/anuncios-admin/anuncios-admin.page').then( m => m.AnunciosAdminPage)
       }
     ]
   },
@@ -127,4 +131,6 @@ export const routes: Routes = [
     path: 'inventario',
     loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
   },
+  
+  
 ];

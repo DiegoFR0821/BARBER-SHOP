@@ -3,18 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { 
-  IonApp, IonSplitPane, IonMenu, IonContent, IonList, IonListHeader, 
-  IonNote, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet,
-  MenuController
+  IonSplitPane, IonMenu, IonContent, IonList, IonItem, IonIcon, 
+  IonLabel, IonMenuToggle, IonRouterOutlet, IonNote 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
+// 👇 1. Importa el icono megaphoneOutline aquí
 import { 
-  pieChartOutline, calendarOutline, peopleOutline, 
-  cubeOutline, logOutOutline 
-} from 'ionicons/icons';
-
-// Inyectamos tu servicio para leer la RAM
-import { UsuarioService } from '../services/usuario'; 
+  gridOutline, calendarOutline, peopleOutline, cubeOutline, 
+  logOutOutline, megaphoneOutline 
+} from 'ionicons/icons'; 
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-admin',
@@ -22,48 +20,49 @@ import { UsuarioService } from '../services/usuario';
   styleUrls: ['./admin.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterModule, IonApp, IonSplitPane, IonMenu, 
-    IonContent, IonList, IonListHeader, IonNote, IonMenuToggle, IonItem, 
-    IonIcon, IonLabel, IonRouterOutlet
+    CommonModule, FormsModule, RouterModule, IonSplitPane, IonMenu, 
+    IonContent, IonList, IonItem, IonIcon, IonLabel, IonMenuToggle, 
+    IonRouterOutlet, IonNote
   ]
 })
 export class AdminPage implements OnInit {
-  
-  // Mapa de las rutas hijas del administrador
+  nombreAdmin: string = 'Administrador';
+
+  // 👇 2. Agrega la ruta de anuncios con su icono
   public appPages = [
-    { title: 'Resumen', url: '/admin/resumen-admin', icon: 'pie-chart' },
+    { title: 'Resumen', url: '/admin/resumen-admin', icon: 'grid' },
     { title: 'Citas', url: '/admin/citas', icon: 'calendar' },
     { title: 'Clientes', url: '/admin/clientes', icon: 'people' },
     { title: 'Inventario', url: '/admin/inventario', icon: 'cube' },
+    { title: 'Modales Pop-up', url: '/admin/anuncios-admin', icon: 'megaphone' } // ¡Aquí está la nueva opción!
   ];
 
-  nombreAdmin: string = 'Admin';
-
-  constructor(
-    private router: Router, 
-    private menuCtrl: MenuController,
-    private usuarioService: UsuarioService
-  ) {
-    // Registramos los íconos exactos que usaremos en el menú
+  constructor(private auth: Auth, private router: Router) {
+    // 👇 3. Registra el icono en el constructor
     addIcons({ 
-      'pie-chart-outline': pieChartOutline, 
-      'calendar-outline': calendarOutline, 
-      'people-outline': peopleOutline, 
-      'cube-outline': cubeOutline,
-      'log-out-outline': logOutOutline
+      gridOutline, calendarOutline, peopleOutline, cubeOutline, 
+      logOutOutline, megaphoneOutline 
     });
   }
 
   ngOnInit() {
-    const datosUsuario = this.usuarioService.getUsuario();
-    if (datosUsuario && datosUsuario.nombre) {
-      this.nombreAdmin = datosUsuario.nombre.split(' ')[0];
-    }
+    this.obtenerUsuario();
   }
 
-  cerrarSesion() {
-    this.usuarioService.limpiarUsuario(); // Borramos la RAM
-    this.menuCtrl.close(); // Cerramos el menú
-    this.router.navigate(['/login']); // Lo expulsamos al login
+  obtenerUsuario() {
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.nombreAdmin = user.displayName || user.email || 'Administrador';
+      }
+    });
+  }
+
+  async cerrarSesion() {
+    try {
+      await this.auth.signOut();
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error al cerrar sesión', error);
+    }
   }
 }

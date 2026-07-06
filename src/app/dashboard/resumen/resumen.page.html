@@ -1,114 +1,150 @@
-<ion-menu contentId="main-resumen-content" menuId="menu-lateral-spa">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title class="menu-title">Étnica Salón</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
-  <ion-content>
-    <ion-list lines="none" class="menu-list">
-     <ion-item button (click)="irACarrito()">
-        <span class="menu-icon">🛒</span>
-        <ion-label>Catálogo y Carrito</ion-label>
-      </ion-item>
-      
-      <ion-item button (click)="irAPerfil()">
-        <span class="menu-icon">👤</span>
-        <ion-label>Editar Perfil</ion-label>
-      </ion-item>
-      
-      <div class="menu-divider"></div>
-      <ion-item button class="settings-item">
-        <span class="menu-icon">⚙️</span>
-        <ion-label>Ajustes</ion-label>
+<ion-menu side="start" menuId="perfil-menu" contentId="main-content-resumen">
+  <ion-content class="menu-perfil-bg">
+    
+    <div class="menu-header-box" style="padding: 24px 16px; text-align: center; border-bottom: 1px solid #f2f2f7;">
+  <div class="avatar-wrapper">
+    <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Perfil">
+    <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
+  </div>
+  <h2 style="margin-top: 12px;">{{ nombreCliente }}</h2>
+</div>
+
+<div class="section-title-row">
+  <h3><ion-icon name="flame-outline"></ion-icon> OFERTAS EXCLUSIVAS</h3>
+  </div>
+
+    <ion-list lines="none" class="menu-options-list">
+      <ion-item button (click)="irAPerfil()" class="menu-item">
+        <ion-icon slot="start" name="person-outline"></ion-icon>
+        <ion-label>Mi Perfil</ion-label>
       </ion-item>
     </ion-list>
+
+    <div class="menu-footer">
+      <ion-item button (click)="cerrarSesion()" class="logout-item">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        <ion-label>Cerrar Sesión</ion-label>
+      </ion-item>
+    </div>
   </ion-content>
 </ion-menu>
 
-<div class="ion-page" id="main-resumen-content">
+<div class="ion-page" id="main-content-resumen">
   
-  <ion-header class="ion-no-border navbar-premium">
+  <ion-header class="ion-no-border premium-header">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-menu-toggle menu="menu-lateral-spa">
-          <ion-avatar class="user-avatar-nav-trigger">
-            <img src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-          </ion-avatar>
-        </ion-menu-toggle>
+        <ion-menu-button menu="perfil-menu" style="color: #aa8529;"></ion-menu-button>
       </ion-buttons>
-
-      <ion-title class="brand-title">ÉTNICA</ion-title>
-
-      <ion-buttons slot="end">
-        <ion-button class="notification-btn">
-          <ion-icon slot="icon-only" name="notifications-outline" color="dark"></ion-icon>
-          <ion-badge color="danger" class="notification-badge" *ngIf="tieneNotificaciones">1</ion-badge>
-        </ion-button>
+      <ion-title class="clean-title">ÉTNICA SALÓN</ion-title>
+      <ion-buttons slot="end" class="ion-padding-end">
+        <ion-icon name="notifications-outline" class="noti-icon"></ion-icon>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
-  <ion-content [fullscreen]="true" class="ion-padding background-light">
-    
-    <div class="greeting-section">
-      <h2 class="welcome-text">Hola, {{ nombreCliente }} 👋</h2>
-      <p>¿Qué te harás hoy en Étnica Salón?</p>
-    </div>
+  <ion-content class="cream-bg">
+    <div class="dashboard-wrapper" style="padding: 16px;">
+      
+      <div class="welcome-user-section" style="margin-bottom: 24px;">
+        <p class="greeting-subtitle">Bienvenida a tu espacio de belleza,</p>
+        <h1 class="greeting-title">{{ nombreCliente }}</h1>
+      </div>
 
-    <ion-card class="reminder-card" *ngIf="tieneNotificaciones">
-      <ion-item lines="none" class="reminder-item">
-        <ion-icon name="time-outline" slot="start" class="reminder-icon"></ion-icon>
-        <ion-label>
-          <h3>Recordatorio Importante</h3>
-          <p>Tu cita para <strong>Balayage</strong> es en 24 horas.</p>
-        </ion-label>
-      </ion-item>
-    </ion-card>
+      <div class="section-title-row">
+        <h3><ion-icon name="flame-outline"></ion-icon> OFERTAS EXCLUSIVAS</h3>
+        <span class="badge-gold">MIEMBROS</span>
+      </div>
 
-    <ion-card class="gold-card">
-      <ion-card-header>
-        <ion-card-subtitle>ÉTNICA REWARDS</ion-card-subtitle>
-        <ion-card-title>
-          <ion-icon name="star"></ion-icon> {{ puntosAcumulados }} Puntos
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Estás a 50 puntos de un tratamiento capilar gratis. ¡Sigue así!
-      </ion-card-content>
-    </ion-card>
-
-    <div class="section-header">
-      <h3>Tus Citas Activas</h3>
-      <a (click)="irA('reservar')">Ver calendario</a>
-    </div>
-
-    <ion-card class="appointment-card">
-      <ion-item lines="none">
-        <ion-avatar slot="start" class="icon-avatar">
-          <ion-icon name="calendar" color="primary"></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h3>Corte y Balayage</h3>
-          <p>Jueves, 24 de Octubre - 15:00 hrs</p>
-        </ion-label>
-        <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
-      </ion-item>
-    </ion-card>
-
-    <ion-modal [isOpen]="isPromoOpen" (didDismiss)="cerrarPromo()" class="modal-promocion-premium">
-      <ng-template>
-        <div class="promo-wrapper">
-          <div class="promo-header">
-            <span>🎉 ¡PROMOCIÓN EXCLUSIVA! 🎉</span>
+      <div class="horizontal-offers-slider">
+        <div class="offer-slide-card card-gold">
+          <div>
+            <h4>Lunes de Brillo Capilar</h4>
+            <p>30% de descuento en tratamientos hidratantes de Keratina.</p>
           </div>
-          <div class="promo-body">
-            <h3>{{ promocionActiva.titulo }}</h3>
-            <p>{{ promocionActiva.descripcion }}</p>
-            <div class="promo-badge">{{ promocionActiva.textoValidez }}</div>
-            <ion-button expand="block" class="btn-gold-action" (click)="cerrarPromo()">
-              Aprovechar
+          <span class="code-badge">CÓDIGO: BRILLO30</span>
+        </div>
+
+        <div class="offer-slide-card card-dark">
+          <div>
+            <h4>Dúo Color Perfecto</h4>
+            <p>Tinte completo + corte de puntas de regalo los días Jueves.</p>
+          </div>
+          <span class="code-badge badge-solid">EXCLUSIVO APP</span>
+        </div>
+      </div>
+
+      <h3 class="section-title-text">ACCESOS RÁPIDOS</h3>
+      <ion-grid class="ion-no-padding shortcut-grid">
+        <ion-row>
+          <ion-col size="6">
+            <div class="shortcut-card" (click)="irA('reservar')">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>Reservar Cita</span>
+            </div>
+          </ion-col>
+          <ion-col size="6">
+            <div class="shortcut-card" (click)="irA('tienda')">
+              <ion-icon name="cart-outline"></ion-icon>
+              <span>E-Shop</span>
+            </div>
+          </ion-col>
+          <ion-col size="6">
+            <div class="shortcut-card" (click)="irA('chatbot')">
+              <ion-icon name="sparkles-outline"></ion-icon>
+              <span>Asistente IA</span>
+            </div>
+          </ion-col>
+          <ion-col size="6">
+            <div class="shortcut-card">
+              <ion-icon name="people-outline"></ion-icon>
+              <span>Comunidad</span>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <h3 class="section-title-text">GALERÍA DE LOOKS</h3>
+      <ion-grid class="ion-no-padding">
+        <ion-row style="margin: 0 -4px;">
+          <ion-col size="6" *ngFor="let item of galeriaTrabajos" style="padding: 4px;">
+            <div class="look-gallery-card">
+              <div class="img-wrapper">
+                <img [src]="item.url" />
+              </div>
+              <div class="info-wrapper">
+                <span class="category-text">{{ item.categoria }}</span>
+                <span class="title-text">{{ item.titulo }}</span>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+    </div>
+
+    <ion-modal id="promo-modal" [isOpen]="isPromoOpen" (didDismiss)="cerrarYContinuarSecuencia()">
+      <ng-template>
+        <div class="popup-container-premium">
+          <div class="close-popup-bar" (click)="cerrarYContinuarSecuencia()">
+            <ion-icon name="close-outline"></ion-icon>
+          </div>
+          
+          <div class="popup-image-hero-wrapper">
+            <img *ngIf="anuncioActual?.imagen" [src]="anuncioActual?.imagen" alt="Promo">
+            <div *ngIf="!anuncioActual?.imagen" class="placeholder-fallback-gold">
+              <ion-icon name="sparkles-outline"></ion-icon>
+            </div>
+          </div>
+
+          <div class="popup-content-body">
+            <h2 class="popup-promo-title">{{ anuncioActual?.titulo }}</h2>
+            <p class="popup-promo-desc">{{ anuncioActual?.descripcion }}</p>
+            <ion-button expand="block" class="btn-popup-whatsapp" (click)="contactarWhatsAppPromocion()">
+              <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
+              RESERVAR POR WHATSAPP
             </ion-button>
+            <span class="popup-dismiss-text" (click)="cerrarYContinuarSecuencia()">Ver otras novedades</span>
           </div>
         </div>
       </ng-template>

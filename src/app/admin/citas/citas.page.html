@@ -113,12 +113,14 @@
 
       <div class="minimalist-appointment-card" *ngFor="let est of estilistas">
         <div class="card-icon-avatar-box">
-          <div class="icon-frame-circle bg-gold-light">
+          <img *ngIf="est.imagen" [src]="est.imagen" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+          <div *ngIf="!est.imagen" class="icon-frame-circle bg-gold-light">
             <ion-icon name="person-outline" class="color-gold"></ion-icon>
           </div>
         </div>
-        <div class="card-body-content" style="display: flex; align-items: center;">
+        <div class="card-body-content" style="display: flex; flex-direction: column; justify-content: center;">
           <h4 class="appointment-client-name" style="margin: 0;">{{ est.nombre }}</h4>
+          <p class="appointment-service-detail" style="margin: 2px 0 0 0; font-size: 11px;">{{ est.profesion || 'Estilista' }}</p>
         </div>
         <div class="card-right-actions" style="justify-content: center;">
           <div class="crud-btn-group">
@@ -136,14 +138,9 @@
   </div>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="premium-fab">
-    <ion-fab-button class="square-fab-btn">
+    <ion-fab-button class="square-fab-btn" (click)="ejecutarAccionFab()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
-    <ion-fab-list side="top">
-      <ion-fab-button (click)="abrirModalReserva()" color="light"><ion-icon name="calendar-outline" class="color-gold"></ion-icon></ion-fab-button>
-      <ion-fab-button (click)="abrirModalServicio()" color="light"><ion-icon name="cut-outline" class="color-gold"></ion-icon></ion-fab-button>
-      <ion-fab-button (click)="abrirModalEstilista()" color="light"><ion-icon name="person-outline" class="color-gold"></ion-icon></ion-fab-button>
-    </ion-fab-list>
   </ion-fab>
 
   <ion-modal [isOpen]="isModalReservaOpen" (didDismiss)="isModalReservaOpen = false">
@@ -181,14 +178,43 @@
     </ng-template>
   </ion-modal>
 
-  <ion-modal [isOpen]="isModalEstilistaOpen" (didDismiss)="isModalEstilistaOpen = false" [initialBreakpoint]="0.4" [breakpoints]="[0, 0.4]">
+  <ion-modal [isOpen]="isModalEstilistaOpen" (didDismiss)="isModalEstilistaOpen = false">
     <ng-template>
-      <ion-header class="ion-no-border"><ion-toolbar style="--background: #ffffff; padding: 10px 0;"><ion-title style="color: #aa8529; font-weight: bold;">Configurar Estilista</ion-title><ion-buttons slot="end"><ion-button (click)="isModalEstilistaOpen=false" color="dark"><ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon></ion-button></ion-buttons></ion-toolbar></ion-header>
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15); margin-bottom: 24px;">
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;"><ion-input label="Nombre del Profesional" labelPlacement="floating" [(ngModel)]="estilistaActual.nombre"></ion-input></ion-item>
+      <ion-header class="ion-no-border">
+        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
+          <ion-title style="color: #aa8529; font-weight: bold;">Configurar Estilista</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isModalEstilistaOpen=false" color="dark">
+              <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" style="--background: #fbfbfd; text-align: center;">
+        
+        <div style="width: 100px; height: 100px; background: #ffffff; border-radius: 50%; margin: 10px auto; overflow: hidden; border: 1px solid rgba(170, 133, 41, 0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
+          <img *ngIf="estilistaActual.imagen" [src]="estilistaActual.imagen" style="width: 100%; height: 100%; object-fit: cover;" />
+          <ion-icon *ngIf="!estilistaActual.imagen" name="person-outline" style="font-size: 40px; color: #aa8529; margin-top:28px;"></ion-icon>
         </div>
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarEstilista()"><ion-icon slot="start" name="save-outline"></ion-icon> GUARDAR ESTILISTA</ion-button>
+        <input type="file" id="file-upload-estilista" accept="image/*" style="display: none;" (change)="cargarImagenEstilista($event)">
+        <ion-button fill="clear" style="--color: #aa8529; font-weight: bold;" (click)="abrirSelectorEstilista()">
+          <ion-icon name="camera-outline" slot="start"></ion-icon> Subir Foto
+        </ion-button>
+
+        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15); margin-top: 20px; margin-bottom: 24px; text-align: left;">
+          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+            <ion-input label="Nombre Completo" labelPlacement="floating" [(ngModel)]="estilistaActual.nombre"></ion-input>
+          </ion-item>
+          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+            <ion-select label="Especialidad / Profesión" labelPlacement="floating" [(ngModel)]="estilistaActual.profesion">
+              <ion-select-option *ngFor="let prof of profesionesSalones" [value]="prof">{{ prof }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarEstilista()">
+          <ion-icon slot="start" name="save-outline"></ion-icon> GUARDAR ESTILISTA
+        </ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

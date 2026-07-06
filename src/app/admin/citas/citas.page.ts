@@ -1,14 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // 👈 Importación del Router
+import { Router } from '@angular/router';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
   IonMenuButton, IonSearchbar, IonIcon, IonButton, IonFooter,
   IonModal, IonInput, IonItem, IonLabel, IonBadge, IonSelect, 
   IonSelectOption, IonSegment, IonSegmentButton, IonAvatar,
-  IonList,
-  IonFab, IonFabButton, IonFabList // 👈 Componentes del botón flotante
+  IonList, IonFab, IonFabButton, IonFabList 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { createOutline, trashOutline, closeOutline, saveOutline, calendarOutline, timeOutline, cameraOutline, imageOutline, personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, add } from 'ionicons/icons';
@@ -25,17 +24,15 @@ import { Firestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, quer
     IonToolbar, IonButtons, IonMenuButton, IonSearchbar, IonIcon, 
     IonButton, IonFooter, IonModal, IonInput, IonItem, IonLabel, 
     IonBadge, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonAvatar,
-    IonList, IonFab, IonFabButton, IonFabList // 👈 Importados en el decorador
+    IonList, IonFab, IonFabButton, IonFabList
   ]
 })
 export class CitasPage implements OnInit {
 
   private firestore = inject(Firestore);
-  private router = inject(Router); // 👈 Inyección del Router para la navegación
+  private router = inject(Router);
 
   seccionActiva: string = 'reservas';
-
-  // 👈 Variables para el buscador
   searchTerm: string = '';
   citasFiltradas: any[] = []; 
 
@@ -43,6 +40,13 @@ export class CitasPage implements OnInit {
   servicios: any[] = [];
   estilistas: any[] = [];
   clientes: any[] = [];
+
+  // Opciones de profesión solicitadas
+  profesionesSalones: string[] = [
+    'Estilista Principal', 'Colorista Profesional', 'Manicurista / Pedicurista', 
+    'Maquillador Profesional', 'Especialista Capilar', 'Especialista en Peinados', 
+    'Barbero Profesional', 'Especialista en Extensiones'
+  ];
 
   horariosFijos: string[] = [
     '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
@@ -56,7 +60,21 @@ export class CitasPage implements OnInit {
 
   reservaActual: any = { id: '', clienteId: '', servicioId: '', estilistaId: '', fecha: '', hora: '', estado: 'pendiente' };
   servicioActual: any = { id: '', nombre: '', imagen: '' };
-  estilistaActual: any = { id: '', nombre: '' };
+  
+  // Añadimos imagen y profesión al objeto de estilista
+  estilistaActual: any = { id: '', nombre: '', imagen: '', profesion: '' };
+  // ==========================================
+  // LÓGICA DEL BOTÓN FLOTANTE DINÁMICO
+  // ==========================================
+  ejecutarAccionFab() {
+    if (this.seccionActiva === 'reservas') {
+      this.abrirModalReserva();
+    } else if (this.seccionActiva === 'servicios') {
+      this.abrirModalServicio();
+    } else if (this.seccionActiva === 'estilistas') {
+      this.abrirModalEstilista();
+    }
+  }
 
   constructor() {
     addIcons({ createOutline, trashOutline, closeOutline, saveOutline, calendarOutline, timeOutline, cameraOutline, imageOutline, personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, add });
@@ -66,7 +84,6 @@ export class CitasPage implements OnInit {
     this.cargarTodo();
   }
 
-  // 👈 Método para navegar con la barra inferior
   irA(ruta: string) {
     this.router.navigate([ruta]);
   }
@@ -83,10 +100,9 @@ export class CitasPage implements OnInit {
   async cargarCitas() {
     const snap = await getDocs(collection(this.firestore, 'citas'));
     this.citas = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-    this.filtrarCitas(); // 👈 Llenamos la lista filtrada al inicio
+    this.filtrarCitas();
   }
 
-  // 👈 Método para hacer funcionar el buscador
   filtrarCitas() {
     if (!this.searchTerm.trim()) {
       this.citasFiltradas = [...this.citas];
@@ -132,11 +148,13 @@ export class CitasPage implements OnInit {
       alert('Completa todos los campos de la reserva.'); return;
     }
 
+    // Mantenemos tu validación de domingos
     const diaSemana = new Date(this.reservaActual.fecha + 'T00:00:00').getDay(); 
     if (diaSemana === 0) { 
       alert('❌ El salón no atiende los domingos. Elige una fecha de Lunes a Sábado.'); return;
     }
 
+    // Mantenemos tu validación de cruce de horarios
     const qVal = query(collection(this.firestore, 'citas'), 
       where('fecha', '==', this.reservaActual.fecha), 
       where('hora', '==', this.reservaActual.hora)
@@ -229,7 +247,7 @@ export class CitasPage implements OnInit {
   }
 
   // ==========================================
-  // LÓGICA DE ESTILISTAS
+  // LÓGICA DE ESTILISTAS (ACTUALIZADA)
   // ==========================================
   abrirModalEstilista(estilista?: any) {
     if (estilista) {
@@ -237,15 +255,34 @@ export class CitasPage implements OnInit {
       this.estilistaActual = { ...estilista };
     } else {
       this.modoEdicion = false;
-      this.estilistaActual = { id: '', nombre: '' };
+      // Añadimos 'Estilista Principal' por defecto si es nuevo
+      this.estilistaActual = { id: '', nombre: '', imagen: '', profesion: 'Estilista Principal' };
     }
     this.isModalEstilistaOpen = true;
+  }
+
+  abrirSelectorEstilista() {
+    document.getElementById('file-upload-estilista')?.click();
+  }
+
+  cargarImagenEstilista(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => { this.estilistaActual.imagen = reader.result as string; };
+    }
   }
 
   async guardarEstilista() {
     if (!this.estilistaActual.nombre) { alert('Ingresa el nombre del estilista.'); return; }
 
-    const datosParaGuardar = { nombre: this.estilistaActual.nombre };
+    // Guardamos nombre, imagen y la profesión en Firestore
+    const datosParaGuardar = { 
+      nombre: this.estilistaActual.nombre,
+      imagen: this.estilistaActual.imagen || '', 
+      profesion: this.estilistaActual.profesion || 'Estilista Principal'
+    };
 
     if (this.modoEdicion) {
       await updateDoc(doc(this.firestore, `estilistas/${this.estilistaActual.id}`), datosParaGuardar);

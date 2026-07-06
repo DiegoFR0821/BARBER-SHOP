@@ -1,93 +1,62 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-title class="brand-title">Reservar Cita</ion-title>
+<ion-header class="ion-no-border premium-header">
+  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+    <ion-buttons slot="start"><ion-menu-button style="color: #aa8529;"></ion-menu-button></ion-buttons>
+    <ion-title style="font-weight: bold; color: #111; font-size: 16px;">RESERVA TU CITA</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding background-light">
-  
-  <div class="step-header">
-    <ion-icon name="cut-outline"></ion-icon>
-    <h3>1. Elige un servicio</h3>
-  </div>
-  
-  <div class="services-grid">
-    <div class="service-card" 
-         *ngFor="let servicio of servicios" 
-         [class.active]="servicioSeleccionado === servicio.id"
-         (click)="seleccionarServicio(servicio.id)">
-      <h4>{{ servicio.nombre }}</h4>
-      <p [class.text-gold]="servicioSeleccionado === servicio.id">{{ servicio.precio }}</p>
-      <ion-icon name="checkmark-circle-outline" *ngIf="servicioSeleccionado === servicio.id"></ion-icon>
-    </div>
-  </div>
-
-  <div *ngIf="servicioSeleccionado" class="fade-in-section">
-    <div class="step-header mt-4">
-      <ion-icon name="person-outline"></ion-icon>
-      <h3>2. Tu estilista</h3>
-    </div>
+<ion-content class="cream-bg">
+  <div class="dashboard-wrapper" style="padding: 16px;">
     
-    <div class="stylist-container">
-      <div class="stylist-card"
-           *ngFor="let estilista of estilistas"
-           [class.active]="estilistaSeleccionado === estilista.id"
-           (click)="seleccionarEstilista(estilista.id)">
-        <div class="avatar-circle">
-          <ion-icon name="person-outline"></ion-icon>
+    <h3 class="step-heading">1. SELECCIONA UN SERVICIO</h3>
+    <div class="services-row-grid">
+      <div class="service-option-card" *ngFor="let s of servicios" [class.active-card]="reserva.servicioId === s.id" (click)="seleccionarServicio(s)">
+        <img *ngIf="s.imagen" [src]="s.imagen" class="service-cover-img" />
+        <div class="service-info-box">
+          <h4>{{ s.nombre }}</h4>
+          <span style="font-size: 12px; color: #888;">S/ {{ s.precio }}</span>
         </div>
-        <h4>{{ estilista.nombre }}</h4>
-        <p>{{ estilista.especialidad }}</p>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="estilistaSeleccionado" class="fade-in-section">
-    <div class="step-header mt-4">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <h3>3. Elige la fecha</h3>
+    <h3 class="step-heading" style="margin-top: 24px;">2. SELECCIONA UN ESTILISTA</h3>
+    <div class="services-row-grid">
+      <div class="staff-option-card" *ngFor="let est of estilistas" [class.active-card]="reserva.estilistaId === est.id" (click)="seleccionarEstilista(est)">
+        <div class="staff-avatar-circle">
+          <img *ngIf="est.imagen" [src]="est.imagen" />
+          <ion-icon *ngIf="!est.imagen" name="person-outline"></ion-icon>
+        </div>
+        <div class="staff-info-box">
+          <h4>{{ est.nombre }}</h4>
+          <p>{{ est.profesion || 'Estilista Profesional' }}</p>
+        </div>
+      </div>
     </div>
 
-    <div class="calendar-container">
-      <ion-datetime 
-        presentation="date" 
-        mode="md"
-        locale="es-ES"
-        class="custom-calendar"
-        [(ngModel)]="fechaSeleccionada"
-        [min]="fechaMinima">
-      </ion-datetime>
+    <h3 class="step-heading" style="margin-top: 24px;">3. FECHA Y HORA DE ATENCIÓN</h3>
+    <ion-datetime presentation="date" [(ngModel)]="reserva.fecha" (ionChange)="verificarDisponibilidad()" style="--background: #ffffff; border-radius: 12px; border: 1px solid rgba(170,133,41,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.02); width: 100%;"></ion-datetime>
+    
+    <div *ngIf="reserva.fecha" style="margin-top: 16px;">
+      <p style="font-size: 12px; font-weight: bold; color: #333; margin-bottom: 10px;">Horarios para el día seleccionado:</p>
+      
+      <ion-grid class="ion-no-padding">
+        <ion-row style="margin: 0 -4px;">
+          <ion-col size="4" *ngFor="let hora of horariosFijos" style="padding: 4px;">
+            <button type="button" class="time-cell-btn" 
+                    [disabled]="citasOcupadas.includes(hora)" 
+                    [class.cell-occupied]="citasOcupadas.includes(hora)" 
+                    [class.cell-active]="reserva.hora === hora" 
+                    (click)="reserva.hora = hora">
+              {{ hora }}
+            </button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </div>
 
-    <div class="step-header mt-4">
-      <ion-icon name="time-outline"></ion-icon>
-      <h3>4. Horas disponibles</h3>
-    </div>
-
-    <ion-grid class="time-grid">
-      <ion-row>
-        <ion-col size="4" *ngFor="let hora of horasDisponibles">
-          <ion-button 
-            expand="block" 
-            [color]="horaSeleccionada === hora ? 'dark' : 'light'"
-            class="time-btn"
-            [class.selected-btn]="horaSeleccionada === hora"
-            (click)="seleccionarHora(hora)">
-            {{ hora }}
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
-
-  <div class="footer-action fade-in-section" *ngIf="estilistaSeleccionado">
-    <ion-button 
-      expand="block" 
-      class="btn-gold" 
-      [disabled]="!servicioSeleccionado || !estilistaSeleccionado || !horaSeleccionada"
-      (click)="confirmarReserva()">
-      Confirmar Reserva
+    <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px; margin-top: 25px;" (click)="guardarReserva()">
+      CONFIRMAR RESERVA
     </ion-button>
-  </div>
 
+  </div>
 </ion-content>
