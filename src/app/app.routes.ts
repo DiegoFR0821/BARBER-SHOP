@@ -68,6 +68,10 @@ export const routes: Routes = [
         // Inyecta la sala de chat interactiva con la asistente inteligente.
         loadComponent: () => import('./dashboard/chatbot/chatbot.page').then((m) => m.ChatbotPage),
       },
+      {
+        path: 'comunidad',
+        loadComponent: () => import('./dashboard/comunidad/comunidad.page').then( m => m.ComunidadPage)
+      },
     ],
   },
 
@@ -97,9 +101,13 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
       },
       {
-    path: 'anuncios-admin',
-    loadComponent: () => import('./admin/anuncios-admin/anuncios-admin.page').then( m => m.AnunciosAdminPage)
-      }
+        path: 'anuncios-admin',
+        loadComponent: () => import('./admin/anuncios-admin/anuncios-admin.page').then( m => m.AnunciosAdminPage)
+      },
+      {
+        path: 'comunidad-admin',
+        loadComponent: () => import('./admin/comunidad-admin/comunidad-admin.page').then( m => m.ComunidadAdminPage)
+      },
     ]
   },
   {
@@ -132,5 +140,7 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/inventario/inventario.page').then( m => m.InventarioPage)
   },
   
+  
+
   
 ];

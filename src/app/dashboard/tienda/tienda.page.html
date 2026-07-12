@@ -1,74 +1,68 @@
-<ion-header class="ion-no-border navbar-premium">
-  <ion-toolbar>
-    <ion-title class="brand-title">CATÁLOGO</ion-title>
-    <ion-buttons slot="end">
-      <ion-button class="cart-btn" (click)="irAlCarrito()">
-        <ion-icon slot="icon-only" name="cart-outline"></ion-icon>
-        <ion-badge color="danger" class="cart-badge" *ngIf="cantidadCarrito > 0">
+<ion-header class="ion-no-border premium-header">
+  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+    <ion-buttons slot="start">
+      <ion-menu-button style="color: #aa8529;"></ion-menu-button>
+    </ion-buttons>
+    <ion-title style="font-weight: 800; color: #111; font-size: 16px; text-align: center;">CATÁLOGO</ion-title>
+    <ion-buttons slot="end" class="ion-padding-end">
+      <ion-button (click)="irACarrito()" style="--color: #aa8529; position: relative;">
+        <ion-icon name="cart-outline" style="font-size: 24px;"></ion-icon>
+        <ion-badge *ngIf="cantidadCarrito > 0" color="danger" style="position: absolute; top: -2px; right: -2px; font-size: 10px; padding: 3px 5px; border-radius: 50%;">
           {{ cantidadCarrito }}
         </ion-badge>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  
-  <ion-toolbar class="search-toolbar">
-    <ion-searchbar 
-      mode="ios"
-      placeholder="Buscar productos de belleza..." 
-      (ionInput)="buscarProducto($event)"
-      class="custom-searchbar">
-    </ion-searchbar>
-  </ion-toolbar>
-
-  <ion-toolbar class="segment-toolbar">
-    <ion-segment scrollable="true" mode="ios" [value]="categoriaSeleccionada" (ionChange)="filtrarCategoria($event)" class="gold-segment">
-      <ion-segment-button value="todos">
-        <ion-label>Todos</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="cabello">
-        <ion-label>Cabello</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="unas">
-        <ion-label>Uñas</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="cuidado">
-        <ion-label>Cuidado Piel</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding background-light">
+<ion-content style="--background: #faf9f6;">
+  <div class="dashboard-wrapper" style="padding: 16px;">
+    
+    <ion-searchbar 
+      placeholder="Buscar productos..." 
+      [(ngModel)]="searchTerm" 
+      (ionInput)="filtrarProductos()"
+      style="--background: #ffffff; --border-radius: 12px; --box-shadow: 0 4px 10px rgba(0,0,0,0.03); padding: 0 0 16px 0;">
+    </ion-searchbar>
 
-  <div class="empty-state" *ngIf="productosMostrados.length === 0">
-    <p>No se encontraron productos.</p>
-  </div>
+    <div *ngIf="productosFiltrados.length === 0" style="text-align: center; margin-top: 30px; color: #888;">
+      <p style="font-size: 13px; font-weight: 600;">No se encontraron productos.</p>
+    </div>
 
-  <ion-grid class="products-grid">
-    <ion-row>
-      <ion-col size="6" *ngFor="let producto of productosMostrados">
-        <div class="product-card">
-          <div class="image-wrapper">
-            <img [src]="producto.imagen" [alt]="producto.nombre" />
-            <button class="btn-favorite">
-              <ion-icon name="heart-outline"></ion-icon>
-            </button>
-          </div>
-          
-          <div class="product-info">
-            <h3 class="product-title">{{ producto.nombre }}</h3>
-            <p class="product-desc">{{ producto.descripcion }}</p>
+    <ion-grid class="ion-no-padding">
+      <ion-row style="margin: 0 -6px;">
+        <ion-col size="6" *ngFor="let prod of productosFiltrados" style="padding: 6px;">
+          <div class="product-catalog-card" style="background: #ffffff; border-radius: 12px; border: 1px solid rgba(170,133,41,0.15); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; height: 100%;">
             
-            <div class="product-action">
-              <span class="product-price">S/ {{ producto.precio | number:'1.2-2' }}</span>
-              <button class="btn-add" (click)="agregarAlCarrito(producto)">
-                <ion-icon name="add-circle-outline"></ion-icon>
-              </button>
+            <div style="width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #f2f2f7; position: relative;">
+              <img *ngIf="prod.imagen" [src]="prod.imagen" style="width: 100%; height: 100%; object-fit: cover;" />
+              <div *ngIf="!prod.imagen" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #aaa;">
+                <ion-icon name="image-outline" style="font-size: 30px;"></ion-icon>
+              </div>
+              <ion-badge *ngIf="prod.stock <= 0" color="danger" style="position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: bold;">AGOTADO</ion-badge>
             </div>
-          </div>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
 
+            <div style="padding: 10px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;">
+              <div>
+                <h4 style="margin: 0; font-size: 13px; font-weight: 700; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ prod.nombre }}</h4>
+                <p style="margin: 4px 0 8px; font-size: 11px; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; height: 30px;">
+                  {{ prod.descripcion || 'Sin descripción disponible.' }}
+                </p>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 13px; font-weight: 800; color: #aa8529;">S/ {{ prod.precio | number:'1.2-2' }}</span>
+                  <span style="font-size: 10px; color: #999; font-weight: 600;">Stock: {{ prod.stock }}</span>
+                </div>
+                <ion-button expand="block" fill="solid" size="small" [disabled]="prod.stock <= 0" style="--background: #aa8529; --border-radius: 8px; font-weight: 700; margin: 0;" (click)="agregarAlCarrito(prod)">
+                  AÑADIR
+                </ion-button>
+              </div>
+            </div>
+
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
 </ion-content>

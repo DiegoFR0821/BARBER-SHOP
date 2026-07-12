@@ -1,89 +1,42 @@
-/* Cabecera */
-.navbar-premium {
-  --background: #ffffff;
-  border-bottom: 1px solid #f5f5f5;
-  .brand-title { font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #aa8529; text-align: center; }
-  .btn-back-gold { --color: #aa8529; }
-  .empty-slot-end { width: 46px; }
+$color-gold: #aa8529;
+
+.cart-horizontal-item {
+  display: flex; align-items: center; background: #ffffff; border-radius: 12px;
+  border: 1px solid rgba(170,133,41,0.15); margin-bottom: 10px; padding: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.01);
 }
 
-.background-light { --background: #fcfbf8; }
-.mt-2 { margin-top: 16px; }
-.mt-4 { margin-top: 32px; }
-
-/* Estado Vacío */
-.empty-state {
-  text-align: center; margin-top: 60px;
-  ion-icon { font-size: 64px; color: #dddddd; margin-bottom: 16px; }
-  p { color: #888; font-size: 16px; }
-  .btn-outline-gold { --color: #aa8529; --border-color: #aa8529; --border-radius: 8px; }
+.total-summary-card {
+  background: #ffffff; border-radius: 12px; padding: 16px;
+  border: 1px solid rgba(170,133,41,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.02); margin-top: 15px;
 }
 
-/* Tarjetas de Producto en Carrito */
-.cart-items-container {
-  display: flex; flex-direction: column; gap: 16px;
-}
-
-.cart-item-card {
-  background: #ffffff; border-radius: 12px; padding: 12px;
-  display: flex; align-items: center; position: relative;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eaeaea;
-
-  .item-image {
-    width: 70px; height: 70px; border-radius: 8px; overflow: hidden; background: #f5f5f5; flex-shrink: 0;
-    img { width: 100%; height: 100%; object-fit: cover; }
-  }
-
-  .item-details {
-    margin-left: 12px; flex-grow: 1;
-    h4 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #333; line-height: 1.2; padding-right: 20px;}
-    .item-price { margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #aa8529; }
-  }
-
-  /* Botones de + y - */
-  .quantity-controls {
-    display: flex; align-items: center; gap: 12px;
-    background: #f9f9f9; padding: 4px 8px; border-radius: 20px; width: fit-content;
-    button { background: transparent; border: none; font-size: 16px; color: #333; display: flex; align-items: center; }
-    span { font-size: 13px; font-weight: 600; width: 16px; text-align: center; }
-  }
-
-  /* Botón de basurero */
-  .btn-delete {
-    position: absolute; top: 12px; right: 12px; background: transparent; border: none;
-    color: #ff4b4b; font-size: 20px;
+.selector-pay-box {
+  flex: 1; background: #ffffff; border: 1px solid rgba(170,133,41,0.25); border-radius: 10px;
+  padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; transition: all 0.2s ease;
+  span { font-size: 13px; font-weight: 700; color: #444; }
+  ion-icon { color: #555; }
+  &.selected-pay {
+    border: 2px solid #{$color-gold}; background: rgba(170, 133, 41, 0.05);
+    span, ion-icon { color: #{$color-gold}; }
   }
 }
 
-/* Métodos de Pago */
-.section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 12px; }
-
-.payment-option {
-  --background: #ffffff; border-radius: 12px; margin-bottom: 8px;
-  border: 1px solid #eaeaea; --padding-start: 12px;
-  ion-icon { color: #aa8529; font-size: 24px; margin-right: 12px; }
-  ion-label { font-size: 14px; font-weight: 500; color: #333; }
-  ion-radio { --color-checked: #aa8529; }
+.custom-input-pay {
+  --background: #f9f9fc; border: 1px solid #e4e4eb; border-radius: 8px;
+  --padding-start: 10px; font-size: 14px; margin-bottom: 10px;
 }
 
-/* Resumen Fijo Inferior */
-.checkout-summary {
-  background: #ffffff; padding: 20px 24px 30px 24px;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-  border-top-left-radius: 24px; border-top-right-radius: 24px;
+.success-screen-container {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 40px 16px 20px; background: #ffffff; border-radius: 16px;
+  border: 1px solid rgba(170,133,41,0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-top: 20px;
 
-  .summary-row {
-    display: flex; justify-content: space-between; font-size: 14px; color: #666; margin-bottom: 8px;
+  .checkmark-animation-box {
+    font-size: 75px; color: #28a745; margin-bottom: 16px;
   }
-  .summary-divider { height: 1px; background: #eaeaea; margin: 12px 0; }
-  .total-row {
-    font-size: 18px; font-weight: 700; color: #333; margin-bottom: 16px;
-    span:last-child { color: #aa8529; }
-  }
-
-  .btn-gold {
-    --background: linear-gradient(135deg, #d4af37 0%, #aa8529 100%);
-    --color: #ffffff; --border-radius: 12px; font-weight: 700; font-size: 16px;
-    --box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
-  }
+  h2 { margin: 0 0 10px 0; font-size: 19px; font-weight: 800; color: #111; }
+  p { margin: 0 0 24px 0; font-size: 13px; color: #555; line-height: 1.5; }
+  .decor-line { width: 60px; height: 3px; background: #eaeaea; border-radius: 2px; margin-bottom: 16px; }
 }

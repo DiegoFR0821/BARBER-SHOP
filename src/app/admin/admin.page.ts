@@ -10,7 +10,7 @@ import { addIcons } from 'ionicons';
 // 👇 1. Importa el icono megaphoneOutline aquí
 import { 
   gridOutline, calendarOutline, peopleOutline, cubeOutline, 
-  logOutOutline, megaphoneOutline 
+  logOutOutline, megaphoneOutline, chatbubblesOutline
 } from 'ionicons/icons'; 
 import { Auth } from '@angular/fire/auth';
 
@@ -34,14 +34,15 @@ export class AdminPage implements OnInit {
     { title: 'Citas', url: '/admin/citas', icon: 'calendar' },
     { title: 'Clientes', url: '/admin/clientes', icon: 'people' },
     { title: 'Inventario', url: '/admin/inventario', icon: 'cube' },
-    { title: 'Modales Pop-up', url: '/admin/anuncios-admin', icon: 'megaphone' } // ¡Aquí está la nueva opción!
+    { title: 'Modales Pop-up', url: '/admin/anuncios-admin', icon: 'megaphone' },// ¡Aquí está la nueva opción!
+    { title: 'Sala Chat', url: '/admin/comunidad-admin', icon: 'chatbubbles' }
   ];
 
   constructor(private auth: Auth, private router: Router) {
     // 👇 3. Registra el icono en el constructor
     addIcons({ 
       gridOutline, calendarOutline, peopleOutline, cubeOutline, 
-      logOutOutline, megaphoneOutline 
+      logOutOutline, megaphoneOutline, chatbubblesOutline
     });
   }
 

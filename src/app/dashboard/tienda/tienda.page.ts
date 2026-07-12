@@ -1,24 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { 
-  IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
-  IonButton, IonIcon, IonBadge, IonSearchbar, IonSegment, 
-  IonSegmentButton, IonLabel, IonGrid, IonRow, IonCol, IonCard
+  IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
+  IonIcon, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, IonMenuButton
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cartOutline, addCircleOutline, searchOutline, heartOutline } from 'ionicons/icons';
-
-// Definimos la estructura profesional del producto
-interface Producto {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  categoria: string;
-  imagen: string;
-}
+import { cartOutline, imageOutline } from 'ionicons/icons';
+import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-tienda',
@@ -26,77 +16,94 @@ interface Producto {
   styleUrls: ['./tienda.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, IonContent, IonHeader, IonTitle, 
-    IonToolbar, IonButtons, IonButton, IonIcon, IonBadge, 
-    IonSearchbar, IonSegment, IonSegmentButton, IonLabel, 
-    IonGrid, IonRow, IonCol, IonCard
+    CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, 
+    IonButtons, IonButton, IonIcon, IonGrid, IonRow, IonCol, IonBadge, 
+    IonSearchbar, IonMenuButton
   ]
 })
 export class TiendaPage implements OnInit {
+  private firestore = inject(Firestore);
+  private router = inject(Router);
 
-  // Productos simulados que luego creará el Administrador
-  productosBackend: Producto[] = [
-    { id: 'p1', nombre: 'Champú Reparador Oro', descripcion: 'Con extracto de argán y keratina.', precio: 45.00, categoria: 'cabello', imagen: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=500&auto=format&fit=crop' },
-    { id: 'p2', nombre: 'Sérum Iluminador', descripcion: 'Vitamina C y Colágeno para el rostro.', precio: 68.00, categoria: 'cuidado', imagen: 'https://images.unsplash.com/photo-1608248593801-52b57b605151?q=80&w=500&auto=format&fit=crop' },
-    { id: 'p3', nombre: 'Mascarilla Hidratante', descripcion: 'Restauración profunda 24 hrs.', precio: 55.00, categoria: 'cabello', imagen: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?q=80&w=500&auto=format&fit=crop' },
-    { id: 'p4', nombre: 'Kit Esmaltes Gel', descripcion: 'Tonos neutros y dorados.', precio: 30.00, categoria: 'unas', imagen: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=500&auto=format&fit=crop' }
-  ];
-
-  // Variables para la vista
-  productosMostrados: Producto[] = [];
-  categoriaSeleccionada: string = 'todos';
+  productos: any[] = [];
+  productosFiltrados: any[] = [];
+  searchTerm: string = '';
   cantidadCarrito: number = 0;
-  textoBusqueda: string = '';
 
-  constructor(private router: Router) {
-    addIcons({
-      'cart-outline': cartOutline,
-      'add-circle-outline': addCircleOutline,
-      'search-outline': searchOutline,
-      'heart-outline': heartOutline
-    });
+  constructor() {
+    addIcons({ cartOutline, imageOutline });
   }
 
   ngOnInit() {
-    // Inicialmente mostramos todos los productos
-    this.productosMostrados = [...this.productosBackend];
+    this.cargarProductosInventario();
   }
 
-  // Lógica para filtrar al tocar los botones superiores
-  filtrarCategoria(event: any) {
-    this.categoriaSeleccionada = event.detail.value;
-    this.aplicarFiltros();
+  ionViewWillEnter() {
+    this.cargarProductosInventario();
+    this.actualizarBadgeCarrito();
   }
 
-  // Lógica para la barra de búsqueda
-  buscarProducto(event: any) {
-    this.textoBusqueda = event.target.value.toLowerCase();
-    this.aplicarFiltros();
+  async cargarProductosInventario() {
+    try {
+      const snap = await getDocs(collection(this.firestore, 'productos'));
+      this.productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.filtrarProductos();
+    } catch (error) {
+      console.error('Error cargando catálogo:', error);
+    }
   }
 
-  // Función maestra de filtrado (Categoría + Búsqueda)
-  aplicarFiltros() {
-    let filtrados = this.productosBackend;
+  filtrarProductos() {
+    if (!this.searchTerm.trim()) {
+      this.productosFiltrados = [...this.productos];
+    } else {
+      this.productosFiltrados = this.productos.filter(p => 
+        p.nombre && p.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
+  }
 
-    if (this.categoriaSeleccionada !== 'todos') {
-      filtrados = filtrados.filter(p => p.categoria === this.categoriaSeleccionada);
+  agregarAlCarrito(prod: any) {
+    if (prod.stock <= 0) return;
+
+    let itemsCarrito = [];
+    const cached = localStorage.getItem('etnica_cart');
+    if (cached) itemsCarrito = JSON.parse(cached);
+
+    const itemExistente = itemsCarrito.find((item: any) => item.id === prod.id);
+
+    if (itemExistente) {
+      if (itemExistente.cantidad >= prod.stock) {
+        alert(`Límite de stock alcanzado. Quedan ${prod.stock} unidades.`);
+        return;
+      }
+      itemExistente.cantidad++;
+    } else {
+      itemsCarrito.push({
+        id: prod.id,
+        nombre: prod.nombre,
+        precio: prod.precio,
+        imagen: prod.imagen,
+        cantidad: 1,
+        stockMaximo: prod.stock
+      });
     }
 
-    if (this.textoBusqueda.trim() !== '') {
-      filtrados = filtrados.filter(p => p.nombre.toLowerCase().includes(this.textoBusqueda));
+    localStorage.setItem('etnica_cart', JSON.stringify(itemsCarrito));
+    this.actualizarBadgeCarrito();
+  }
+
+  actualizarBadgeCarrito() {
+    const cached = localStorage.getItem('etnica_cart');
+    if (cached) {
+      const items = JSON.parse(cached);
+      this.cantidadCarrito = items.reduce((acc: number, item: any) => acc + item.cantidad, 0);
+    } else {
+      this.cantidadCarrito = 0;
     }
-
-    this.productosMostrados = filtrados;
   }
 
-  // Simulación de agregar al carrito
-  agregarAlCarrito(producto: Producto) {
-    this.cantidadCarrito++;
-    console.log('Agregado:', producto.nombre);
-    // Aquí luego integraremos un Servicio Global de Angular para guardar el estado del carrito
-  }
-
-  irAlCarrito() {
-    this.router.navigate(['/carrito']); // 👈 Le quitamos el /dashboard/
+  irACarrito() {
+    this.router.navigate(['/carrito']);
   }
 }

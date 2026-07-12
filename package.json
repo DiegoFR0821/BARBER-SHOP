@@ -28,11 +28,13 @@
     "@capacitor/haptics": "8.0.2",
     "@capacitor/keyboard": "8.0.3",
     "@capacitor/status-bar": "8.0.2",
+    "@google/generative-ai": "^0.24.1",
     "@ionic/angular": "^8.0.0",
     "firebase": "^12.14.0",
     "ionicons": "^7.0.0",
     "ngx-image-cropper": "^9.1.6",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.3",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

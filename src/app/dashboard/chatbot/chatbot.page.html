@@ -1,53 +1,59 @@
-<ion-header class="ion-no-border navbar-premium">
-  <ion-toolbar>
-    <ion-title class="brand-title">
-      <ion-icon name="sparkles" class="title-icon"></ion-icon>
-      ASISTENTE ÉTNICA
+<ion-header class="ion-no-border premium-header">
+  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+    <ion-buttons slot="start">
+      <ion-menu-button style="color: #aa8529;"></ion-menu-button>
+    </ion-buttons>
+    <ion-title style="font-weight: 800; color: #111; font-size: 16px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <ion-icon name="sparkles-outline" style="color: #aa8529; font-size: 20px;"></ion-icon>
+      ASISTENTE MÍA
     </ion-title>
+    <ion-buttons slot="end" class="ion-padding-end">
+      </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="chat-container">
-  
-  <div class="messages-wrapper">
-    <div *ngFor="let msg of mensajes" 
-         class="message-row" 
-         [ngClass]="{'row-bot': msg.emisor === 'bot', 'row-user': msg.emisor === 'usuario'}">
-      
-      <ion-avatar class="bot-avatar" *ngIf="msg.emisor === 'bot'">
-        <img src="https://ui-avatars.com/api/?name=Mia&background=aa8529&color=fff" alt="Bot Avatar" />
-      </ion-avatar>
-
-      <div class="message-bubble" 
-           [ngClass]="{'bubble-bot': msg.emisor === 'bot', 'bubble-user': msg.emisor === 'usuario'}">
-        <p>{{ msg.texto }}</p>
-        <span class="message-time">{{ msg.hora }}</span>
-      </div>
-
+<ion-content class="chat-bg">
+  <div class="chat-container">
+    
+    <div class="system-message">
+      <span>Las respuestas son generadas por IA. Confirma disponibilidad agendando tu cita.</span>
     </div>
 
-    <div class="message-row row-bot" *ngIf="escribiendo">
-      <ion-avatar class="bot-avatar">
-        <img src="https://ui-avatars.com/api/?name=Mia&background=aa8529&color=fff" alt="Bot Avatar" />
-      </ion-avatar>
-      <div class="message-bubble bubble-bot typing-indicator">
+    <div *ngFor="let msj of mensajes" 
+         class="message-wrapper" 
+         [ngClass]="msj.role === 'user' ? 'message-mine' : 'message-ia'">
+      
+      <div *ngIf="msj.role === 'model'" class="avatar-circle ia-avatar">
+        <ion-icon name="sparkles-outline"></ion-icon>
+      </div>
+
+      <div class="message-bubble">
+        <p class="message-text" [innerHTML]="msj.text | slice:0:500"></p> 
+        </div>
+    </div>
+
+    <div *ngIf="escribiendo" class="message-wrapper message-ia typing-indicator">
+      <div class="avatar-circle ia-avatar"><ion-icon name="sparkles-outline"></ion-icon></div>
+      <div class="message-bubble typing-dots">
         <span></span><span></span><span></span>
       </div>
     </div>
-  </div>
 
+  </div>
 </ion-content>
 
-<ion-footer class="ion-no-border chat-footer">
-  <div class="input-container">
-    <ion-input 
-      mode="md"
-      type="text" 
-      placeholder="Escribe tu mensaje aquí..." 
-      [(ngModel)]="nuevoMensaje"
-      (keyup.enter)="enviarMensaje()">
-    </ion-input>
-    <ion-button fill="clear" class="btn-send" (click)="enviarMensaje()" [disabled]="nuevoMensaje.trim() === ''">
+<ion-footer class="ion-no-border">
+  <div class="chat-input-container">
+    <ion-item lines="none" class="input-item">
+      <ion-input 
+        [(ngModel)]="mensajeTexto" 
+        (keyup.enter)="enviarMensaje()"
+        placeholder="Pregúntale a Mía sobre cortes..." 
+        type="text"
+        [disabled]="escribiendo">
+      </ion-input>
+    </ion-item>
+    <ion-button fill="clear" class="send-btn" (click)="enviarMensaje()" [disabled]="!mensajeTexto.trim() || escribiendo">
       <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
   </div>

@@ -1,0 +1,49 @@
+<ion-header class="ion-no-border premium-header">
+  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+    <ion-title style="font-weight: 800; color: #111; font-size: 16px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <ion-icon name="people-outline" style="color: #aa8529; font-size: 22px;"></ion-icon>
+      COMUNIDAD ÉTNICA
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="chat-bg">
+  <div class="chat-container">
+    
+    <div class="system-message">
+      <span>Bienvenido al chat global de Étnica Salón. ¡Saluda a la comunidad!</span>
+    </div>
+
+    <div *ngFor="let msj of mensajes" 
+         class="message-wrapper" 
+         [ngClass]="msj.esMio ? 'message-mine' : 'message-other'">
+      
+      <div *ngIf="!msj.esMio" class="avatar-circle">
+        {{ msj.usuario.charAt(0) | uppercase }}
+      </div>
+
+      <div class="message-bubble">
+        <span class="message-user" *ngIf="!msj.esMio">{{ msj.usuario }}</span>
+        <p class="message-text">{{ msj.texto }}</p>
+        <span class="message-time">{{ msj.hora }}</span>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="chat-input-container">
+    <ion-item lines="none" class="input-item">
+      <ion-input 
+        [(ngModel)]="mensajeTexto" 
+        (keyup.enter)="enviarMensaje()"
+        placeholder="Escribe un mensaje aquí..." 
+        type="text">
+      </ion-input>
+    </ion-item>
+    <ion-button fill="clear" class="send-btn" (click)="enviarMensaje()" [disabled]="!mensajeTexto.trim()">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+  </div>
+</ion-footer>

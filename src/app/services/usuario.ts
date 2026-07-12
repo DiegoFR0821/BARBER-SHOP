@@ -5,11 +5,11 @@ export interface DatosUsuario {
   nombre: string;
   correo: string;
   rol: string;
-  imagen?: string;
+  imagen?: string; // 👈 Aseguramos que la propiedad opcional exista para TypeScript
 }
 
 @Injectable({
-  providedIn: 'root' // Esto hace que el servicio sea global para toda la app
+  providedIn: 'root'
 })
 export class UsuarioService {
   
@@ -17,17 +17,14 @@ export class UsuarioService {
 
   constructor() { }
 
-  // Guardar los datos en memoria
   setUsuario(datos: DatosUsuario) {
     this.usuarioActual = datos;
   }
 
-  // Leer los datos desde cualquier página
   getUsuario(): DatosUsuario | null {
     return this.usuarioActual;
   }
 
-  // Limpiar memoria al cerrar sesión
   limpiarUsuario() {
     this.usuarioActual = null;
   }

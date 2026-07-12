@@ -1,17 +1,13 @@
 <ion-menu side="start" menuId="perfil-menu" contentId="main-content-resumen">
   <ion-content class="menu-perfil-bg">
     
-    <div class="menu-header-box" style="padding: 24px 16px; text-align: center; border-bottom: 1px solid #f2f2f7;">
-  <div class="avatar-wrapper">
-    <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Perfil">
-    <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
-  </div>
-  <h2 style="margin-top: 12px;">{{ nombreCliente }}</h2>
-</div>
-
-<div class="section-title-row">
-  <h3><ion-icon name="flame-outline"></ion-icon> OFERTAS EXCLUSIVAS</h3>
-  </div>
+    <div class="menu-profile-header">
+      <div class="avatar-wrapper">
+        <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Perfil">
+        <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
+      </div>
+      <h2>{{ nombreCliente }}</h2>
+    </div>
 
     <ion-list lines="none" class="menu-options-list">
       <ion-item button (click)="irAPerfil()" class="menu-item">
@@ -29,6 +25,7 @@
   </ion-content>
 </ion-menu>
 
+
 <div class="ion-page" id="main-content-resumen">
   
   <ion-header class="ion-no-border premium-header">
@@ -38,7 +35,7 @@
       </ion-buttons>
       <ion-title class="clean-title">ÉTNICA SALÓN</ion-title>
       <ion-buttons slot="end" class="ion-padding-end">
-        <ion-icon name="notifications-outline" class="noti-icon"></ion-icon>
+        <ion-icon name="notifications-outline" class="noti-icon" [class.has-noti]="tieneNotificaciones"></ion-icon>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -53,7 +50,6 @@
 
       <div class="section-title-row">
         <h3><ion-icon name="flame-outline"></ion-icon> OFERTAS EXCLUSIVAS</h3>
-        <span class="badge-gold">MIEMBROS</span>
       </div>
 
       <div class="horizontal-offers-slider">
@@ -110,7 +106,7 @@
           <ion-col size="6" *ngFor="let item of galeriaTrabajos" style="padding: 4px;">
             <div class="look-gallery-card">
               <div class="img-wrapper">
-                <img [src]="item.url" />
+                <img [src]="item.url" alt="{{item.titulo}}" />
               </div>
               <div class="info-wrapper">
                 <span class="category-text">{{ item.categoria }}</span>

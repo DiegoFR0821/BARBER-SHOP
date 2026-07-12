@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core'; // 👈 Añadido ElementRef y ViewChild
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,13 +10,12 @@ import {
 } from '@ionic/angular/standalone';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+// Ya no necesitamos @capacitor/camera porque el input file nativo hace el trabajo en ambas plataformas
 import { addIcons } from 'ionicons';
 import { pencilOutline, cameraOutline } from 'ionicons/icons';
 
-// Importaciones para Firebase y nuestro Servicio de Memoria
 import { Firestore, doc, updateDoc, getDoc } from '@angular/fire/firestore';
-import { UsuarioService } from '../services/usuario'; // 👈 Ruta ajustada (sube dos niveles)
+import { UsuarioService } from '../services/usuario'; 
 
 @Component({
   selector: 'app-perfil',
@@ -32,19 +31,21 @@ import { UsuarioService } from '../services/usuario'; // 👈 Ruta ajustada (sub
 })
 export class PerfilPage implements OnInit {
 
-  // Variables para la interfaz y base de datos
+  // 👈 Obtenemos una referencia al input oculto en el HTML
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
   usuarioPerfil = {
     nombre: '',
     correo: '',
     telefono: '',
     bio: '',
-    avatarUrl: 'https://ionicframework.com/docs/img/demos/avatar.svg' // Avatar por defecto
+    avatarUrl: 'https://ionicframework.com/docs/img/demos/avatar.svg' 
   };
 
   abrirRecortador: boolean = false;
   imagenOriginalBase64: string = '';
   imagenTemporalRecortada: string = '';
-  guardando: boolean = false; // Bloquea el botón mientras guarda en Firebase
+  guardando: boolean = false; 
 
   constructor(
     private router: Router,
@@ -58,18 +59,16 @@ export class PerfilPage implements OnInit {
   }
 
   async ngOnInit() {
-    // 1. Cargar datos básicos y rápidos desde el localStorage (vía UsuarioService)
     const datosMemoria = this.usuarioService.getUsuario();
     
     if (datosMemoria) {
       this.usuarioPerfil.nombre = datosMemoria.nombre || '';
       this.usuarioPerfil.correo = datosMemoria.correo || '';
-      // Si el servicio ya guardaba una imagen en caché, la mostramos al instante
+      
       if (datosMemoria.imagen) {
         this.usuarioPerfil.avatarUrl = datosMemoria.imagen;
       }
 
-      // 2. Traer datos adicionales (teléfono, bio) directamente desde Firebase
       try {
         const referenciaDocumento = doc(this.firestore, `usuarios/${datosMemoria.uid}`);
         const documentoConsumido = await getDoc(referenciaDocumento);
@@ -83,9 +82,11 @@ export class PerfilPage implements OnInit {
           if (datosCompletos['bio']) {
             this.usuarioPerfil.bio = datosCompletos['bio'];
           }
-          // Si Firebase tiene una imagen más actual que la memoria, la usamos
           if (datosCompletos['imagen']) {
             this.usuarioPerfil.avatarUrl = datosCompletos['imagen'];
+            // 👈 Sincronizamos la memoria local si Firebase tiene una foto que la memoria no
+             datosMemoria.imagen = datosCompletos['imagen'];
+             this.usuarioService.setUsuario(datosMemoria);
           }
         }
       } catch (error) {
@@ -94,43 +95,61 @@ export class PerfilPage implements OnInit {
     }
   }
 
-  // ==========================================
-  // LÓGICA DE CAPACITOR CAMERA + NGX-CROPPER
-  // ==========================================
-  async obtenerImagen() {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false, // Usamos el cropper personalizado en su lugar
-        resultType: CameraResultType.Base64,
-        source: CameraSource.Prompt, 
-        promptLabelHeader: 'Cambiar foto de perfil',
-        promptLabelPhoto: 'Seleccionar desde Galería',
-        promptLabelPicture: 'Tomar una Foto'
-      });
-
-      if (image && image.base64String) {
-        this.imagenOriginalBase64 = `data:image/jpeg;base64,${image.base64String}`;
-        this.abrirRecortador = true;
-      }
-    } catch (error) {
-      console.log('El usuario canceló la selección de imagen o hubo un error.', error);
-    }
+  // ==============================================================
+  // LÓGICA DE SELECCIÓN DE IMAGEN (PC Y MÓVIL) + NGX-CROPPER
+  // ==============================================================
+  
+  // 1. Esta función se ejecuta al tocar el botón de la cámara
+  abrirSelectorArchivo() {
+    // Simula un clic en el input de tipo file oculto
+    this.fileInput.nativeElement.click(); 
   }
 
-  fotoRecortadaEfectuada(event: ImageCroppedEvent) {
-    // Cuando el usuario mueve el cuadro de recorte, guardamos el resultado
-    if (event && event.base64) {
+  // 2. Esta función se dispara cuando el usuario selecciona un archivo (en PC o Celular)
+  archivoSeleccionado(event: any) {
+    const archivo = event.target.files[0]; // Captura el archivo
+    if (archivo) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        // Convierte el archivo a Base64 y lo manda al Recortador (Cropper)
+        this.imagenOriginalBase64 = e.target.result;
+        this.abrirRecortador = true; // Abre el modal
+      };
+      reader.readAsDataURL(archivo);
+    }
+    // Resetea el input para poder seleccionar la misma imagen dos veces seguidas si se quiere
+    event.target.value = ''; 
+  }
+
+  // ==========================================
+  // CORRECCIÓN: LECTURA HÍBRIDA DEL RECORTADOR
+  // ==========================================
+  fotoRecortadaEfectuada(event: any) {
+    // 1. Si usas una versión de ngx-image-cropper que aún envía base64
+    if (event.base64) {
       this.imagenTemporalRecortada = event.base64;
+    } 
+    // 2. Si usas una versión moderna que envía un 'blob', lo convertimos a base64
+    else if (event.blob) {
+      const reader = new FileReader();
+      reader.readAsDataURL(event.blob);
+      reader.onloadend = () => {
+        this.imagenTemporalRecortada = reader.result as string;
+      };
     }
   }
 
   aplicarRecorteCircular() {
-    if (this.imagenTemporalRecortada) {
-      this.usuarioPerfil.avatarUrl = this.imagenTemporalRecortada;
-      this.abrirRecortador = false;
-      console.log('Imagen recortada exitosamente. Lista para guardar.');
+    // Si por alguna razón el recorte falló, usamos la imagen original como respaldo
+    // Esto garantiza que el modal SIEMPRE se cierre y no te deje atrapado.
+    if (!this.imagenTemporalRecortada) {
+      this.imagenTemporalRecortada = this.imagenOriginalBase64;
     }
+    
+    // Aplicamos la foto al círculo de perfil y apagamos el modal
+    this.usuarioPerfil.avatarUrl = this.imagenTemporalRecortada;
+    this.abrirRecortador = false;
+    console.log('¡Foto aplicada correctamente!');
   }
 
   cancelarRecorte() {
@@ -152,34 +171,28 @@ export class PerfilPage implements OnInit {
     this.guardando = true;
 
     try {
-      // 1. Apuntamos al documento en Firebase
       const referenciaDocumento = doc(this.firestore, `usuarios/${datosMemoria.uid}`);
       
-      // 2. Construimos el paquete de actualización
       const datosActualizar: any = {
         nombre: this.usuarioPerfil.nombre,
         telefono: this.usuarioPerfil.telefono,
         bio: this.usuarioPerfil.bio
       };
 
-      // Si la URL del avatar cambió (es decir, ya no es el SVG por defecto), la enviamos a Firebase
       if (this.usuarioPerfil.avatarUrl && !this.usuarioPerfil.avatarUrl.includes('avatar.svg')) {
         datosActualizar.imagen = this.usuarioPerfil.avatarUrl;
       }
 
-      // 3. Enviamos a Firebase
       await updateDoc(referenciaDocumento, datosActualizar);
 
-      // 4. Sincronizamos la memoria local (UsuarioService) para que el Dashboard vea los cambios
+      // 👈 AÑADIDO: Actualizamos el UsuarioService con la nueva imagen
       datosMemoria.nombre = this.usuarioPerfil.nombre;
       if (datosActualizar.imagen) {
-        datosMemoria.imagen = datosActualizar.imagen;
+        datosMemoria.imagen = datosActualizar.imagen; // Guardamos la imagen base64 en la memoria global
       }
       this.usuarioService.setUsuario(datosMemoria);
 
       this.guardando = false;
-      
-      // 5. Regresamos al dashboard para que el usuario vea su nueva foto y nombre
       this.router.navigate(['/dashboard/resumen']);
 
     } catch (error) {

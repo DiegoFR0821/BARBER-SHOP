@@ -41,7 +41,7 @@ export class ResumenPage implements OnInit {
 
   // Datos del cliente
   nombreCliente: string = 'Invitado'; 
-  fotoCliente: string = ''; // 👈 Añadimos variable para la foto
+  fotoCliente: string = ''; // 👈 Variable para controlar la foto en el menú
   tieneNotificaciones: boolean = true; 
 
   // Sistema de Cola de Promociones (Firebase)
@@ -50,13 +50,14 @@ export class ResumenPage implements OnInit {
   indiceAnuncio: number = 0;
   isPromoOpen: boolean = false;    
 
-  numeroWhatsApp: string = '51999999999';
+  numeroWhatsApp: string = '51929727435';
 
+  // 👈 GALERÍA DE LOOKS ACTUALIZADA CON TUS RUTAS LOCALES
   galeriaTrabajos = [
-    { titulo: 'Corte Bob Simétrico', categoria: 'CORTES', url: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80' },
-    { titulo: 'Balayage Caramelo Oro', categoria: 'TINTES', url: 'https://images.unsplash.com/photo-1620331350645-81068944f324?w=400&q=80' },
-    { titulo: 'Manicure Rusa Imperial', categoria: 'UÑAS', url: 'https://images.unsplash.com/photo-1604654894610-df490688a7ae?w=400&q=80' },
-    { titulo: 'Peinado Ondas de Agua', categoria: 'PEINADOS', url: 'https://images.unsplash.com/photo-1595894154568-0dc9be24edd0?w=400&q=80' }
+    { titulo: 'Corte Bob Simétrico', categoria: 'CORTES', url: 'assets/img/cortes.jpg' },
+    { titulo: 'Balayage Caramelo Oro', categoria: 'TINTES', url: 'assets/img/tintes.jpg' },
+    { titulo: 'Manicure Rusa Imperial', categoria: 'UÑAS', url: 'assets/img/uñas.jpg' },
+    { titulo: 'Peinado Ondas de Agua', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
   ];
 
   constructor(
@@ -73,21 +74,34 @@ export class ResumenPage implements OnInit {
   }
 
   ngOnInit() {
-    // 1. LECTURA DEL SERVICIO DE MEMORIA (Tu lógica intacta)
+    this.obtenerDatosDeMemoria();
+    this.cargarPromocionesCola();
+  }
+
+  // 🌟 MAGIA: Se ejecuta cada vez que regresas a la pestaña Resumen
+  ionViewWillEnter() {
+    this.obtenerDatosDeMemoria();
+  }
+
+  // Centralizamos la lógica de lectura
+  obtenerDatosDeMemoria() {
     const datosUsuario = this.usuarioService.getUsuario();
     if (datosUsuario) {
       if (datosUsuario.nombre) {
         this.nombreCliente = datosUsuario.nombre.split(' ')[0];
       }
+      // Actualizamos la foto dinámicamente si existe
       if (datosUsuario.imagen) {
-        this.fotoCliente = datosUsuario.imagen; // Extraemos foto si existe
+        this.fotoCliente = datosUsuario.imagen;
+      } else {
+        this.fotoCliente = '';
       }
     }
-
-    // 2. LÓGICA DE PROMOCIONES DE FIREBASE
-    this.cargarPromocionesCola();
   }
 
+  // ==============================
+  // LÓGICA DE POP-UPS PROMOCIONALES
+  // ==============================
   async cargarPromocionesCola() {
     try {
       const q = query(collection(this.firestore, 'anuncios'), where('activo', '==', true));
@@ -127,7 +141,9 @@ export class ResumenPage implements OnInit {
     this.cerrarYContinuarSecuencia();
   }
 
-  // TUS MÉTODOS DE NAVEGACIÓN ORIGINALES
+  // ==============================
+  // NAVEGACIÓN Y MENÚ
+  // ==============================
   irAPerfil() {
     this.menuCtrl.close('perfil-menu'); 
     this.router.navigate(['/perfil']); 
@@ -139,6 +155,7 @@ export class ResumenPage implements OnInit {
     if (confirmar) {
       try {
         await this.auth.signOut();
+        this.usuarioService.limpiarUsuario(); // Borramos memoria local por seguridad
         this.router.navigate(['/login']);
       } catch (error) {
         console.error('Error al cerrar sesión:', error);

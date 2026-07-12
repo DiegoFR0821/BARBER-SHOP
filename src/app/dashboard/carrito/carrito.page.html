@@ -1,82 +1,125 @@
-<ion-header class="ion-no-border navbar-premium">
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar style="--background: #ffffff; padding: 6px 0; border-bottom: 1px solid #f2f2f7;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard/tienda" text="" class="btn-back-gold"></ion-back-button>
+      <ion-button (click)="volverATienda()" style="--color: #aa8529;">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
     </ion-buttons>
-    <ion-title class="brand-title">MI CARRITO</ion-title>
-    <ion-buttons slot="end" class="empty-slot-end"></ion-buttons>
+    
+    <ion-title style="font-weight: 800; color: #111; font-size: 16px; text-align: center;">
+      <span *ngIf="vistaActiva === 'mi-carrito'">MI CESTA</span>
+      <span *ngIf="vistaActiva === 'pasarela'">PAGO SEGURO</span>
+      <span *ngIf="vistaActiva === 'exito'">¡COMPRA EXITOSA!</span>
+    </ion-title>
+    
+    <ion-buttons slot="end" class="ion-padding-end">
+      </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding background-light">
+<ion-content style="--background: #faf9f6;">
+  <div class="dashboard-wrapper" style="padding: 16px;">
 
-  <div class="empty-state" *ngIf="itemsCarrito.length === 0">
-    <ion-icon name="cart-outline"></ion-icon>
-    <p>Tu carrito está vacío.</p>
-    <ion-button fill="outline" class="btn-outline-gold mt-2" routerLink="/dashboard/tienda">Volver a la Tienda</ion-button>
-  </div>
-
-  <div class="cart-items-container" *ngIf="itemsCarrito.length > 0">
-    <div class="cart-item-card" *ngFor="let item of itemsCarrito">
-      <div class="item-image">
-        <img [src]="item.imagen" [alt]="item.nombre">
+    <div *ngIf="vistaActiva === 'mi-carrito'">
+      <div *ngIf="itemsCarrito.length === 0" style="text-align: center; padding: 40px 16px;">
+        <ion-icon name="bag-handle-outline" style="font-size: 55px; color: #ccc; margin-bottom: 12px;"></ion-icon>
+        <h3 style="font-size: 15px; font-weight: 700; color: #444;">Tu cesta de compras está vacía</h3>
+        <ion-button fill="clear" style="--color: #aa8529; font-weight: 700; font-size: 13px;" (click)="volverATienda()">Ir a explorar productos</ion-button>
       </div>
-      
-      <div class="item-details">
-        <h4>{{ item.nombre }}</h4>
-        <p class="item-price">S/ {{ item.precio | number:'1.2-2' }}</p>
-        
-        <div class="quantity-controls">
-          <button (click)="disminuirCantidad(item)"><ion-icon name="remove-outline"></ion-icon></button>
-          <span>{{ item.cantidad }}</span>
-          <button (click)="aumentarCantidad(item)"><ion-icon name="add-outline"></ion-icon></button>
+
+      <div *ngIf="itemsCarrito.length > 0">
+        <ion-list lines="none" style="background: transparent; padding: 0;">
+          <div *ngFor="let item of itemsCarrito" class="cart-horizontal-item">
+            <ion-thumbnail style="width: 55px; height: 55px; border-radius: 8px; overflow: hidden; margin-right: 12px;">
+              <img [src]="item.imagen" style="object-fit: cover;" />
+            </ion-thumbnail>
+            <div style="flex-grow: 1; overflow: hidden;">
+              <h4 style="margin: 0; font-size: 13px; font-weight: 700; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.nombre }}</h4>
+              <span style="font-size: 12px; font-weight: 800; color: #aa8529; display: block; margin-top: 2px;">S/ {{ item.precio | number:'1.2-2' }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 2px;">
+              <ion-button fill="clear" style="--color: #444; width: 26px; height: 28px;" (click)="decrementarCantidad(item)"><ion-icon name="remove-outline"></ion-icon></ion-button>
+              <span style="font-size: 13px; font-weight: 700; color: #111; min-width: 18px; text-align: center;">{{ item.cantidad }}</span>
+              <ion-button fill="clear" style="--color: #444; width: 26px; height: 28px;" (click)="incrementarCantidad(item)"><ion-icon name="add-outline"></ion-icon></ion-button>
+              <ion-button fill="clear" style="--color: #dc3545; width: 28px; height: 28px;" (click)="eliminarDelCarrito(item)"><ion-icon name="trash-outline"></ion-icon></ion-button>
+            </div>
+          </div>
+        </ion-list>
+
+        <div class="total-summary-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <span style="font-weight: 800; color: #111;">TOTAL A PAGAR:</span>
+            <span style="font-size: 18px; font-weight: 900; color: #aa8529;">S/ {{ totalPagar | number:'1.2-2' }}</span>
+          </div>
+          <ion-button expand="block" style="--background: #aa8529; --border-radius: 10px; font-weight: 700; height: 46px; margin: 0;" (click)="cambiarVista('pasarela')">
+            CONTINUAR AL PAGO
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="vistaActiva === 'pasarela'">
+      <div class="total-summary-card" style="margin-bottom: 16px; background: rgba(170,133,41,0.04); border: 1px dashed #aa8529; text-align: center;">
+        <span style="font-size: 12px; color: #666; font-weight: 600;">Monto a transferir:</span>
+        <h2 style="margin: 4px 0 0; font-weight: 900; color: #aa8529;">S/ {{ totalPagar | number:'1.2-2' }}</h2>
+      </div>
+
+      <h3 style="font-size: 12px; font-weight: 800; color: #111; margin: 0 0 10px 4px; letter-spacing: 0.5px;">MÉTODO DE PAGO</h3>
+      <ion-radio-group [(ngModel)]="metodoPago" style="display: flex; gap: 10px; margin-bottom: 16px;">
+        <div class="selector-pay-box" [class.selected-pay]="metodoPago === 'yape'" (click)="metodoPago = 'yape'">
+          <ion-icon name="qr-code-outline" style="font-size: 20px;"></ion-icon>
+          <span>Yape</span>
+        </div>
+        <div class="selector-pay-box" [class.selected-pay]="metodoPago === 'tarjeta'" (click)="metodoPago = 'tarjeta'">
+          <ion-icon name="card-outline" style="font-size: 20px;"></ion-icon>
+          <span>Tarjeta</span>
+        </div>
+      </ion-radio-group>
+
+      <div class="total-summary-card" style="padding: 6px 14px 14px; margin-bottom: 20px;">
+        <div *ngIf="metodoPago === 'yape'">
+          <p style="font-size: 11px; color: #666; margin: 8px 0 12px;">Ingresa tu número celular afiliado.</p>
+          <ion-item lines="none" class="custom-input-pay">
+            <ion-input label="Celular" labelPlacement="floating" type="tel" maxlength="9" [(ngModel)]="datosPago.celularYape" placeholder="Ej. 999888777"></ion-input>
+          </ion-item>
+        </div>
+        <div *ngIf="metodoPago === 'tarjeta'">
+          <ion-item lines="none" class="custom-input-pay" style="margin-bottom: 10px;">
+            <ion-input label="Número de Tarjeta" labelPlacement="floating" type="tel" maxlength="16" [(ngModel)]="datosPago.numeroTarjeta" placeholder="0000 0000 0000 0000"></ion-input>
+          </ion-item>
+          <ion-row style="margin: 0 -4px;">
+            <ion-col size="6" style="padding: 0 4px;">
+              <ion-item lines="none" class="custom-input-pay">
+                <ion-input label="MM/AA" labelPlacement="floating" type="text" maxlength="5" [(ngModel)]="datosPago.fechaExp" placeholder="12/29"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" style="padding: 0 4px;">
+              <ion-item lines="none" class="custom-input-pay">
+                <ion-input label="CVV" labelPlacement="floating" type="password" maxlength="3" [(ngModel)]="datosPago.cvv" placeholder="***"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
         </div>
       </div>
 
-      <button class="btn-delete" (click)="eliminarItem(item.id)">
-        <ion-icon name="trash-outline"></ion-icon>
-      </button>
+      <ion-button expand="block" [disabled]="guardando" style="--background: #aa8529; --border-radius: 10px; font-weight: 700; height: 48px; margin: 0;" (click)="finalizarCompraPasarela()">
+        {{ guardando ? 'VALIDANDO PAGO...' : 'CONFIRMAR COMPRA' }}
+      </ion-button>
     </div>
+
+    <div *ngIf="vistaActiva === 'exito'" class="success-screen-container">
+      <div class="checkmark-animation-box">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </div>
+      <h2>¡Operación Exitosa!</h2>
+      <p>Tu orden ha sido confirmada y registrada en nuestro sistema. ¡Gracias por confiar en Étnica Salón!</p>
+      
+      <div class="decor-line"></div>
+      
+      <ion-button expand="block" fill="outline" style="--color: #aa8529; --border-color: #aa8529; --border-radius: 10px; font-weight: 700; height: 46px; width: 100%; margin-top: 10px;" (click)="volverATienda()">
+        VOLVER A LA TIENDA
+      </ion-button>
+    </div>
+
   </div>
-
-  <div *ngIf="itemsCarrito.length > 0" class="payment-section mt-4">
-    <h3 class="section-title">Método de Pago</h3>
-    
-    <ion-radio-group [(ngModel)]="metodoPagoSeleccionado">
-      <ion-item lines="none" class="payment-option">
-        <ion-icon name="card-outline" slot="start"></ion-icon>
-        <ion-label>Tarjeta de Crédito / Débito</ion-label>
-        <ion-radio slot="end" value="tarjeta" color="warning"></ion-radio>
-      </ion-item>
-
-      <ion-item lines="none" class="payment-option">
-        <ion-icon name="phone-portrait-outline" slot="start"></ion-icon>
-        <ion-label>Billetera Digital (Yape / Plin)</ion-label>
-        <ion-radio slot="end" value="billetera" color="warning"></ion-radio>
-      </ion-item>
-    </ion-radio-group>
-  </div>
-
 </ion-content>
-
-<ion-footer class="ion-no-border" *ngIf="itemsCarrito.length > 0">
-  <div class="checkout-summary">
-    <div class="summary-row">
-      <span>Subtotal</span>
-      <span>S/ {{ subtotal | number:'1.2-2' }}</span>
-    </div>
-    <div class="summary-row">
-      <span>IGV (18%)</span>
-      <span>S/ {{ impuestos | number:'1.2-2' }}</span>
-    </div>
-    <div class="summary-divider"></div>
-    <div class="summary-row total-row">
-      <span>Total a Pagar</span>
-      <span>S/ {{ total | number:'1.2-2' }}</span>
-    </div>
-
-    <ion-button expand="block" class="btn-gold mt-2" (click)="procesarPago()">
-      Pagar Ahora
-    </ion-button>
-  </div>
-</ion-footer>
