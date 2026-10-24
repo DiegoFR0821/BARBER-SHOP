@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -8,7 +8,6 @@ import {
 import { addIcons } from 'ionicons';
 import { send, shieldCheckmarkOutline } from 'ionicons/icons';
 import { io, Socket } from 'socket.io-client';
-import { Auth } from '@angular/fire/auth'; // Usamos Auth para el admin
 
 interface Mensaje {
   usuario: string;
@@ -29,8 +28,6 @@ interface Mensaje {
 })
 export class ComunidadAdminPage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) content!: IonContent;
-
-  private auth = inject(Auth);
   
   // ⚠️ Debe ser el MISMO puerto que usa el cliente
   private URL_SERVIDOR = 'http://localhost:3000'; 
@@ -56,13 +53,8 @@ export class ComunidadAdminPage implements OnInit, OnDestroy {
   }
 
   obtenerDatosAdmin() {
-    this.auth.onAuthStateChanged((user) => {
-      if (user) {
-        // Le añadimos la corona para que destaque en el chat
-        const nombreBase = user.displayName || user.email?.split('@')[0] || 'Admin';
-        this.nombreAdmin = `👑 ${nombreBase} (Staff)`;
-      }
-    });
+    // TODO: Migrar a Supabase en Fase 2 (supabase.auth.getUser() / sesión activa)
+    this.nombreAdmin = '👑 Admin (Staff)';
   }
 
   conectarSocket() {

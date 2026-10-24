@@ -7,10 +7,6 @@ import {
   IonItem, IonInput, IonText 
 } from '@ionic/angular/standalone';
 
-// 👈 1. Importaciones vitales de Firebase
-import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-import { Firestore, doc, setDoc } from '@angular/fire/firestore';
-
 @Component({
   selector: 'app-registro',
   templateUrl: './registro.page.html',
@@ -25,59 +21,42 @@ export class RegistroPage implements OnInit {
 
   nombre: string = '';
   correo: string = '';
-  clave: string = ''; // 👈 Mantenemos tu variable 'clave'
+  clave: string = '';
   
   mensajeError: string = '';
-  cargando: boolean = false; // 👈 Variable extra para que el botón muestre que está pensando
+  cargando: boolean = false;
 
-  // 👈 2. Inyectamos Auth y Firestore en tu constructor
   constructor(
-    private router: Router,
-    private auth: Auth,         
-    private firestore: Firestore 
+    private router: Router
   ) { }
 
   ngOnInit() { }
 
   async registrarUsuario() {
-    // Validación de campos
     if (!this.nombre || !this.correo || !this.clave) {
       this.mensajeError = 'Por favor, completa todos los campos.';
       return;
     }
 
     this.mensajeError = '';
-    this.cargando = true; // El botón se bloquea temporalmente
+    this.cargando = true;
 
     try {
-      // 3. Crear el usuario en Firebase Authentication
-      const credencialUsuario = await createUserWithEmailAndPassword(this.auth, this.correo, this.clave);
-      const uid = credencialUsuario.user.uid;
-
-      // 4. Guardar los datos en Firestore (El CRUD de creación)
-      const referenciaDocumento = doc(this.firestore, `usuarios/${uid}`);
-      await setDoc(referenciaDocumento, {
-        nombre: this.nombre,
-        correo: this.correo,
-        rol: 'cliente',
-        fechaRegistro: new Date()
-      });
-
-      console.log('¡Usuario registrado con éxito en la nube!');
+      // TODO: Migrar a Supabase en Fase 2:
+      // const { data, error } = await supabase.auth.signUp({
+      //   email: this.correo,
+      //   password: this.clave,
+      //   options: { data: { nombre: this.nombre, rol: 'cliente' } }
+      // });
+      // Inserción en tabla 'usuarios'
+      console.log('Registro de usuario preparado para Fase 2');
       this.cargando = false;
       this.router.navigate(['/login']);
 
     } catch (error: any) {
       this.cargando = false;
-      // 5. Manejo de errores de Firebase traducidos al cliente
-      if (error.code === 'auth/email-already-in-use') {
-        this.mensajeError = 'Este correo ya está registrado.';
-      } else if (error.code === 'auth/weak-password') {
-        this.mensajeError = 'La contraseña debe tener al menos 6 caracteres.';
-      } else {
-        this.mensajeError = 'Ocurrió un error. Verifica tus datos.';
-        console.error(error);
-      }
+      this.mensajeError = 'Ocurrió un error. Verifica tus datos.';
+      console.error(error);
     }
   }
 }

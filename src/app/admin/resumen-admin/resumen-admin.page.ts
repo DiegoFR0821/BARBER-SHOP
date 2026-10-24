@@ -13,7 +13,6 @@ import {
   menuOutline, trendingUpOutline, sparklesOutline, arrowForwardOutline, 
   add, cartOutline, personAddOutline
 } from 'ionicons/icons';
-import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-resumen-admin',
@@ -28,7 +27,6 @@ import { Firestore, collection, getDocs, query, where } from '@angular/fire/fire
 })
 export class ResumenAdminPage implements OnInit {
 
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   totalCitas: number = 0;
@@ -58,29 +56,13 @@ export class ResumenAdminPage implements OnInit {
   }
 
   async cargarDashboardReal() {
+    // TODO: Migrar a Supabase en Fase 2 (consultas de conteo a Supabase: citas, usuarios, productos, servicios)
     try {
-      const citasSnap = await getDocs(collection(this.firestore, 'citas'));
-      this.totalCitas = citasSnap.size;
-
-      const qClientes = query(collection(this.firestore, 'usuarios'), where('rol', '==', 'cliente'));
-      const cliSnap = await getDocs(qClientes);
-      this.totalClientes = cliSnap.size;
-
-      const prodSnap = await getDocs(collection(this.firestore, 'productos'));
-      this.totalProductos = prodSnap.size;
-      
-      const servSnap = await getDocs(collection(this.firestore, 'servicios'));
-      this.totalServicios = servSnap.size;
-      
-      // Mapeo simple para la actividad reciente
-      const ultimasCitasList = citasSnap.docs.slice(-3).map(d => ({
-        titulo: 'Cita Agendada',
-        detalle: `${d.data()['nombreCliente']} - ${d.data()['nombreServicio']}`,
-        icono: 'calendar-outline',
-        color: '#aa8529'
-      }));
-      this.actividadReciente = [...ultimasCitasList].reverse();
-
+      this.totalCitas = 0;
+      this.totalClientes = 0;
+      this.totalProductos = 0;
+      this.totalServicios = 0;
+      this.actividadReciente = [];
     } catch (error) {
       console.error('❌ Error cargando métricas:', error);
     }

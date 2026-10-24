@@ -13,7 +13,6 @@ import {
   cubeOutline, menuOutline, createOutline, trashOutline, 
   closeOutline, saveOutline, add, cashOutline, alertCircleOutline, cameraOutline, imageOutline 
 } from 'ionicons/icons';
-import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-inventario',
@@ -29,7 +28,6 @@ import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } fro
 })
 export class InventarioPage implements OnInit {
 
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   productos: any[] = [];
@@ -39,7 +37,6 @@ export class InventarioPage implements OnInit {
   isModalOpen: boolean = false;
   modoEdicion: boolean = false;
   
-  // 👈 Añadido el campo 'imagen' nuevamente
   productoActual: any = { id: '', nombre: '', precio: null, stock: null, descripcion: '', imagen: '' };
 
   constructor() {
@@ -58,13 +55,9 @@ export class InventarioPage implements OnInit {
   }
 
   async cargarProductos() {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('productos').select('*'))
     try {
-      const colRef = collection(this.firestore, 'productos');
-      const snapshot = await getDocs(colRef);
-      this.productos = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      this.productos = [];
       this.filtrarProductos();
     } catch (error) {
       console.error('❌ Error leyendo inventario:', error);
@@ -101,12 +94,10 @@ export class InventarioPage implements OnInit {
     this.isModalOpen = false;
   }
 
-  // 👈 Función para abrir el explorador de archivos
   abrirSelectorArchivo() {
     document.getElementById('file-upload-producto')?.click();
   }
 
-  // 👈 Función para transformar la imagen seleccionada a Base64
   cargarImagenProducto(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -124,20 +115,8 @@ export class InventarioPage implements OnInit {
       return;
     }
 
-    const datosParaGuardar = {
-      nombre: this.productoActual.nombre,
-      precio: Number(this.productoActual.precio),
-      stock: Number(this.productoActual.stock),
-      descripcion: this.productoActual.descripcion,
-      imagen: this.productoActual.imagen || '' // 👈 Guardamos la imagen en Firebase
-    };
-
+    // TODO: Migrar a Supabase en Fase 2 (insert o update en tabla 'productos' / Supabase Storage)
     try {
-      if (this.modoEdicion) {
-        await updateDoc(doc(this.firestore, `productos/${this.productoActual.id}`), datosParaGuardar);
-      } else {
-        await addDoc(collection(this.firestore, 'productos'), datosParaGuardar);
-      }
       this.cerrarModal();
       this.cargarProductos();
     } catch (error) {
@@ -148,8 +127,12 @@ export class InventarioPage implements OnInit {
 
   async eliminarProducto(id: string) {
     if (confirm('¿Eliminar este producto del inventario?')) {
-      await deleteDoc(doc(this.firestore, `productos/${id}`));
-      this.cargarProductos();
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('productos').delete().eq('id', id))
+      try {
+        this.cargarProductos();
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 }

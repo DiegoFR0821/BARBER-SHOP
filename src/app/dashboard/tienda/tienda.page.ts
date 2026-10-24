@@ -8,7 +8,6 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cartOutline, imageOutline } from 'ionicons/icons';
-import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-tienda',
@@ -22,7 +21,6 @@ import { Firestore, collection, getDocs } from '@angular/fire/firestore';
   ]
 })
 export class TiendaPage implements OnInit {
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   productos: any[] = [];
@@ -44,9 +42,9 @@ export class TiendaPage implements OnInit {
   }
 
   async cargarProductosInventario() {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('productos').select('*'))
     try {
-      const snap = await getDocs(collection(this.firestore, 'productos'));
-      this.productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.productos = [];
       this.filtrarProductos();
     } catch (error) {
       console.error('Error cargando catálogo:', error);
@@ -67,7 +65,7 @@ export class TiendaPage implements OnInit {
     if (prod.stock <= 0) return;
 
     let itemsCarrito = [];
-    const cached = localStorage.getItem('etnica_cart');
+    const cached = localStorage.getItem('barber_cart');
     if (cached) itemsCarrito = JSON.parse(cached);
 
     const itemExistente = itemsCarrito.find((item: any) => item.id === prod.id);
@@ -89,12 +87,12 @@ export class TiendaPage implements OnInit {
       });
     }
 
-    localStorage.setItem('etnica_cart', JSON.stringify(itemsCarrito));
+    localStorage.setItem('barber_cart', JSON.stringify(itemsCarrito));
     this.actualizarBadgeCarrito();
   }
 
   actualizarBadgeCarrito() {
-    const cached = localStorage.getItem('etnica_cart');
+    const cached = localStorage.getItem('barber_cart');
     if (cached) {
       const items = JSON.parse(cached);
       this.cantidadCarrito = items.reduce((acc: number, item: any) => acc + item.cantidad, 0);

@@ -13,7 +13,6 @@ import {
   megaphoneOutline, createOutline, trashOutline, closeOutline, 
   saveOutline, add, cameraOutline, imageOutline, eyeOutline, eyeOffOutline 
 } from 'ionicons/icons';
-import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-anuncios-admin',
@@ -29,7 +28,6 @@ import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } fro
 })
 export class AnunciosAdminPage implements OnInit {
 
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   anuncios: any[] = [];
@@ -57,16 +55,12 @@ export class AnunciosAdminPage implements OnInit {
   }
 
   async cargarAnuncios() {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('anuncios').select('*'))
     try {
-      const colRef = collection(this.firestore, 'anuncios');
-      const snapshot = await getDocs(colRef);
-      this.anuncios = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      this.anuncios = [];
       this.filtrarAnuncios();
     } catch (error) {
-      console.error('❌ Error leyendo promociones de Firestore:', error);
+      console.error('❌ Error leyendo promociones:', error);
     }
   }
 
@@ -113,9 +107,9 @@ export class AnunciosAdminPage implements OnInit {
 
   // Permite activar/desactivar el pop-up directamente desde la tarjeta con un switch rápido
   async alternarEstadoAnuncio(promo: any) {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('anuncios').update({ activo: !promo.activo }).eq('id', promo.id))
     try {
-      const docRef = doc(this.firestore, `anuncios/${promo.id}`);
-      await updateDoc(docRef, { activo: !promo.activo });
+      promo.activo = !promo.activo;
       this.cargarAnuncios();
     } catch (error) {
       console.error('Error al cambiar el estado del pop-up:', error);
@@ -128,21 +122,8 @@ export class AnunciosAdminPage implements OnInit {
       return;
     }
 
-    const datosAnuncio = {
-      titulo: this.anuncioActual.titulo,
-      descripcion: this.anuncioActual.descripcion,
-      imagen: this.anuncioActual.imagen || '',
-      activo: this.anuncioActual.activo
-    };
-
+    // TODO: Migrar a Supabase en Fase 2 (insert o update en tabla 'anuncios')
     try {
-      if (this.modoEdicion) {
-        const docRef = doc(this.firestore, `anuncios/${this.anuncioActual.id}`);
-        await updateDoc(docRef, datosAnuncio);
-      } else {
-        const colRef = collection(this.firestore, 'anuncios');
-        await addDoc(colRef, datosAnuncio);
-      }
       this.cerrarModal();
       this.cargarAnuncios();
     } catch (error) {
@@ -153,8 +134,8 @@ export class AnunciosAdminPage implements OnInit {
 
   async eliminarAnuncio(id: string) {
     if (confirm('¿Estás seguro de eliminar permanentemente esta campaña promocional emergente?')) {
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('anuncios').delete().eq('id', id))
       try {
-        await deleteDoc(doc(this.firestore, `anuncios/${id}`));
         this.cargarAnuncios();
       } catch (error) {
         console.error(error);

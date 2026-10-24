@@ -13,7 +13,6 @@ import {
   shieldOutline, peopleOutline, menuOutline, createOutline, 
   trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline 
 } from 'ionicons/icons';
-import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-clientes',
@@ -29,7 +28,6 @@ import { Firestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc } fro
 })
 export class ClientesPage implements OnInit {
 
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   usuarios: any[] = [];
@@ -61,16 +59,12 @@ export class ClientesPage implements OnInit {
   }
 
   async cargarUsuarios() {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').select('*'))
     try {
-      const colRef = collection(this.firestore, 'usuarios');
-      const snapshot = await getDocs(colRef);
-      this.usuarios = snapshot.docs.map(docSnap => ({
-        uid: docSnap.id,
-        ...docSnap.data()
-      }));
+      this.usuarios = [];
       this.filtrarUsuarios();
     } catch (error) {
-      console.error('❌ Error leyendo usuarios de Firestore:', error);
+      console.error('❌ Error leyendo usuarios:', error);
     }
   }
 
@@ -109,29 +103,8 @@ export class ClientesPage implements OnInit {
       return;
     }
 
+    // TODO: Migrar a Supabase en Fase 2 (update o insert en tabla 'usuarios')
     try {
-      if (this.modoEdicion) {
-        // OPERACIÓN: ACTUALIZAR (UPDATE)
-        const docRef = doc(this.firestore, `usuarios/${this.usuarioActual.uid}`);
-        await updateDoc(docRef, {
-          nombre: this.usuarioActual.nombre,
-          correo: this.usuarioActual.correo,
-          telefono: this.usuarioActual.telefono,
-          descripcion: this.usuarioActual.descripcion,
-          rol: this.usuarioActual.rol
-        });
-      } else {
-        // OPERACIÓN: CREAR MANUAL (CREATE)
-        const colRef = collection(this.firestore, 'usuarios');
-        await addDoc(colRef, {
-          nombre: this.usuarioActual.nombre,
-          correo: this.usuarioActual.correo,
-          telefono: this.usuarioActual.telefono,
-          descripcion: this.usuarioActual.descripcion,
-          rol: this.usuarioActual.rol,
-          fechaRegistro: new Date()
-        });
-      }
       this.cerrarModal();
       this.cargarUsuarios();
     } catch (error) {
@@ -143,8 +116,8 @@ export class ClientesPage implements OnInit {
   async eliminarUsuario(uid: string) {
     const confirmar = confirm('¿Estás seguro de eliminar a este usuario permanentemente del sistema?');
     if (confirmar) {
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').delete().eq('id', uid))
       try {
-        await deleteDoc(doc(this.firestore, `usuarios/${uid}`));
         this.cargarUsuarios();
       } catch (error) {
         console.error('Error al intentar remover el documento:', error);
@@ -154,9 +127,9 @@ export class ClientesPage implements OnInit {
 
   async cambiarRolDirecto(user: any) {
     const nuevoRol = user.rol === 'admin' ? 'cliente' : 'admin';
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').update({ rol: nuevoRol }).eq('id', user.uid))
     try {
-      const docRef = doc(this.firestore, `usuarios/${user.uid}`);
-      await updateDoc(docRef, { rol: nuevoRol });
+      user.rol = nuevoRol;
       this.cargarUsuarios();
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 {
-  "name": "etnicaSalon",
+  "name": "barber-shop-lima-norte",
   "version": "0.0.1",
-  "author": "Ionic Framework",
+  "author": "BARBER SHOP LIMA NORTE S.A.C.",
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
@@ -17,7 +17,6 @@
     "@angular/common": "^20.0.0",
     "@angular/compiler": "^20.0.0",
     "@angular/core": "^20.0.0",
-    "@angular/fire": "^20.0.1",
     "@angular/forms": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
@@ -30,7 +29,7 @@
     "@capacitor/status-bar": "8.0.2",
     "@google/generative-ai": "^0.24.1",
     "@ionic/angular": "^8.0.0",
-    "firebase": "^12.14.0",
+    "@supabase/supabase-js": "^2.118.0",
     "ionicons": "^7.0.0",
     "ngx-image-cropper": "^9.1.6",
     "rxjs": "~7.8.0",
@@ -66,5 +65,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.9.0"
   },
-  "description": "An Ionic project"
+  "description": "Barber Shop - Sistema Móvil Híbrido"
 }

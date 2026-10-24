@@ -12,8 +12,6 @@ import {
 import { addIcons } from 'ionicons';
 import { createOutline, trashOutline, closeOutline, saveOutline, calendarOutline, timeOutline, cameraOutline, imageOutline, personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, add } from 'ionicons/icons';
 
-import { Firestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } from '@angular/fire/firestore';
-
 @Component({
   selector: 'app-citas',
   templateUrl: './citas.page.html',
@@ -29,7 +27,6 @@ import { Firestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, quer
 })
 export class CitasPage implements OnInit {
 
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   seccionActiva: string = 'reservas';
@@ -41,7 +38,6 @@ export class CitasPage implements OnInit {
   estilistas: any[] = [];
   clientes: any[] = [];
 
-  // Opciones de profesión solicitadas
   profesionesSalones: string[] = [
     'Estilista Principal', 'Colorista Profesional', 'Manicurista / Pedicurista', 
     'Maquillador Profesional', 'Especialista Capilar', 'Especialista en Peinados', 
@@ -60,12 +56,8 @@ export class CitasPage implements OnInit {
 
   reservaActual: any = { id: '', clienteId: '', servicioId: '', estilistaId: '', fecha: '', hora: '', estado: 'pendiente' };
   servicioActual: any = { id: '', nombre: '', imagen: '' };
-  
-  // Añadimos imagen y profesión al objeto de estilista
   estilistaActual: any = { id: '', nombre: '', imagen: '', profesion: '' };
-  // ==========================================
-  // LÓGICA DEL BOTÓN FLOTANTE DINÁMICO
-  // ==========================================
+
   ejecutarAccionFab() {
     if (this.seccionActiva === 'reservas') {
       this.abrirModalReserva();
@@ -98,8 +90,8 @@ export class CitasPage implements OnInit {
   }
 
   async cargarCitas() {
-    const snap = await getDocs(collection(this.firestore, 'citas'));
-    this.citas = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('citas').select('*'))
+    this.citas = [];
     this.filtrarCitas();
   }
 
@@ -114,24 +106,20 @@ export class CitasPage implements OnInit {
   }
 
   async cargarServicios() {
-    const snap = await getDocs(collection(this.firestore, 'servicios'));
-    this.servicios = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('servicios').select('*'))
+    this.servicios = [];
   }
 
   async cargarEstilistas() {
-    const snap = await getDocs(collection(this.firestore, 'estilistas'));
-    this.estilistas = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('estilistas').select('*'))
+    this.estilistas = [];
   }
 
   async cargarClientes() {
-    const q = query(collection(this.firestore, 'usuarios'), where('rol', '==', 'cliente'));
-    const snap = await getDocs(q);
-    this.clientes = snap.docs.map(d => ({ ...d.data(), uid: d.id }));
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').select('*').eq('rol', 'cliente'))
+    this.clientes = [];
   }
 
-  // ==========================================
-  // LÓGICA DE RESERVAS (CITAS)
-  // ==========================================
   abrirModalReserva(cita?: any) {
     if (cita) {
       this.modoEdicion = true;
@@ -148,59 +136,23 @@ export class CitasPage implements OnInit {
       alert('Completa todos los campos de la reserva.'); return;
     }
 
-    // Mantenemos tu validación de domingos
     const diaSemana = new Date(this.reservaActual.fecha + 'T00:00:00').getDay(); 
     if (diaSemana === 0) { 
-      alert('❌ El salón no atiende los domingos. Elige una fecha de Lunes a Sábado.'); return;
+      alert('❌ El local no atiende los domingos. Elige una fecha de Lunes a Sábado.'); return;
     }
 
-    // Mantenemos tu validación de cruce de horarios
-    const qVal = query(collection(this.firestore, 'citas'), 
-      where('fecha', '==', this.reservaActual.fecha), 
-      where('hora', '==', this.reservaActual.hora)
-    );
-    const snap = await getDocs(qVal);
-    const ocupado = snap.docs.some(doc => doc.id !== this.reservaActual.id);
-    
-    if (ocupado) {
-      alert('❌ Esta hora ya está reservada. Por favor, elige otro horario.'); return;
-    }
-
-    const cliente = this.clientes.find(c => c.uid === this.reservaActual.clienteId);
-    const servicio = this.servicios.find(s => s.id === this.reservaActual.servicioId);
-    const estilista = this.estilistas.find(e => e.id === this.reservaActual.estilistaId);
-
-    const datosParaGuardar = {
-      clienteId: this.reservaActual.clienteId,
-      servicioId: this.reservaActual.servicioId,
-      estilistaId: this.reservaActual.estilistaId,
-      fecha: this.reservaActual.fecha,
-      hora: this.reservaActual.hora,
-      estado: this.reservaActual.estado,
-      nombreCliente: cliente ? cliente.nombre : 'Desconocido',
-      nombreServicio: servicio ? servicio.nombre : 'Servicio',
-      nombreEstilista: estilista ? estilista.nombre : 'Estilista'
-    };
-
-    if (this.modoEdicion) {
-      await updateDoc(doc(this.firestore, `citas/${this.reservaActual.id}`), datosParaGuardar);
-    } else {
-      await addDoc(collection(this.firestore, 'citas'), datosParaGuardar);
-    }
+    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'citas')
     this.isModalReservaOpen = false;
     this.cargarCitas();
   }
 
   async eliminarReserva(id: string) {
     if (confirm('¿Eliminar cita?')) {
-      await deleteDoc(doc(this.firestore, `citas/${id}`));
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('citas').delete().eq('id', id))
       this.cargarCitas();
     }
   }
 
-  // ==========================================
-  // LÓGICA DE SERVICIOS
-  // ==========================================
   abrirModalServicio(servicio?: any) {
     if (servicio) {
       this.modoEdicion = true;
@@ -228,34 +180,24 @@ export class CitasPage implements OnInit {
   async guardarServicio() {
     if (!this.servicioActual.nombre) { alert('Ingresa un nombre para el servicio.'); return; }
     
-    const datosParaGuardar = { nombre: this.servicioActual.nombre, imagen: this.servicioActual.imagen || '' };
-
-    if (this.modoEdicion) {
-      await updateDoc(doc(this.firestore, `servicios/${this.servicioActual.id}`), datosParaGuardar);
-    } else {
-      await addDoc(collection(this.firestore, 'servicios'), datosParaGuardar);
-    }
+    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'servicios')
     this.isModalServicioOpen = false;
     this.cargarServicios();
   }
 
   async eliminarServicio(id: string) {
     if (confirm('¿Eliminar este servicio del catálogo?')) {
-      await deleteDoc(doc(this.firestore, `servicios/${id}`));
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('servicios').delete().eq('id', id))
       this.cargarServicios();
     }
   }
 
-  // ==========================================
-  // LÓGICA DE ESTILISTAS (ACTUALIZADA)
-  // ==========================================
   abrirModalEstilista(estilista?: any) {
     if (estilista) {
       this.modoEdicion = true;
       this.estilistaActual = { ...estilista };
     } else {
       this.modoEdicion = false;
-      // Añadimos 'Estilista Principal' por defecto si es nuevo
       this.estilistaActual = { id: '', nombre: '', imagen: '', profesion: 'Estilista Principal' };
     }
     this.isModalEstilistaOpen = true;
@@ -277,25 +219,14 @@ export class CitasPage implements OnInit {
   async guardarEstilista() {
     if (!this.estilistaActual.nombre) { alert('Ingresa el nombre del estilista.'); return; }
 
-    // Guardamos nombre, imagen y la profesión en Firestore
-    const datosParaGuardar = { 
-      nombre: this.estilistaActual.nombre,
-      imagen: this.estilistaActual.imagen || '', 
-      profesion: this.estilistaActual.profesion || 'Estilista Principal'
-    };
-
-    if (this.modoEdicion) {
-      await updateDoc(doc(this.firestore, `estilistas/${this.estilistaActual.id}`), datosParaGuardar);
-    } else {
-      await addDoc(collection(this.firestore, 'estilistas'), datosParaGuardar);
-    }
+    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'estilistas')
     this.isModalEstilistaOpen = false;
     this.cargarEstilistas();
   }
 
   async eliminarEstilista(id: string) {
     if (confirm('¿Dar de baja a este estilista?')) {
-      await deleteDoc(doc(this.firestore, `estilistas/${id}`));
+      // TODO: Migrar a Supabase en Fase 2 (supabase.from('estilistas').delete().eq('id', id))
       this.cargarEstilistas();
     }
   }

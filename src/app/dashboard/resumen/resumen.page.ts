@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,8 +18,6 @@ import {
   sparklesOutline, cartOutline, chatbubblesOutline, peopleOutline, 
   flameOutline, personOutline, logOutOutline, menuOutline
 } from 'ionicons/icons';
-import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-resumen',
@@ -35,16 +33,13 @@ import { Auth } from '@angular/fire/auth';
   ]
 })
 export class ResumenPage implements OnInit {
-  
-  private firestore = inject(Firestore);
-  private auth = inject(Auth);
 
   // Datos del cliente
   nombreCliente: string = 'Invitado'; 
-  fotoCliente: string = ''; // 👈 Variable para controlar la foto en el menú
+  fotoCliente: string = '';
   tieneNotificaciones: boolean = true; 
 
-  // Sistema de Cola de Promociones (Firebase)
+  // Sistema de Cola de Promociones
   anunciosActivos: any[] = [];
   anuncioActual: any = null;
   indiceAnuncio: number = 0;
@@ -52,12 +47,11 @@ export class ResumenPage implements OnInit {
 
   numeroWhatsApp: string = '51929727435';
 
-  // 👈 GALERÍA DE LOOKS ACTUALIZADA CON TUS RUTAS LOCALES
   galeriaTrabajos = [
-    { titulo: 'Corte Bob Simétrico', categoria: 'CORTES', url: 'assets/img/cortes.jpg' },
-    { titulo: 'Balayage Caramelo Oro', categoria: 'TINTES', url: 'assets/img/tintes.jpg' },
-    { titulo: 'Manicure Rusa Imperial', categoria: 'UÑAS', url: 'assets/img/uñas.jpg' },
-    { titulo: 'Peinado Ondas de Agua', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
+    { titulo: 'Corte Fade Clásico', categoria: 'CORTES', url: 'assets/img/cortes.jpg' },
+    { titulo: 'Diseño y Perfilado de Barba', categoria: 'BARBA', url: 'assets/img/tintes.jpg' },
+    { titulo: 'Tratamiento Capilar Masculino', categoria: 'TRATAMIENTOS', url: 'assets/img/uñas.jpg' },
+    { titulo: 'Peinado Pompadour con Cera', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
   ];
 
   constructor(
@@ -78,19 +72,16 @@ export class ResumenPage implements OnInit {
     this.cargarPromocionesCola();
   }
 
-  // 🌟 MAGIA: Se ejecuta cada vez que regresas a la pestaña Resumen
   ionViewWillEnter() {
     this.obtenerDatosDeMemoria();
   }
 
-  // Centralizamos la lógica de lectura
   obtenerDatosDeMemoria() {
     const datosUsuario = this.usuarioService.getUsuario();
     if (datosUsuario) {
       if (datosUsuario.nombre) {
         this.nombreCliente = datosUsuario.nombre.split(' ')[0];
       }
-      // Actualizamos la foto dinámicamente si existe
       if (datosUsuario.imagen) {
         this.fotoCliente = datosUsuario.imagen;
       } else {
@@ -103,15 +94,9 @@ export class ResumenPage implements OnInit {
   // LÓGICA DE POP-UPS PROMOCIONALES
   // ==============================
   async cargarPromocionesCola() {
+    // TODO: Migrar a Supabase en Fase 2 (supabase.from('anuncios').select('*').eq('activo', true))
     try {
-      const q = query(collection(this.firestore, 'anuncios'), where('activo', '==', true));
-      const snap = await getDocs(q);
-      this.anunciosActivos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      if (this.anunciosActivos.length > 0) {
-        this.indiceAnuncio = 0;
-        this.dispararAnuncioModal();
-      }
+      this.anunciosActivos = [];
     } catch (error) {
       console.error('Error cargando anuncios:', error);
     }
@@ -135,7 +120,7 @@ export class ResumenPage implements OnInit {
 
   contactarWhatsAppPromocion() {
     if (!this.anuncioActual) return;
-    const textoMensaje = `¡Hola Étnica Salón! 👋 Me interesa mucho la promoción de: *${this.anuncioActual.titulo}*. ¿Me podrían dar más detalles?`;
+    const textoMensaje = `¡Hola Barber Shop! 👋 Me interesa mucho la promoción de: *${this.anuncioActual.titulo}*. ¿Me podrían dar más detalles?`;
     const waUrl = `https://wa.me/${this.numeroWhatsApp}?text=${encodeURIComponent(textoMensaje)}`;
     window.open(waUrl, '_blank');
     this.cerrarYContinuarSecuencia();
@@ -154,8 +139,8 @@ export class ResumenPage implements OnInit {
     const confirmar = confirm('¿Deseas cerrar tu sesión?');
     if (confirmar) {
       try {
-        await this.auth.signOut();
-        this.usuarioService.limpiarUsuario(); // Borramos memoria local por seguridad
+        // TODO: Migrar a Supabase en Fase 2 (supabase.auth.signOut())
+        this.usuarioService.limpiarUsuario();
         this.router.navigate(['/login']);
       } catch (error) {
         console.error('Error al cerrar sesión:', error);

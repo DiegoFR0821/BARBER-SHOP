@@ -7,12 +7,10 @@ import {
   IonLabel, IonMenuToggle, IonRouterOutlet, IonNote 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-// 👇 1. Importa el icono megaphoneOutline aquí
 import { 
   gridOutline, calendarOutline, peopleOutline, cubeOutline, 
   logOutOutline, megaphoneOutline, chatbubblesOutline
 } from 'ionicons/icons'; 
-import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-admin',
@@ -28,18 +26,16 @@ import { Auth } from '@angular/fire/auth';
 export class AdminPage implements OnInit {
   nombreAdmin: string = 'Administrador';
 
-  // 👇 2. Agrega la ruta de anuncios con su icono
   public appPages = [
     { title: 'Resumen', url: '/admin/resumen-admin', icon: 'grid' },
     { title: 'Citas', url: '/admin/citas', icon: 'calendar' },
     { title: 'Clientes', url: '/admin/clientes', icon: 'people' },
     { title: 'Inventario', url: '/admin/inventario', icon: 'cube' },
-    { title: 'Modales Pop-up', url: '/admin/anuncios-admin', icon: 'megaphone' },// ¡Aquí está la nueva opción!
+    { title: 'Modales Pop-up', url: '/admin/anuncios-admin', icon: 'megaphone' },
     { title: 'Sala Chat', url: '/admin/comunidad-admin', icon: 'chatbubbles' }
   ];
 
-  constructor(private auth: Auth, private router: Router) {
-    // 👇 3. Registra el icono en el constructor
+  constructor(private router: Router) {
     addIcons({ 
       gridOutline, calendarOutline, peopleOutline, cubeOutline, 
       logOutOutline, megaphoneOutline, chatbubblesOutline
@@ -51,16 +47,13 @@ export class AdminPage implements OnInit {
   }
 
   obtenerUsuario() {
-    this.auth.onAuthStateChanged((user) => {
-      if (user) {
-        this.nombreAdmin = user.displayName || user.email || 'Administrador';
-      }
-    });
+    // TODO: Migrar a Supabase en Fase 2 (supabase.auth.getUser() o auth state change)
+    this.nombreAdmin = 'Administrador';
   }
 
   async cerrarSesion() {
+    // TODO: Migrar a Supabase en Fase 2 (await supabase.auth.signOut())
     try {
-      await this.auth.signOut();
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Error al cerrar sesión', error);

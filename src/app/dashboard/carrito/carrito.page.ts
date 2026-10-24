@@ -12,7 +12,6 @@ import {
   trashOutline, addOutline, removeOutline, cashOutline, arrowBackOutline, 
   checkmarkCircleOutline, cardOutline, qrCodeOutline, bagHandleOutline
 } from 'ionicons/icons';
-import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-carrito',
@@ -26,7 +25,6 @@ import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
   ]
 })
 export class CarritoPage implements OnInit {
-  private firestore = inject(Firestore);
   private router = inject(Router);
 
   // Estados: 'mi-carrito' | 'pasarela' | 'exito'
@@ -47,7 +45,7 @@ export class CarritoPage implements OnInit {
   ionViewWillEnter() { this.recuperarCarritoDeMemoria(); this.vistaActiva = 'mi-carrito'; }
 
   recuperarCarritoDeMemoria() {
-    const cached = localStorage.getItem('etnica_cart');
+    const cached = localStorage.getItem('barber_cart');
     if (cached) {
       this.itemsCarrito = JSON.parse(cached);
       this.calcularTotal();
@@ -55,7 +53,7 @@ export class CarritoPage implements OnInit {
   }
 
   guardarCarritoEnMemoria() {
-    localStorage.setItem('etnica_cart', JSON.stringify(this.itemsCarrito));
+    localStorage.setItem('barber_cart', JSON.stringify(this.itemsCarrito));
     this.calcularTotal();
   }
 
@@ -91,7 +89,7 @@ export class CarritoPage implements OnInit {
     this.vistaActiva = nuevaVista;
   }
 
-  // ⚡ RF-10: TRANSACCIÓN EN FIREBASE SIN ALERTS DE ÉXITO
+  // TODO: Migrar a Supabase en Fase 2 (transacción RPC / actualización de stock en tabla 'productos')
   async finalizarCompraPasarela() {
     if (this.metodoPago === 'yape' && !this.datosPago.celularYape) return;
     if (this.metodoPago === 'tarjeta' && (!this.datosPago.numeroTarjeta || !this.datosPago.cvv)) return;
@@ -99,25 +97,21 @@ export class CarritoPage implements OnInit {
     this.guardando = true;
 
     try {
-      // 1. Restamos las cantidades de Firestore
-      for (const item of this.itemsCarrito) {
-        const nuevoStock = Math.max(0, item.stockMaximo - item.cantidad);
-        const docRef = doc(this.firestore, `productos/${item.id}`);
-        await updateDoc(docRef, { stock: nuevoStock });
-      }
+      // TODO: Migrar a Supabase en Fase 2:
+      // Restar cantidades en Supabase DB para cada item
+      // Registrar orden de compra en tabla 'pedidos'/'ventas'
 
-      // 2. Limpiamos carrito
+      // Limpiamos carrito
       this.itemsCarrito = [];
-      localStorage.removeItem('etnica_cart');
+      localStorage.removeItem('barber_cart');
       
       this.guardando = false;
-      // 3. 🎯 Activamos pantalla nativa de éxito en vez de usar "alert()"
       this.cambiarVista('exito');
 
     } catch (error) {
       console.error('Error procesando compra:', error);
       this.guardando = false;
-      alert('Surgió un inconveniente en la pasarela.'); // Única alerta solo en caso de error crítico
+      alert('Surgió un inconveniente en la pasarela.');
     }
   }
 
