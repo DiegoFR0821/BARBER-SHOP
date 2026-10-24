@@ -1,17 +1,37 @@
 /* ======================================================================
-   ESTILOS ESPECÍFICOS PARA LA CARCASA DEL DASHBOARD (TABS BAR)
+   THE BARBER COMPANY - TABS BAR INFERIOR (DASHBOARD)
    ====================================================================== */
 
-/* Modificamos el contenedor general de la barra inferior de botones */
 ion-tab-bar {
-  /* Sustituimos el color gris de fábrica por un fondo blanco premium impecable */
-  --background: #ffffff;
-  /* Dibujamos un borde superior sutil en tono crema para separar el menú del contenido */
-  border-top: 1px solid #f2edd9;
+  --background: #0b0b0d;
+  --color: #71717a;
+  --color-selected: #c59d5f;
+  border-top: 1px solid rgba(197, 157, 95, 0.25);
+  height: 60px;
+  padding-bottom: 4px;
 }
 
-/* Aplicamos estilos avanzados al botón cuando Ionic detecta que la pestaña está activa */
-ion-tab-button.tab-selected {
-  /* Pintamos el icono y la etiqueta de texto con nuestro dorado insignia de Comas */
-  color: #735c00;
+ion-tab-button {
+  --color: #71717a;
+  --color-selected: #c59d5f;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+
+  ion-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+
+  &.tab-selected {
+    color: #c59d5f;
+    font-weight: 700;
+
+    ion-icon {
+      color: #c59d5f;
+      transform: scale(1.08);
+      transition: transform 0.2s ease;
+    }
+  }
 }

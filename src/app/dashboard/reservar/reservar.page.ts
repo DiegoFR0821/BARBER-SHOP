@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
-  IonMenuButton, IonIcon, IonButton, IonGrid, IonRow, IonCol, 
-  IonDatetime, IonSegment, IonSegmentButton, IonLabel, IonBadge, 
+  IonIcon, IonButton, IonGrid, IonRow, IonCol, 
+  IonDatetime, IonSegment, IonSegmentButton, IonLabel, 
   IonItem, IonTextarea 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -23,9 +23,9 @@ import { UsuarioService, UsuarioPerfil } from '../../services/usuario';
   standalone: true,
   imports: [
     CommonModule, FormsModule, IonContent, IonHeader, IonTitle, 
-    IonToolbar, IonButtons, IonMenuButton, IonIcon, IonButton, 
+    IonToolbar, IonButtons, IonIcon, IonButton, 
     IonGrid, IonRow, IonCol, IonDatetime, IonSegment, IonSegmentButton, 
-    IonLabel, IonBadge, IonItem, IonTextarea
+    IonLabel, IonItem, IonTextarea
   ]
 })
 export class ReservarPage implements OnInit {

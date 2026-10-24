@@ -1,78 +1,503 @@
-/* =======================================
-   1. VARIABLES Y ESTILOS GLOBALES
-   ======================================= */
+/* ======================================================================
+   THE BARBER COMPANY - DARK LUXURY STYLES (HOME PAGE)
+   ====================================================================== */
+
+$bg-dark: #0b0b0d;
+$bg-surface: #141417;
+$bg-card: #1c1c21;
+$gold-primary: #c59d5f;
+$gold-light: #d4af37;
+$text-light: #ffffff;
+$text-muted: #a1a1aa;
+$border-gold: rgba(197, 157, 95, 0.25);
+
 :host {
-  --dorado-oscuro: #735c00;
-  --dorado-claro: #d4af37;
-  --blanco-fondo: #faf9f9;
-  --texto-oscuro: #1a1c1c;
-  --texto-claro: #4d4635;
-  
-  font-family: 'Manrope', sans-serif;
-  color: var(--texto-oscuro);
+  --dorado-primary: #{$gold-primary};
+  --bg-dark-app: #{$bg-dark};
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  color: $text-light;
 }
 
-ion-content {
-  --background: var(--blanco-fondo);
+/* ======================================================================
+   HEADER
+   ====================================================================== */
+.header-dark-barber {
+  background-color: $bg-dark;
+  border-bottom: 1px solid rgba(197, 157, 95, 0.15);
+
+  .toolbar-dark {
+    --background: #{$bg-dark};
+    --color: #{$text-light};
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    --min-height: 58px;
+  }
 }
 
-/* =======================================
-   2. TIPOGRAFÍAS Y CABECERA
-   ======================================= */
 .cabecera-titulo {
-  text-align: center; 
-  color: var(--dorado-oscuro); 
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
   letter-spacing: 2px;
-  font-weight: 600;
+  color: $text-light;
+  text-align: left;
+  padding-left: 8px;
+
+  .gold-text {
+    color: $gold-primary;
+  }
 }
 
-.boton-cabecera {
-  color: var(--dorado-oscuro);
-  font-weight: bold;
+.botones-header {
+  padding-right: 6px;
+
+  .btn-header-login {
+    --color: #{$gold-primary};
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .btn-header-registro {
+    --background: #{$gold-primary};
+    --color: #0b0b0d;
+    --border-radius: 6px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
+    height: 32px;
+    margin-left: 4px;
+  }
+}
+
+/* ======================================================================
+   HERO BANNER
+   ====================================================================== */
+.contenido-dark {
+  --background: #{$bg-dark};
+  --color: #{$text-light};
+}
+
+.hero-section {
+  position: relative;
+  min-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px 50px;
+  background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-position: center;
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(11, 11, 13, 0.72) 0%, rgba(11, 11, 13, 0.94) 85%, #0b0b0d 100%);
+    z-index: 1;
+  }
+
+  .hero-contenido {
+    position: relative;
+    z-index: 2;
+    max-width: 580px;
+  }
+}
+
+.badge-luxury {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(197, 157, 95, 0.12);
+  border: 1px solid rgba(197, 157, 95, 0.35);
+  color: $gold-primary;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 18px;
+
+  .dot-gold {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: $gold-primary;
+    box-shadow: 0 0 8px $gold-primary;
+  }
 }
 
 .titulo-principal {
-  font-family: 'Noto Serif', serif;
-  font-size: 3rem;
-  line-height: 1.1;
-  margin-bottom: 20px;
-  color: #1a1c1c;
+  font-family: 'Oswald', 'Montserrat', sans-serif;
+  font-size: 2.8rem;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: $text-light;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
 }
 
-.titulo-seccion {
-  font-family: 'Noto Serif', serif;
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: #1a1c1c;
+.hero-subtitulo {
+  color: $text-muted;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 auto 26px;
+  font-weight: 400;
+}
+
+.hero-cta-wrapper {
+  .boton-dorado-cta {
+    --background: #{$gold-primary};
+    --color: #0b0b0d;
+    --border-radius: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    height: 48px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(197, 157, 95, 0.3);
+  }
+}
+
+/* ======================================================================
+   ESTRUCTURA DE SECCIONES
+   ====================================================================== */
+.contenedor-principal {
+  padding: 24px 16px;
+  background-color: $bg-dark;
+}
+
+.seccion-bloque {
+  text-align: center;
+  margin: 28px 0 24px;
+
+  &.mb-16 {
+    margin-bottom: 16px;
+  }
 }
 
 .etiqueta-dorada {
-  color: var(--dorado-oscuro);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  color: $gold-primary;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.titulo-seccion {
+  font-family: 'Oswald', 'Montserrat', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-light;
+  letter-spacing: 1px;
+  margin: 4px 0 14px;
   text-transform: uppercase;
 }
 
 .texto-parrafo {
-  color: var(--texto-claro);
-  line-height: 1.6;
+  color: $text-muted;
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 650px;
+  margin: 0 auto;
 }
 
-/* =======================================
-   3. ESTRUCTURA (Layout)
-   ======================================= */
-.contenedor-principal {
-  padding: 20px;
+/* ======================================================================
+   TARJETAS DE SERVICIOS DARK
+   ====================================================================== */
+.tarjeta-servicio-dark {
+  background: $bg-card;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 8px 4px 16px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(197, 157, 95, 0.5);
+  }
+
+  .card-img-wrapper {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .img-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, #1c1c21 100%);
+    }
+  }
+
+  .tarjeta-cuerpo {
+    padding: 16px 18px 20px;
+
+    .etiqueta-tarjeta {
+      color: $gold-primary;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .titulo-tarjeta {
+      color: $text-light;
+      font-size: 18px;
+      font-weight: 700;
+      margin: 6px 0 8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .desc-tarjeta {
+      color: $text-muted;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
 }
 
-.seccion-centrada {
+/* ======================================================================
+   CARTA DE PRECIOS DARK
+   ====================================================================== */
+.seccion-precios-dark {
+  background: $bg-surface;
+  border-radius: 16px;
+  padding: 28px 20px;
+  margin: 36px 0;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+
+  .fila-precio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.destacada {
+      background: rgba(197, 157, 95, 0.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+      border: 1px solid rgba(197, 157, 95, 0.3);
+      margin: 6px 0;
+    }
+
+    .precio-info {
+      display: flex;
+      flex-direction: column;
+
+      .nombre-servicio {
+        font-size: 14px;
+        font-weight: 600;
+        color: $text-light;
+
+        &.color-gold {
+          color: $gold-primary;
+        }
+      }
+
+      .duracion-servicio {
+        font-size: 11px;
+        color: $text-muted;
+        margin-top: 2px;
+      }
+    }
+
+    .linea-punteada {
+      flex: 1;
+      height: 1px;
+      border-bottom: 1px dashed rgba(197, 157, 95, 0.2);
+      margin: 0 14px;
+    }
+
+    .precio-servicio {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: $text-light;
+
+      &.color-gold {
+        color: $gold-primary;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+/* ======================================================================
+   TESTIMONIO DARK
+   ====================================================================== */
+.seccion-testimonio {
+  margin: 30px 0;
+
+  .tarjeta-testimonio-dark {
+    background: $bg-card;
+    border-radius: 14px;
+    padding: 22px 18px;
+    border: 1px solid rgba(197, 157, 95, 0.2);
+    text-align: center;
+    margin: 0;
+
+    .estrellas {
+      color: $gold-primary;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .texto-testimonio {
+      font-size: 14px;
+      font-style: italic;
+      line-height: 1.6;
+      color: $text-light;
+      margin: 0 0 16px;
+    }
+
+    .autor-testimonio {
+      color: $gold-primary;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+  }
+}
+
+/* ======================================================================
+   CONTACTO DARK
+   ====================================================================== */
+.seccion-contacto-dark {
+  margin: 36px 0 20px;
+
+  .lista-contacto-dark {
+    background: transparent;
+    padding: 0;
+
+    .item-contacto-dark {
+      --background: #{$bg-surface};
+      --color: #{$text-light};
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(197, 157, 95, 0.15);
+
+      .icono-contacto-gold {
+        color: $gold-primary;
+        font-size: 22px;
+        margin-right: 14px;
+      }
+
+      .icono-whatsapp {
+        color: #25d366;
+        font-size: 24px;
+        margin-right: 14px;
+      }
+
+      .contacto-titulo {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: $gold-primary;
+        margin-bottom: 2px;
+      }
+
+      .contacto-detalle {
+        font-size: 13px;
+        color: $text-light;
+        margin: 0;
+      }
+    }
+  }
+}
+
+/* ======================================================================
+   FOOTER & TABS
+   ====================================================================== */
+.pie-pagina-dark {
   text-align: center;
-  margin: 40px 0;
+  padding: 30px 16px 20px;
+  background-color: #050507;
+  border-top: 1px solid rgba(197, 157, 95, 0.15);
+
+  .logo-pie {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: $text-light;
+    margin-bottom: 8px;
+
+    .gold-text {
+      color: $gold-primary;
+    }
+  }
+
+  .pie-copy {
+    color: $text-muted;
+    font-size: 11px;
+    margin: 2px 0;
+  }
+
+  .pie-sub {
+    color: #55555c;
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin: 2px 0;
+  }
 }
 
-.mb-20 {
-  margin-bottom: 20px;
+.espacio-footer {
+  height: 60px;
+}
+
+.menu-inferior-dark {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: $bg-dark;
+  border-top: 1px solid rgba(197, 157, 95, 0.2);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+
+  .boton-menu-dark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: $text-muted;
+    font-size: 11px;
+    gap: 3px;
+    cursor: pointer;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    &.activo {
+      color: $gold-primary;
+      font-weight: 700;
+    }
+  }
 }
 
 .text-center {
@@ -81,231 +506,4 @@ ion-content {
 
 .block {
   display: block;
-}
-
-/* =======================================
-   4. SECCIÓN HERO (Banner)
-   ======================================= */
-.hero-section {
-  position: relative;
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-content: center;
-  text-align: center;
-  padding: 20px;
-  background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-}
-
-.hero-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
-  z-index: 1;
-}
-
-.hero-contenido {
-  position: relative;
-  z-index: 2;
-}
-
-/* =======================================
-   5. TARJETAS (Servicios y Testimonios)
-   ======================================= */
-.tarjeta-servicio {
-  margin: 0;
-  height: 250px;
-  position: relative;
-  border-radius: 12px;
-}
-
-.tarjeta-servicio img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.tarjeta-titulo-flotante {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-  color: white;
-  padding: 20px 10px;
-}
-
-.etiqueta-tarjeta {
-  color: white;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-}
-
-.titulo-tarjeta {
-  margin: 5px 0 0 0;
-  font-family: 'Noto Serif', serif;
-}
-
-.tarjeta-testimonio {
-  box-shadow: none;
-  border: 1px solid #eee;
-  margin-top: 20px;
-  border-radius: 12px;
-}
-
-.estrellas {
-  color: var(--dorado-claro);
-  margin-bottom: 10px;
-  font-size: 1.2rem;
-}
-
-.texto-testimonio {
-  font-style: italic;
-  color: var(--texto-claro);
-  font-size: 1.1rem;
-}
-
-.autor-testimonio {
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-/* =======================================
-   6. LISTA DE PRECIOS
-   ======================================= */
-.seccion-precios {
-  margin: 50px 0;
-}
-
-.fila-precio {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  align-items: flex-end;
-}
-
-.nombre-servicio {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #4d4635;
-}
-
-.precio-servicio {
-  color: var(--dorado-oscuro);
-  font-weight: bold;
-}
-
-.linea-punteada {
-  border-bottom: 1px dotted #d0c5af;
-  flex-grow: 1;
-  margin: 0 10px;
-  position: relative;
-  top: -6px;
-}
-
-/* =======================================
-   7. SECCIÓN DE CONTACTO
-   ======================================= */
-.seccion-contacto {
-  margin: 50px 0;
-  padding: 20px 0;
-  border-top: 1px solid #eee;
-}
-
-.lista-transparente {
-  background: transparent;
-}
-
-.lista-transparente ion-item {
-  --background: transparent;
-  --padding-start: 0;
-  margin-bottom: 10px;
-}
-
-.icono-dorado {
-  color: var(--dorado-claro);
-  font-size: 24px;
-}
-
-.contacto-titulo {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: var(--texto-claro);
-}
-
-.contacto-detalle {
-  font-size: 1rem;
-  color: var(--texto-oscuro);
-}
-
-/* =======================================
-   8. FOOTER Y MENÚ MÓVIL
-   ======================================= */
-.pie-pagina {
-  text-align: center;
-  padding: 40px 20px;
-  background-color: white;
-  border-top: 1px solid #eee;
-}
-
-.logo-pie {
-  font-family: 'Noto Serif', serif;
-  color: var(--dorado-oscuro);
-  letter-spacing: 0.3em;
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-
-.pie-pagina p {
-  color: gray;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-}
-
-.espacio-footer {
-  height: 70px;
-}
-
-.boton-dorado {
-  --background: var(--dorado-oscuro);
-  --color: white;
-  margin-top: 20px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.menu-inferior {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: white;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid #eee;
-  z-index: 100;
-}
-
-.boton-menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: gray;
-  cursor: pointer;
-}
-
-.boton-menu ion-icon {
-  font-size: 24px;
-}
-
-.boton-menu span {
-  font-size: 10px;
-  margin-top: 4px;
-}
-
-.boton-menu.activo {
-  color: var(--dorado-oscuro);
-  font-weight: bold;
 }

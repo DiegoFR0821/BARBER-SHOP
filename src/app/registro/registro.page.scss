@@ -1,120 +1,134 @@
-// Paleta de colores oficial extraída de tu prototipo
-$gold-base: #cda332;
-$gold-dark: #b18924;
-$text-dark: #222222;
-$text-muted: #8e8e93;
-$bg-smooth: #fafafa;
+$bg-dark: #0b0b0d;
+$bg-card: #1c1c21;
+$bg-input: #141417;
+$gold-primary: #c59d5f;
+$gold-light: #d4af37;
+$text-light: #ffffff;
+$text-muted: #a1a1aa;
+$border-gold: rgba(197, 157, 95, 0.25);
 
-// Forzar que el ion-content tenga una estética limpia
 .mobile-bg-content {
-  --background: #ffffff;
+  --background: #{$bg-dark};
+  --color: #{$text-light};
 }
 
-// Envoltorio simulador de App Móvil Premium
 .app-screen-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 100%;
   padding: 24px 20px;
-  background: #ffffff; 
+  background: $bg-dark;
 }
 
-// Botón de atrás flotante minimalista
 .nav-header-floating {
   width: 100%;
   display: flex;
   align-items: center;
-  margin-top: 10px;
 
   .back-btn-gold {
-    --color: #{$text-dark};
+    --color: #{$gold-primary};
     font-size: 20px;
   }
 }
 
-// Cabecera con tipografía idéntica a tu logo
 .brand-brandup {
   text-align: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 14px;
+  margin-bottom: 24px;
 
   .brand-logo-text {
-    font-size: 34px;
-    font-weight: 300;
-    letter-spacing: 7px;
-    color: var(--ion-text-color, #222);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: $text-light;
     margin: 0;
+
+    .gold-text {
+      color: $gold-primary;
+    }
   }
 
   .brand-sub-text {
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 4px;
-    color: $gold-base;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    color: $gold-primary;
     margin: 4px 0 0 0;
   }
 }
 
-// Tarjeta contenedora del formulario
 .form-card-mobile {
-  background: #ffffff;
+  background: $bg-card;
   width: 100%;
+  border-radius: 16px;
+  padding: 24px 20px;
+  border: 1px solid $border-gold;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
 
   .form-title {
+    font-family: 'Oswald', 'Montserrat', sans-serif;
     font-size: 22px;
-    font-weight: 600;
-    color: $text-dark;
+    font-weight: 700;
+    color: $text-light;
     margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .form-subtitle {
     font-size: 13px;
     color: $text-muted;
-    line-height: 1.4;
-    margin: 0 0 28px 0;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
   }
 }
 
-// Items de entradas de texto premium e independientes
 .input-custom-holder {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   width: 100%;
 
   .input-premium-item {
-    --background: #{$bg-smooth};
+    --background: #{$bg-input};
     --border-radius: 8px;
-    border: 1px solid #e5e5ea;
+    --color: #{$text-light};
+    border: 1px solid rgba(197, 157, 95, 0.2);
     padding: 2px 8px;
-    color: #222222;
-    
-    // Cambiar el color del label flotante enfocado al color dorado corporativo
+
     &.item-has-focus {
-      border-color: $gold-base;
+      border-color: $gold-primary;
     }
   }
 }
 
-// Mensaje de validación interactivo
 .error-msg-text {
   font-size: 12px;
-  text-align: center;
-  font-weight: 500;
-  margin: 4px 0 16px 0;
+  margin: 6px 0 12px;
+  line-height: 1.4;
+  color: #ff6b6b;
 }
 
-// El botón estrella dorado de tus capturas (LOG IN / SIGN UP)
 .btn-gold-submit {
-  --background: #{$gold-base};
-  --background-activated: #{$gold-dark};
-  --color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 1px;
-  --border-radius: 4px; // Bordes cuadrados semi-suaves como tu botón LOG IN
+  --background: #{$gold-primary};
+  --color: #0b0b0d;
+  --border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1.5px;
   height: 48px;
-  margin-top: 12px;
-  box-shadow: 0 4px 10px rgba(205, 163, 50, 0.2);
+  margin-top: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(197, 157, 95, 0.25);
+}
+
+.btn-link-registro {
+  --color: #{$gold-primary};
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
 }

@@ -9,15 +9,15 @@
     </div>
 
     <div class="brand-brandup">
-      <h1 class="brand-logo-text">BARBER</h1>
-      <h3 class="brand-sub-text">SHOP</h3>
+      <h1 class="brand-logo-text"><span class="gold-text">BARBER</span> SHOP</h1>
+      <h3 class="brand-sub-text">LIMA NORTE S.A.C.</h3>
     </div>
 
     <div class="form-card-mobile">
       <h2 class="form-title">Crear Cuenta</h2>
-      <p class="form-subtitle">Únete a Barber Shop Lima Norte. Personaliza tus preferencias de corte y agenda con tu barbero favorito.</p>
+      <p class="form-subtitle">Regístrate para agendar citas, elegir tu barbero y acceder a beneficios exclusivos.</p>
 
-      <!-- PASO 1: Datos Personales -->
+      <!-- Campo 1: Nombre Completo -->
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
@@ -30,10 +30,11 @@
         </ion-item>
       </div>
 
+      <!-- Campo 2: Teléfono / WhatsApp -->
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
-            label="Teléfono / Celular" 
+            label="Teléfono / WhatsApp" 
             labelPlacement="floating" 
             type="tel"
             placeholder="999-999-999"
@@ -42,7 +43,7 @@
         </ion-item>
       </div>
 
-      <!-- PASO 2: Acceso y Seguridad -->
+      <!-- Campo 3: Correo Electrónico -->
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
@@ -55,6 +56,7 @@
         </ion-item>
       </div>
 
+      <!-- Campo 4: Contraseña -->
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
@@ -67,28 +69,14 @@
         </ion-item>
       </div>
 
-      <!-- PASO 3: Estilo de Corte Inicial (Preferencia Rápida) -->
-      <div class="input-custom-holder">
-        <ion-item lines="none" class="input-premium-item">
-          <ion-select 
-            label="Estilo de Corte Preferido" 
-            labelPlacement="floating" 
-            [(ngModel)]="estiloPreferido">
-            <ion-select-option value="Fade Clásico">Fade Clásico (Degradado Medio)</ion-select-option>
-            <ion-select-option value="Skin Fade">Skin Fade Urbano (Afeitado a cero)</ion-select-option>
-            <ion-select-option value="Clásico Tijera">Corte Ejecutivo / Solo Tijera</ion-select-option>
-            <ion-select-option value="Pompadour">Pompadour / Texturizado</ion-select-option>
-            <ion-select-option value="Buzz Cut">Buzz Cut / Militar</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </div>
-
+      <!-- Mensaje de Error -->
       <ion-text color="danger" *ngIf="mensajeError">
         <p class="error-msg-text">⚠️ {{ mensajeError }}</p>
       </ion-text>
 
+      <!-- Botón de Registro Directo -->
       <ion-button expand="block" class="btn-gold-submit" (click)="registrarUsuario()" [disabled]="cargando">
-        {{ cargando ? 'REGISTRANDO...' : 'REGISTRARME' }}
+        {{ cargando ? 'REGISTRANDO...' : 'CREAR CUENTA' }}
       </ion-button>
 
       <ion-button expand="block" fill="clear" class="btn-link-registro" (click)="irALogin()">

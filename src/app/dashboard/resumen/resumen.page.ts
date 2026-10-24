@@ -2,23 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MenuController } from '@ionic/angular/standalone';
 import { UsuarioService, UsuarioPerfil } from '../../services/usuario';
 import { SupabaseService, Cita, Anuncio } from '../../core/services/supabase.service';
 import { 
   IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
-  IonIcon, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, 
-  IonCardContent, IonItem, IonLabel, IonAvatar, IonBadge,
-  IonMenu, IonMenuToggle, IonList, IonModal, IonGrid, IonRow, IonCol,
-  IonMenuButton
+  IonIcon, IonBadge, IonModal, IonGrid, IonRow, IonCol
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   notificationsOutline, star, calendar, chevronForwardOutline, 
   timeOutline, alertCircleOutline, closeOutline, logoWhatsapp, 
   sparklesOutline, cartOutline, chatbubblesOutline, peopleOutline, 
-  flameOutline, personOutline, logOutOutline, menuOutline, calendarOutline, 
-  cutOutline, checkmarkCircleOutline 
+  flameOutline, personOutline, logOutOutline, calendarOutline, 
+  cutOutline, checkmarkCircleOutline, personCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -28,10 +24,7 @@ import {
   standalone: true,
   imports: [
     CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, 
-    IonButtons, IonButton, IonIcon, IonCard, IonCardHeader, IonCardSubtitle, 
-    IonCardTitle, IonCardContent, IonItem, IonLabel, IonAvatar, IonBadge,
-    IonMenu, IonMenuToggle, IonList, IonModal, IonGrid, IonRow, IonCol,
-    IonMenuButton
+    IonButtons, IonButton, IonIcon, IonBadge, IonModal, IonGrid, IonRow, IonCol
   ]
 })
 export class ResumenPage implements OnInit {
@@ -53,16 +46,32 @@ export class ResumenPage implements OnInit {
 
   numeroWhatsApp: string = '51929727435';
 
+  // Galería de estilos 100% masculinos (The Barber Company style)
   galeriaTrabajos = [
-    { titulo: 'Corte Fade Clásico', categoria: 'DEGRADADOS', url: 'assets/img/cortes.jpg' },
-    { titulo: 'Perfilado de Barba a Navaja', categoria: 'BARBA', url: 'assets/img/tintes.jpg' },
-    { titulo: 'Tratamiento Capilar Purificante', categoria: 'TRATAMIENTOS', url: 'assets/img/uñas.jpg' },
-    { titulo: 'Pompadour con Cera Mate', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
+    { 
+      titulo: 'Corte Fade Clásico', 
+      categoria: 'DEGRADADOS', 
+      url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80' 
+    },
+    { 
+      titulo: 'Perfilado de Barba a Navaja', 
+      categoria: 'BARBA', 
+      url: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80' 
+    },
+    { 
+      titulo: 'Tratamiento Capilar Purificante', 
+      categoria: 'TRATAMIENTOS', 
+      url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80' 
+    },
+    { 
+      titulo: 'Pompadour con Cera Mate', 
+      categoria: 'PEINADOS', 
+      url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80' 
+    }
   ];
 
   constructor(
     private router: Router, 
-    private menuCtrl: MenuController,
     private usuarioService: UsuarioService,
     private supabaseService: SupabaseService
   ){
@@ -70,8 +79,8 @@ export class ResumenPage implements OnInit {
       notificationsOutline, star, calendar, chevronForwardOutline, 
       timeOutline, alertCircleOutline, closeOutline, logoWhatsapp, 
       sparklesOutline, cartOutline, chatbubblesOutline, peopleOutline, 
-      flameOutline, personOutline, logOutOutline, menuOutline, calendarOutline, 
-      cutOutline, checkmarkCircleOutline
+      flameOutline, personOutline, logOutOutline, calendarOutline, 
+      cutOutline, checkmarkCircleOutline, personCircleOutline
     });
   }
 
@@ -162,13 +171,11 @@ export class ResumenPage implements OnInit {
   }
 
   irAPerfil() {
-    this.menuCtrl.close('perfil-menu'); 
     this.router.navigate(['/perfil']); 
   }
 
   async cerrarSesion() {
-    this.menuCtrl.close('perfil-menu');
-    const confirmar = confirm('¿Deseas cerrar tu sesión?');
+    const confirmar = confirm('¿Deseas cerrar tu sesión de Barber Shop?');
     if (confirmar) {
       try {
         await this.supabaseService.signOut();

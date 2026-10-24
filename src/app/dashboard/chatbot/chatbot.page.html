@@ -1,14 +1,9 @@
-<ion-header class="ion-no-border premium-header">
-  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
-    <ion-buttons slot="start">
-      <ion-menu-button style="color: #aa8529;"></ion-menu-button>
-    </ion-buttons>
-    <ion-title style="font-weight: 800; color: #111; font-size: 16px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <ion-icon name="sparkles-outline" style="color: #aa8529; font-size: 20px;"></ion-icon>
-      ASISTENTE MÍA
+<ion-header class="ion-no-border header-dark-barber">
+  <ion-toolbar style="--background: #0b0b0d; padding: 6px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.15);">
+    <ion-title style="font-weight: 800; color: #ffffff; font-size: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <ion-icon name="sparkles-outline" style="color: #c59d5f; font-size: 18px;"></ion-icon>
+      ASISTENTE IA BARBER SHOP
     </ion-title>
-    <ion-buttons slot="end" class="ion-padding-end">
-      </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -16,7 +11,7 @@
   <div class="chat-container">
     
     <div class="system-message">
-      <span>Las respuestas son generadas por IA. Confirma disponibilidad agendando tu cita.</span>
+      <span>Asistente virtual de Barber Shop Lima Norte S.A.C. Consulta sobre estilos, degradados y barba.</span>
     </div>
 
     <div *ngFor="let msj of mensajes" 
@@ -29,7 +24,7 @@
 
       <div class="message-bubble">
         <p class="message-text" [innerHTML]="msj.text | slice:0:500"></p> 
-        </div>
+      </div>
     </div>
 
     <div *ngIf="escribiendo" class="message-wrapper message-ia typing-indicator">
@@ -48,7 +43,7 @@
       <ion-input 
         [(ngModel)]="mensajeTexto" 
         (keyup.enter)="enviarMensaje()"
-        placeholder="Pregúntale a Mía sobre cortes..." 
+        placeholder="Pregunta sobre cortes, degradados o barba..." 
         type="text"
         [disabled]="escribiendo">
       </ion-input>

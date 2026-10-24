@@ -1,86 +1,539 @@
-$color-gold: #aa8529;
-.cream-bg { --background: #faf9f6; }
+$bg-dark: #0b0b0d;
+$bg-surface: #141417;
+$bg-card: #1c1c21;
+$gold-primary: #c59d5f;
+$gold-light: #d4af37;
+$text-light: #ffffff;
+$text-muted: #a1a1aa;
+$border-gold: rgba(197, 157, 95, 0.25);
 
-.step-card-container {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 16px;
-  border: 1px solid rgba(170, 133, 41, 0.15);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+.contenido-dark {
+  --background: #{$bg-dark};
+  --color: #{$text-light};
 }
 
-.step-title-badge {
+.dashboard-wrapper {
+  padding: 16px 16px 30px;
+}
+
+/* ======================================================================
+   HEADER & SEGMENT DARK
+   ====================================================================== */
+.header-dark-barber {
+  background-color: $bg-dark;
+
+  .toolbar-dark {
+    --background: #{$bg-dark};
+    --color: #{$text-light};
+    --min-height: 54px;
+  }
+
+  .toolbar-segment-dark {
+    --background: #{$bg-dark};
+    --padding-top: 0;
+    --padding-bottom: 8px;
+    border-bottom: 1px solid rgba(197, 157, 95, 0.15);
+  }
+}
+
+.cabecera-titulo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: $text-light;
+  text-align: left;
+  padding-left: 12px;
+
+  .gold-text {
+    color: $gold-primary;
+  }
+}
+
+.custom-segment-dark {
+  --background: #{$bg-surface};
+  margin: 0 16px;
+  width: calc(100% - 32px);
+  border-radius: 8px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+
+  ion-segment-button {
+    --color: #{$text-muted};
+    --color-checked: #0b0b0d;
+    --indicator-color: #{$gold-primary};
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    min-height: 36px;
+  }
+}
+
+/* ======================================================================
+   STEP CARD CONTAINER
+   ====================================================================== */
+.step-card-container-dark {
+  background: $bg-card;
+  border-radius: 16px;
+  padding: 18px 16px;
+  border: 1px solid $border-gold;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+
+  .step-title-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 10px;
+
+    .step-number {
+      background: $gold-primary;
+      color: #0b0b0d;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .step-heading {
+      font-family: 'Oswald', 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: $text-light;
+      letter-spacing: 1px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+  }
+
+  .step-subheading {
+    font-size: 12px;
+    font-weight: 600;
+    color: $gold-light;
+    margin: 8px 0 12px;
+  }
+}
+
+/* ======================================================================
+   OPCIONES DE SERVICIOS & STAFF (CARDS)
+   ====================================================================== */
+.services-row-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-option-card-dark, .staff-option-card-dark {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #f2f2f2;
-  padding-bottom: 8px;
+  background: $bg-surface;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(197, 157, 95, 0.18);
+  cursor: pointer;
+  transition: all 0.25s ease;
 
-  .step-number {
-    background: #aa8529;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 3px 8px;
-    border-radius: 6px;
-    letter-spacing: 0.5px;
+  &:hover {
+    border-color: rgba(197, 157, 95, 0.45);
+  }
+
+  &.active-card {
+    border: 2px solid $gold-primary;
+    background: rgba(197, 157, 95, 0.12);
+    box-shadow: 0 0 16px rgba(197, 157, 95, 0.25);
   }
 }
 
-.step-heading { 
-  font-size: 13px; 
-  font-weight: 800; 
-  color: #111111; 
-  letter-spacing: 0.5px; 
-  margin: 0; 
-}
+.service-img-wrapper {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 14px;
+  flex-shrink: 0;
 
-.step-subheading {
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  margin: 8px 0 10px 0;
-}
+  .service-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-.services-row-grid { display: flex; flex-direction: column; gap: 10px; }
-
-.service-option-card, .staff-option-card {
-  display: flex; align-items: center; background: #ffffff; padding: 12px; border-radius: 12px;
-  border: 1px solid rgba(170, 133, 41, 0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer; transition: all 0.2s;
-  
-  &.active-card { 
-    border: 2px solid #{$color-gold}; 
-    background: rgba(170, 133, 41, 0.08); 
+  .service-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
   }
 }
 
-.service-cover-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 14px; }
-.service-info-box { flex: 1; }
-.service-info-box h4, .staff-info-box h4 { margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: #111; }
+.service-info-box {
+  flex: 1;
+
+  h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: $text-light;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .service-meta-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .service-price {
+      font-size: 13px;
+      font-weight: 800;
+      color: $gold-primary;
+    }
+
+    .service-time {
+      font-size: 11px;
+      color: $text-muted;
+    }
+  }
+}
 
 .staff-avatar-circle {
-  width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: #f2f2f7;
-  display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0;
-  
-  img { width: 100%; height: 100%; object-fit: cover; }
-  ion-icon { font-size: 20px; color: $color-gold; }
-}
-.staff-info-box p { margin: 0; font-size: 11px; color: #666; font-weight: 500; }
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: $bg-card;
+  border: 1.5px solid rgba(197, 157, 95, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  flex-shrink: 0;
 
-.time-cell-btn {
-  width: 100%; background: #ffffff; border: 1px solid rgba(170,133,41,0.2); color: #111; padding: 10px 0;
-  font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-  
-  &.cell-active { background: #{$color-gold}; color: #ffffff; border-color: #{$color-gold}; }
-  &.cell-occupied { background: #e8e8e8; color: #999; border-color: #ccc; cursor: not-allowed; text-decoration: line-through; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
-.my-appointment-card {
-  background: #ffffff;
+.staff-info-box {
+  flex: 1;
+
+  h4 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    font-weight: 700;
+    color: $text-light;
+  }
+
+  p {
+    margin: 0;
+    font-size: 11px;
+    color: $gold-primary;
+    font-weight: 600;
+  }
+
+  .staff-exp {
+    font-size: 10px;
+    color: $text-muted;
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+/* ======================================================================
+   DATETIME & HORARIOS (STEP 2)
+   ====================================================================== */
+.custom-datetime-dark {
+  --background: #{$bg-surface};
+  --title-color: #{$gold-primary};
   border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(170, 133, 41, 0.2);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  width: 100%;
+  color: $text-light;
+}
+
+.time-cell-btn-dark {
+  width: 100%;
+  background: $bg-surface;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  color: $text-light;
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.cell-active {
+    background: $gold-primary;
+    color: #0b0b0d;
+    border-color: $gold-primary;
+    box-shadow: 0 0 12px rgba(197, 157, 95, 0.4);
+  }
+
+  &.cell-occupied {
+    background: #19191d;
+    color: #55555c;
+    border-color: rgba(255, 255, 255, 0.05);
+    cursor: not-allowed;
+    text-decoration: line-through;
+
+    .occupied-tag {
+      display: block;
+      font-size: 8px;
+      font-weight: 800;
+      color: #ff6b6b;
+      margin-top: 2px;
+    }
+  }
+}
+
+.warning-callout-dark {
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(197, 157, 95, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(197, 157, 95, 0.25);
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: $gold-light;
+  }
+}
+
+/* ======================================================================
+   CONFIRMACIÓN (STEP 3)
+   ====================================================================== */
+.confirmation-summary-dark {
+  background: $bg-surface;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+
+    span {
+      color: $text-muted;
+    }
+
+    strong {
+      color: $text-light;
+    }
+
+    .text-pending {
+      color: #ffc107;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    &.highlight-price {
+      border-bottom: none;
+      padding-top: 12px;
+
+      .gold-price {
+        color: $gold-primary;
+        font-size: 16px;
+        font-weight: 900;
+      }
+    }
+  }
+
+  .attached-client-sheet-dark {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(197, 157, 95, 0.08);
+    border-radius: 8px;
+    border: 1px dashed rgba(197, 157, 95, 0.35);
+
+    .sheet-title {
+      margin: 0 0 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: $gold-primary;
+      letter-spacing: 1px;
+    }
+
+    .sheet-desc {
+      margin: 0;
+      font-size: 11px;
+      color: $text-light;
+
+      strong {
+        color: $gold-light;
+      }
+    }
+  }
+
+  .input-note-dark {
+    --background: transparent;
+    --padding-start: 0;
+    --color: #{$text-light};
+    margin-top: 12px;
+  }
+}
+
+.btn-confirm-booking-dark {
+  --background: #{$gold-primary};
+  --color: #0b0b0d;
+  --border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 1.2px;
+  height: 50px;
+  margin-top: 20px;
+  box-shadow: 0 8px 24px rgba(197, 157, 95, 0.3);
+}
+
+/* ======================================================================
+   MIS CITAS
+   ====================================================================== */
+.appointments-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .appointments-title {
+    margin: 0;
+    font-family: 'Oswald', 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-light;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-refresh-outline {
+    --color: #{$gold-primary};
+    --border-color: #{$gold-primary};
+    font-weight: 700;
+    font-size: 11px;
+  }
+}
+
+.empty-appointments-dark {
+  text-align: center;
+  padding: 40px 20px;
+  background: $bg-card;
+  border-radius: 14px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+
+  .empty-icon-gold {
+    font-size: 46px;
+    color: $gold-primary;
+    margin-bottom: 12px;
+  }
+
+  h4 {
+    margin: 0 0 6px;
+    color: $text-light;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: $text-muted;
+  }
+
+  .btn-gold-first-booking {
+    --background: #{$gold-primary};
+    --color: #0b0b0d;
+    --border-radius: 8px;
+    font-weight: 800;
+    font-size: 12px;
+  }
+}
+
+.my-appointment-card-dark {
+  background: $bg-card;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(197, 157, 95, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+  .card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+
+    .service-name-text {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: $text-light;
+    }
+
+    .barber-name-text {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: $text-muted;
+
+      strong {
+        color: $gold-light;
+      }
+    }
+
+    .badge-status-pill {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+
+      &.badge-confirmed {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+      }
+
+      &.badge-pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+      }
+
+      &.badge-cancelled {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+      }
+    }
+  }
+
+  .meta-datetime-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: $text-light;
+
+    .meta-price {
+      color: $gold-primary;
+      font-weight: 800;
+    }
+  }
+
+  .appointment-notes-italic {
+    margin: 4px 0 10px;
+    font-size: 12px;
+    color: $text-muted;
+    font-style: italic;
+  }
+
+  .cancel-action-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 8px;
+    text-align: right;
+  }
 }

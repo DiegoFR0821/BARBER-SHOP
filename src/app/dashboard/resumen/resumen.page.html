@@ -1,203 +1,168 @@
-<ion-menu side="start" menuId="perfil-menu" contentId="main-content-resumen">
-  <ion-content class="menu-perfil-bg">
+<ion-header class="ion-no-border header-dark-barber">
+  <ion-toolbar class="toolbar-dark">
+    <!-- Título de marca visible sin cortes -->
+    <ion-title class="cabecera-titulo">
+      <span class="gold-text">BARBER</span> SHOP
+    </ion-title>
+
+    <!-- Perfil y acciones rápidas en la esquina superior derecha -->
+    <ion-buttons slot="end" class="header-user-actions">
+      <ion-button fill="clear" class="btn-avatar-header" (click)="irAPerfil()" title="Mi Perfil">
+        <div class="header-avatar-circle">
+          <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Avatar" />
+          <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
+        </div>
+      </ion-button>
+      <ion-button fill="clear" class="btn-logout-header" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="contenido-dark">
+  <div class="dashboard-wrapper">
     
-    <div class="menu-profile-header">
-      <div class="avatar-wrapper">
-        <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Perfil">
-        <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
+    <!-- SALUDO AL CLIENTE -->
+    <div class="welcome-user-section">
+      <p class="greeting-subtitle">Bienvenido a Barber Shop Lima Norte,</p>
+      <h1 class="greeting-title">{{ nombreCliente }}</h1>
+    </div>
+
+    <!-- SECCIÓN: PRÓXIMA CITA EN TIEMPO REAL DESDE SUPABASE -->
+    <div *ngIf="proximaCita" class="next-appointment-card-dark">
+      <div class="card-top-row">
+        <span class="appointment-tag">TU PRÓXIMA CITA</span>
+        <ion-badge class="badge-status-dark" [class.badge-pending]="proximaCita.estado === 'pendiente'" [class.badge-confirmed]="proximaCita.estado === 'confirmada'">
+          {{ proximaCita.estado }}
+        </ion-badge>
       </div>
-      <h2>{{ nombreCliente }}</h2>
-      <p style="margin: 2px 0 0; font-size: 11px; color: #aa8529; font-weight: bold;">BARBER SHOP CLUB</p>
-    </div>
-
-    <ion-list lines="none" class="menu-options-list">
-      <ion-item button (click)="irAPerfil()" class="menu-item">
-        <ion-icon slot="start" name="person-outline"></ion-icon>
-        <ion-label>Mi Perfil & Preferencias</ion-label>
-      </ion-item>
-      <ion-item button (click)="irA('reservar')" class="menu-item">
-        <ion-icon slot="start" name="calendar-outline"></ion-icon>
-        <ion-label>Mis Citas Agendadas</ion-label>
-      </ion-item>
-      <ion-item button (click)="irA('tienda')" class="menu-item">
-        <ion-icon slot="start" name="cart-outline"></ion-icon>
-        <ion-label>Catálogo de Productos</ion-label>
-      </ion-item>
-    </ion-list>
-
-    <div class="menu-footer">
-      <ion-item button (click)="cerrarSesion()" class="logout-item">
-        <ion-icon slot="start" name="log-out-outline"></ion-icon>
-        <ion-label>Cerrar Sesión</ion-label>
-      </ion-item>
-    </div>
-  </ion-content>
-</ion-menu>
-
-
-<div class="ion-page" id="main-content-resumen">
-  
-  <ion-header class="ion-no-border premium-header">
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-menu-button menu="perfil-menu" style="color: #aa8529;"></ion-menu-button>
-      </ion-buttons>
-      <ion-title class="clean-title">BARBER SHOP</ion-title>
-      <ion-buttons slot="end" class="ion-padding-end">
-        <ion-icon name="notifications-outline" class="noti-icon" [class.has-noti]="tieneNotificaciones"></ion-icon>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
-
-  <ion-content class="cream-bg">
-    <div class="dashboard-wrapper" style="padding: 16px;">
       
-      <div class="welcome-user-section" style="margin-bottom: 20px;">
-        <p class="greeting-subtitle">Bienvenido a Barber Shop Lima Norte,</p>
-        <h1 class="greeting-title">{{ nombreCliente }}</h1>
+      <h3 class="appointment-service-title">{{ proximaCita.nombreServicio }}</h3>
+      <p class="appointment-barber-info">💈 Barbero: <strong>{{ proximaCita.nombreBarbero }}</strong></p>
+      
+      <div class="appointment-datetime-row">
+        <span>📅 {{ proximaCita.fecha }}</span>
+        <span>⏰ {{ proximaCita.hora }}</span>
       </div>
 
-      <!-- SECCIÓN: PRÓXIMA CITA EN TIEMPO REAL DESDE SUPABASE -->
-      <div *ngIf="proximaCita" class="next-appointment-card" style="background: linear-gradient(135deg, #1f1f1f 0%, #111111 100%); color: #fff; padding: 16px; border-radius: 14px; margin-bottom: 22px; border: 1px solid rgba(170,133,41,0.4); box-shadow: 0 6px 18px rgba(0,0,0,0.15);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 11px; font-weight: 800; color: #d4af37; letter-spacing: 1px;">TU PRÓXIMA CITA</span>
-          <ion-badge color="warning" style="font-size: 10px; text-transform: uppercase;">{{ proximaCita.estado }}</ion-badge>
-        </div>
-        
-        <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #fff;">{{ proximaCita.nombreServicio }}</h3>
-        <p style="margin: 0; font-size: 13px; color: #ccc;">💈 Barbero: <strong style="color: #fff;">{{ proximaCita.nombreBarbero }}</strong></p>
-        
-        <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 13px; color: #ddd;">
-          <span>📅 {{ proximaCita.fecha }}</span>
-          <span>⏰ {{ proximaCita.hora }}</span>
-        </div>
-
-        <ion-button size="small" fill="outline" style="--color: #d4af37; --border-color: #d4af37; margin-top: 12px;" (click)="irA('reservar')">
-          Ver detalles de reserva
-        </ion-button>
-      </div>
-
-      <!-- SI NO TIENE CITA AGENDADA -->
-      <div *ngIf="!proximaCita" class="no-appointment-banner" style="background: #ffffff; padding: 16px; border-radius: 14px; margin-bottom: 22px; border: 1px dashed rgba(170,133,41,0.4); box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #111;">¿Listo para tu próximo corte?</h4>
-          <p style="margin: 0; font-size: 12px; color: #777;">Agenda tu cita con los mejores barberos de Lima Norte.</p>
-        </div>
-        <ion-button style="--background: #aa8529; --border-radius: 8px; font-size: 12px;" (click)="irA('reservar')">
-          Reservar
-        </ion-button>
-      </div>
-
-      <!-- FICHA DE PREFERENCIAS DE CORTE -->
-      <div *ngIf="usuarioActual?.preferencias_corte" style="background: #ffffff; padding: 14px; border-radius: 12px; margin-bottom: 22px; border: 1px solid rgba(170,133,41,0.15);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span style="font-size: 11px; font-weight: 700; color: #aa8529; letter-spacing: 0.5px;">MI FICHA DE CORTE</span>
-          <a (click)="irAPerfil()" style="font-size: 11px; color: #aa8529; font-weight: bold; text-decoration: none;">Editar</a>
-        </div>
-        <p style="margin: 0; font-size: 12px; color: #333;">
-          ✂️ <strong>Estilo:</strong> {{ usuarioActual?.preferencias_corte?.estilo }} • 
-          💈 <strong>Barba:</strong> {{ usuarioActual?.preferencias_corte?.barba }}
-        </p>
-      </div>
-
-      <div class="section-title-row">
-        <h3><ion-icon name="flame-outline"></ion-icon> PROMOCIONES ACTIVAS</h3>
-      </div>
-
-      <div class="horizontal-offers-slider">
-        <div class="offer-slide-card card-gold">
-          <div>
-            <h4>Combo Master Barber</h4>
-            <p>20% de descuento en Corte Fade + Ritual de Barba completo.</p>
-          </div>
-          <span class="code-badge">CÓDIGO: MASTER20</span>
-        </div>
-
-        <div class="offer-slide-card card-dark">
-          <div>
-            <h4>Miércoles de Barba</h4>
-            <p>Perfilado a navaja y toalla caliente por solo S/ 25.00.</p>
-          </div>
-          <span class="code-badge badge-solid">EXCLUSIVO APP</span>
-        </div>
-      </div>
-
-      <h3 class="section-title-text">ACCESOS RÁPIDOS</h3>
-      <ion-grid class="ion-no-padding shortcut-grid">
-        <ion-row>
-          <ion-col size="6">
-            <div class="shortcut-card" (click)="irA('reservar')">
-              <ion-icon name="calendar-outline"></ion-icon>
-              <span>Reservar Cita</span>
-            </div>
-          </ion-col>
-          <ion-col size="6">
-            <div class="shortcut-card" (click)="irA('tienda')">
-              <ion-icon name="cart-outline"></ion-icon>
-              <span>Barber Shop</span>
-            </div>
-          </ion-col>
-          <ion-col size="6">
-            <div class="shortcut-card" (click)="irA('chatbot')">
-              <ion-icon name="sparkles-outline"></ion-icon>
-              <span>Asistente IA</span>
-            </div>
-          </ion-col>
-          <ion-col size="6">
-            <div class="shortcut-card" (click)="irA('comunidad')">
-              <ion-icon name="people-outline"></ion-icon>
-              <span>Comunidad</span>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-
-      <h3 class="section-title-text">GALERÍA DE ESTILOS MASCULINOS</h3>
-      <ion-grid class="ion-no-padding">
-        <ion-row style="margin: 0 -4px;">
-          <ion-col size="6" *ngFor="let item of galeriaTrabajos" style="padding: 4px;">
-            <div class="look-gallery-card">
-              <div class="img-wrapper">
-                <img [src]="item.url" alt="{{item.titulo}}" />
-              </div>
-              <div class="info-wrapper">
-                <span class="category-text">{{ item.categoria }}</span>
-                <span class="title-text">{{ item.titulo }}</span>
-              </div>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-
+      <ion-button size="small" expand="block" class="btn-gold-card" (click)="irA('reservar')">
+        Ver detalles de reserva
+      </ion-button>
     </div>
 
-    <!-- MODAL EMERGENTE DE ANUNCIOS DESDE SUPABASE -->
-    <ion-modal id="promo-modal" [isOpen]="isPromoOpen" (didDismiss)="cerrarYContinuarSecuencia()">
-      <ng-template>
-        <div class="popup-container-premium">
-          <div class="close-popup-bar" (click)="cerrarYContinuarSecuencia()">
-            <ion-icon name="close-outline"></ion-icon>
+    <!-- SI NO TIENE CITA AGENDADA -->
+    <div *ngIf="!proximaCita" class="no-appointment-banner-dark">
+      <div class="banner-text">
+        <h4>¿Listo para tu próximo corte?</h4>
+        <p>Agenda tu cita con los mejores barberos de Lima Norte.</p>
+      </div>
+      <ion-button class="btn-gold-action" (click)="irA('reservar')">
+        Reservar
+      </ion-button>
+    </div>
+
+    <!-- FICHA DE PREFERENCIAS DE CORTE -->
+    <div *ngIf="usuarioActual?.preferencias_corte" class="cutting-preferences-card-dark">
+      <div class="pref-header">
+        <span class="pref-title-tag">MI FICHA DE CORTE</span>
+        <a (click)="irAPerfil()" class="pref-edit-link">Editar</a>
+      </div>
+      <p class="pref-details">
+        ✂️ <strong>Estilo:</strong> {{ usuarioActual?.preferencias_corte?.estilo }} &bull; 
+        💈 <strong>Barba:</strong> {{ usuarioActual?.preferencias_corte?.barba }}
+      </p>
+      <p *ngIf="usuarioActual?.preferencias_corte?.notas" class="pref-notes">
+        "{{ usuarioActual?.preferencias_corte?.notas }}"
+      </p>
+    </div>
+
+    <!-- ACCESOS RÁPIDOS -->
+    <h3 class="section-title-dark">ACCESOS RÁPIDOS</h3>
+    <ion-grid class="ion-no-padding shortcut-grid">
+      <ion-row>
+        <ion-col size="6">
+          <div class="shortcut-card-dark" (click)="irA('reservar')">
+            <div class="icon-circle-gold">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </div>
+            <span>Reservar Cita</span>
           </div>
-          
-          <div class="popup-image-hero-wrapper">
-            <img *ngIf="anuncioActual?.imagen || anuncioActual?.imagen_url" [src]="anuncioActual?.imagen || anuncioActual?.imagen_url" alt="Promo">
-            <div *ngIf="!anuncioActual?.imagen && !anuncioActual?.imagen_url" class="placeholder-fallback-gold">
+        </ion-col>
+        <ion-col size="6">
+          <div class="shortcut-card-dark" (click)="irA('tienda')">
+            <div class="icon-circle-gold">
+              <ion-icon name="cart-outline"></ion-icon>
+            </div>
+            <span>Barber Shop</span>
+          </div>
+        </ion-col>
+        <ion-col size="6">
+          <div class="shortcut-card-dark" (click)="irA('chatbot')">
+            <div class="icon-circle-gold">
               <ion-icon name="sparkles-outline"></ion-icon>
             </div>
+            <span>Asistente IA</span>
           </div>
+        </ion-col>
+        <ion-col size="6">
+          <div class="shortcut-card-dark" (click)="irA('comunidad')">
+            <div class="icon-circle-gold">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <span>Comunidad</span>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-          <div class="popup-content-body">
-            <h2 class="popup-promo-title">{{ anuncioActual?.titulo }}</h2>
-            <p class="popup-promo-desc">{{ anuncioActual?.descripcion }}</p>
-            <ion-button expand="block" class="btn-popup-whatsapp" (click)="contactarWhatsAppPromocion()">
-              <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
-              RESERVAR POR WHATSAPP
-            </ion-button>
-            <span class="popup-dismiss-text" (click)="cerrarYContinuarSecuencia()">Ver otras promociones</span>
+    <!-- GALERÍA DE ESTILOS MASCULINOS -->
+    <h3 class="section-title-dark">GALERÍA DE ESTILOS MASCULINOS</h3>
+    <ion-grid class="ion-no-padding">
+      <ion-row style="margin: 0 -4px;">
+        <ion-col size="6" *ngFor="let item of galeriaTrabajos" style="padding: 4px;">
+          <div class="look-gallery-card-dark">
+            <div class="img-wrapper">
+              <img [src]="item.url" [alt]="item.titulo" />
+              <div class="img-overlay-dark"></div>
+            </div>
+            <div class="info-wrapper">
+              <span class="category-text">{{ item.categoria }}</span>
+              <span class="title-text">{{ item.titulo }}</span>
+            </div>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+  </div>
+
+  <!-- MODAL EMERGENTE DE ANUNCIOS DESDE SUPABASE -->
+  <ion-modal id="promo-modal" [isOpen]="isPromoOpen" (didDismiss)="cerrarYContinuarSecuencia()">
+    <ng-template>
+      <div class="popup-container-dark">
+        <div class="close-popup-bar" (click)="cerrarYContinuarSecuencia()">
+          <ion-icon name="close-outline"></ion-icon>
+        </div>
+        
+        <div class="popup-image-hero-wrapper">
+          <img *ngIf="anuncioActual?.imagen || anuncioActual?.imagen_url" [src]="anuncioActual?.imagen || anuncioActual?.imagen_url" alt="Promo">
+          <div *ngIf="!anuncioActual?.imagen && !anuncioActual?.imagen_url" class="placeholder-fallback-gold">
+            <ion-icon name="sparkles-outline"></ion-icon>
           </div>
         </div>
-      </ng-template>
-    </ion-modal>
 
-  </ion-content>
-</div>
+        <div class="popup-content-body">
+          <h2 class="popup-promo-title">{{ anuncioActual?.titulo }}</h2>
+          <p class="popup-promo-desc">{{ anuncioActual?.descripcion }}</p>
+          <ion-button expand="block" class="btn-popup-whatsapp" (click)="contactarWhatsAppPromocion()">
+            <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
+            RESERVAR POR WHATSAPP
+          </ion-button>
+          <span class="popup-dismiss-text" (click)="cerrarYContinuarSecuencia()">Cerrar</span>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

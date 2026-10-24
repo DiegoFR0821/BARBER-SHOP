@@ -1,101 +1,174 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="light">
-    <ion-buttons slot="start">
-      <ion-button>
-        <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+<ion-header class="ion-no-border header-dark-barber">
+  <ion-toolbar class="toolbar-dark">
+    <!-- Título de marca visible y completo sin cortes -->
+    <ion-title class="cabecera-titulo">
+      <span class="gold-text">BARBER</span> SHOP
+    </ion-title>
     
-    <ion-title class="cabecera-titulo">BARBER SHOP</ion-title>
-    
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="['/login']" class="boton-cabecera">Login</ion-button>
-      <ion-button [routerLink]="['/registro']" class="boton-cabecera">Registrarse</ion-button>
+    <!-- Botones de Acceso Rápido -->
+    <ion-buttons slot="end" class="botones-header">
+      <ion-button [routerLink]="['/login']" class="btn-header-login">LOGIN</ion-button>
+      <ion-button [routerLink]="['/registro']" class="btn-header-registro">REGISTRARSE</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="contenido-dark">
 
+  <!-- ==================== HERO BANNER PRINCIPAL ==================== -->
   <div class="hero-section">
     <div class="hero-overlay"></div>
     <div class="hero-contenido">
-      <span class="etiqueta-dorada">Barbería & Estética Masculina</span>
-      <h1 class="titulo-principal">Estilo, Maestría y Tradición</h1>
-      <ion-button [routerLink]="['/login']" class="boton-dorado" shape="round">RESERVAR CITA</ion-button>
+      <div class="badge-luxury">
+        <span class="dot-gold"></span> THE URBAN & LUXURY EXPERIENCE
+      </div>
+      <h1 class="titulo-principal">MAESTRÍA, ESTILO & TRADICIÓN</h1>
+      <p class="hero-subtitulo">
+        Cortes degradados de precisión, afeitado tradicional a navaja y rituales de toalla caliente en Lima Norte.
+      </p>
+      <div class="hero-cta-wrapper">
+        <ion-button [routerLink]="['/login']" class="boton-dorado-cta">
+          RESERVAR CITA
+        </ion-button>
+      </div>
     </div>
   </div>
 
   <div class="contenedor-principal">
 
-    <div class="seccion-centrada">
-      <span class="etiqueta-dorada">BARBER SHOP LIMA NORTE</span>
-      <h2 class="titulo-seccion">Nuestra Filosofía</h2>
+    <!-- ==================== FILOSOFÍA DE MARCA ==================== -->
+    <div class="seccion-bloque">
+      <span class="etiqueta-dorada">BARBER SHOP LIMA NORTE S.A.C.</span>
+      <h2 class="titulo-seccion">El Arte del Cuidado Masculino</h2>
       <p class="texto-parrafo">
-        En Barber Shop Lima Norte fusionamos el ritual del afeitado clásico a navaja con las técnicas de vanguardia en degradados (Skin Fade), visagismo y cuidado estético masculino. Cada detalle está pensado para tu confort y estilo personal.
+        Inspirados en la estética y excelencia de las mejores barberías del mundo, fusionamos la disciplina del afeitado clásico con las últimas tendencias urbanas en Skin Fade, visagismo y cuidado estético masculino. Un espacio exclusivo para el hombre contemporáneo.
       </p>
     </div>
 
-    <div class="seccion-centrada mb-20">
-      <span class="etiqueta-dorada">SERVICIOS ESTRELLA</span>
+    <!-- ==================== SERVICIOS DESTACADOS ==================== -->
+    <div class="seccion-bloque mb-16">
+      <span class="etiqueta-dorada">NUESTROS SERVICIOS</span>
       <h2 class="titulo-seccion">Experiencias de Barbería</h2>
     </div>
 
-    <ion-grid>
+    <ion-grid class="ion-no-padding">
       <ion-row>
+        <!-- Tarjeta 1: Degradados & Fades -->
         <ion-col size="12" size-md="6">
-          <ion-card class="tarjeta-servicio">
-            <img src="assets/img/img1.jpg" alt="Degradados y Fades Urbanos" />
-            <div class="tarjeta-titulo-flotante">
-              <span class="etiqueta-tarjeta">MASTER FADE</span>
-              <h3 class="titulo-tarjeta">Degradados & Fades</h3>
+          <ion-card class="tarjeta-servicio-dark">
+            <div class="card-img-wrapper">
+              <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80" alt="Degradados Skin Fade" />
+              <div class="img-gradient"></div>
+            </div>
+            <div class="tarjeta-cuerpo">
+              <span class="etiqueta-tarjeta">URBAN FADE</span>
+              <h3 class="titulo-tarjeta">Degradados & Skin Fade</h3>
+              <p class="desc-tarjeta">Desvanecido a cero o navaja con contornos milimétricos y texturizado profesional.</p>
             </div>
           </ion-card>
         </ion-col>
 
+        <!-- Tarjeta 2: Barba & Toalla Caliente -->
         <ion-col size="12" size-md="6">
-          <ion-card class="tarjeta-servicio">
-            <img src="assets/img/img2.jpg" alt="Ritual de Barba y Toalla Caliente" />
-            <div class="tarjeta-titulo-flotante">
+          <ion-card class="tarjeta-servicio-dark">
+            <div class="card-img-wrapper">
+              <img src="https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80" alt="Ritual de Barba" />
+              <div class="img-gradient"></div>
+            </div>
+            <div class="tarjeta-cuerpo">
               <span class="etiqueta-tarjeta">RITUAL DELUXE</span>
               <h3 class="titulo-tarjeta">Barba & Toalla Caliente</h3>
+              <p class="desc-tarjeta">Vapor de ozono, aceites esenciales, toallas calientes y perfilado a navaja tradicional.</p>
+            </div>
+          </ion-card>
+        </ion-col>
+
+        <!-- Tarjeta 3: Corte Clásico & Pompadour -->
+        <ion-col size="12" size-md="6">
+          <ion-card class="tarjeta-servicio-dark">
+            <div class="card-img-wrapper">
+              <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=800&q=80" alt="Corte Ejecutivo" />
+              <div class="img-gradient"></div>
+            </div>
+            <div class="tarjeta-cuerpo">
+              <span class="etiqueta-tarjeta">EJECUTIVO</span>
+              <h3 class="titulo-tarjeta">Corte Clásico & Peinado</h3>
+              <p class="desc-tarjeta">Tijera o máquina a elección, lavado capilar purificante y acabado con cera mate.</p>
+            </div>
+          </ion-card>
+        </ion-col>
+
+        <!-- Tarjeta 4: Tratamiento Facial Black Mask -->
+        <ion-col size="12" size-md="6">
+          <ion-card class="tarjeta-servicio-dark">
+            <div class="card-img-wrapper">
+              <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80" alt="Facial Black Mask" />
+              <div class="img-gradient"></div>
+            </div>
+            <div class="tarjeta-cuerpo">
+              <span class="etiqueta-tarjeta">WELLNESS</span>
+              <h3 class="titulo-tarjeta">Limpieza Facial & Black Mask</h3>
+              <p class="desc-tarjeta">Exfoliación profunda para hombre y mascarilla de carbón activado purificante.</p>
             </div>
           </ion-card>
         </ion-col>
       </ion-row>
     </ion-grid>
 
-    <div class="seccion-precios">
+    <!-- ==================== CARTA DE PRECIOS ==================== -->
+    <div class="seccion-precios-dark">
+      <span class="etiqueta-dorada text-center block">TARIFAS TRANSPARENTES</span>
       <h2 class="titulo-seccion text-center">Carta de Servicios</h2>
       
       <div class="fila-precio">
-        <span class="nombre-servicio">Corte Clásico Ejecutivo</span>
+        <div class="precio-info">
+          <span class="nombre-servicio">Corte Clásico Ejecutivo</span>
+          <span class="duracion-servicio">35 minutos &bull; Lavado incluido</span>
+        </div>
         <div class="linea-punteada"></div>
         <span class="precio-servicio">S/ 35.00</span>
       </div>
 
       <div class="fila-precio">
-        <span class="nombre-servicio">Degradado Skin Fade Urbano</span>
+        <div class="precio-info">
+          <span class="nombre-servicio">Degradado Skin Fade Urbano</span>
+          <span class="duracion-servicio">45 minutos &bull; Afeitado a navaja</span>
+        </div>
         <div class="linea-punteada"></div>
         <span class="precio-servicio">S/ 40.00</span>
       </div>
 
       <div class="fila-precio">
-        <span class="nombre-servicio">Ritual de Barba Tradicional</span>
+        <div class="precio-info">
+          <span class="nombre-servicio">Ritual de Barba Tradicional</span>
+          <span class="duracion-servicio">30 minutos &bull; Toallas calientes</span>
+        </div>
         <div class="linea-punteada"></div>
         <span class="precio-servicio">S/ 30.00</span>
       </div>
 
-      <div class="fila-precio">
-        <span class="nombre-servicio">Combo Master Barber (Corte + Barba)</span>
+      <div class="fila-precio destacada">
+        <div class="precio-info">
+          <span class="nombre-servicio color-gold">Combo Master Barber (Corte + Barba)</span>
+          <span class="duracion-servicio">60 minutos &bull; Experiencia completa VIP</span>
+        </div>
         <div class="linea-punteada"></div>
-        <span class="precio-servicio">S/ 60.00</span>
+        <span class="precio-servicio color-gold">S/ 60.00</span>
+      </div>
+
+      <div class="fila-precio">
+        <div class="precio-info">
+          <span class="nombre-servicio">Limpieza Facial Black Mask</span>
+          <span class="duracion-servicio">30 minutos &bull; Exfoliación profunda</span>
+        </div>
+        <div class="linea-punteada"></div>
+        <span class="precio-servicio">S/ 45.00</span>
       </div>
     </div>
 
-    <div class="seccion-centrada">
-      <span class="etiqueta-dorada">EXPERIENCIA COMPROBADA</span>
-      <ion-card class="tarjeta-testimonio">
+    <!-- ==================== TESTIMONIO ==================== -->
+    <div class="seccion-testimonio">
+      <ion-card class="tarjeta-testimonio-dark">
         <ion-card-content>
           <div class="estrellas">
             <ion-icon name="star"></ion-icon>
@@ -105,37 +178,38 @@
             <ion-icon name="star"></ion-icon>
           </div>
           <p class="texto-testimonio">
-            "Excelente atención y precisión milimétrica en el degradado. El servicio de toalla caliente y perfilado de barba es insuperable en Lima Norte."
+            "Excelente atención y precisión milimétrica en el degradado. El servicio de toalla caliente y perfilado de barba es insuperable en Lima Norte. 100% recomendado."
           </p>
-          <div class="autor-testimonio">CARLOS SÁNCHEZ - CLIENTE FRECUENTE</div>
+          <div class="autor-testimonio">CARLOS SÁNCHEZ &bull; CLIENTE VIP</div>
         </ion-card-content>
       </ion-card>
     </div>
 
-    <div class="seccion-contacto">
-      <span class="etiqueta-dorada text-center block">VISÍTANOS EN LIMA NORTE</span>
-      <h2 class="titulo-seccion text-center">Ubicación y Contacto</h2>
+    <!-- ==================== CONTACTO & UBICACIÓN ==================== -->
+    <div class="seccion-contacto-dark">
+      <span class="etiqueta-dorada text-center block">ENCUÉNTRANOS</span>
+      <h2 class="titulo-seccion text-center">Ubicación & Atención</h2>
       
-      <ion-list lines="none" class="lista-transparente">
-        <ion-item>
-          <ion-icon name="location-outline" slot="start" class="icono-dorado"></ion-icon>
+      <ion-list lines="none" class="lista-contacto-dark">
+        <ion-item class="item-contacto-dark">
+          <ion-icon name="location-outline" slot="start" class="icono-contacto-gold"></ion-icon>
           <ion-label>
             <h3 class="contacto-titulo">DIRECCIÓN</h3>
-            <p class="contacto-detalle">Av. Micaela Bastidas N° 1045, Comas, Lima</p>
+            <p class="contacto-detalle">Av. Micaela Bastidas N° 1045, Comas, Lima Norte</p>
           </ion-label>
         </ion-item>
 
-        <ion-item>
-          <ion-icon name="call-outline" slot="start" class="icono-dorado"></ion-icon>
+        <ion-item class="item-contacto-dark">
+          <ion-icon name="call-outline" slot="start" class="icono-contacto-gold"></ion-icon>
           <ion-label>
-            <h3 class="contacto-titulo">HORARIOS DE ATENCIÓN</h3>
-            <p class="contacto-detalle">Lun - Sáb: 9:00 AM - 8:00 PM</p>
-            <p class="contacto-detalle">Domingos: Previa cita VIP</p>
+            <h3 class="contacto-titulo">HORARIOS</h3>
+            <p class="contacto-detalle">Lunes a Sábado: 9:00 AM - 8:00 PM</p>
+            <p class="contacto-detalle">Domingos: Cerrado (Descanso dominical)</p>
           </ion-label>
         </ion-item>
 
-        <ion-item>
-          <ion-icon name="logo-whatsapp" slot="start" style="color: #25D366; font-size: 24px;"></ion-icon>
+        <ion-item class="item-contacto-dark">
+          <ion-icon name="logo-whatsapp" slot="start" class="icono-whatsapp"></ion-icon>
           <ion-label>
             <h3 class="contacto-titulo">WHATSAPP OFICIAL</h3>
             <p class="contacto-detalle">+51 929 727 435</p>
@@ -146,22 +220,23 @@
 
   </div> 
   
-  <footer class="pie-pagina">
-    <div class="logo-pie">BARBER SHOP</div>
-    <p>© 2026 BARBER SHOP LIMA NORTE S.A.C. - RUC: 20611302151</p>
-    <p>TODOS LOS DERECHOS RESERVADOS.</p>
+  <footer class="pie-pagina-dark">
+    <div class="logo-pie"><span class="gold-text">BARBER</span> SHOP</div>
+    <p class="pie-copy">&copy; 2026 BARBER SHOP LIMA NORTE S.A.C. &bull; RUC: 20611302151</p>
+    <p class="pie-sub">TODOS LOS DERECHOS RESERVADOS</p>
   </footer>
 
   <div class="espacio-footer"></div>
 
 </ion-content>
 
-<div class="menu-inferior ion-hide-md-up">
-  <div class="boton-menu activo">
+<!-- ==================== MENÚ INFERIOR TABS ==================== -->
+<div class="menu-inferior-dark ion-hide-md-up">
+  <div class="boton-menu-dark activo">
     <ion-icon name="home"></ion-icon>
     <span>Inicio</span>
   </div>
-  <div class="boton-menu" [routerLink]="['/login']">
+  <div class="boton-menu-dark" [routerLink]="['/login']">
     <ion-icon name="person-outline"></ion-icon>
     <span>Acceso</span>
   </div>

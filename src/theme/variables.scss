@@ -2,19 +2,48 @@
 // https://ionicframework.com/docs/theming/
 
 /* ======================================================================
-   PALETA DE COLORES GLOBAL - ÉTNICA SALÓN
+   PALETA DARK LUXURY & URBAN BARBER SHOP - ESTILO THE BARBER COMPANY
+   Empresa: BARBER SHOP LIMA NORTE S.A.C.
    ====================================================================== */
-/* El selector :root hace que estas variables existan en toda la aplicación */
 :root {
-  /* Forzamos a Ionic a olvidar su azul por defecto y usar nuestro dorado */
-  --ion-color-primary: #735c00;
-  --ion-color-primary-rgb: 115,92,0;
-  
-  /* El color del texto dentro del botón (Blanco) */
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255,255,255;
-  
-  /* Efectos automáticos al hacer clic */
-  --ion-color-primary-shade: #655100;
-  --ion-color-primary-tint: #816c1a;
+  /* Fondo general oscuro y contraste */
+  --ion-background-color: #0b0b0d;
+  --ion-background-color-rgb: 11, 11, 13;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  /* Color insignia: Dorado / Bronce Barbería Masculino */
+  --ion-color-primary: #c59d5f;
+  --ion-color-primary-rgb: 197, 157, 95;
+  --ion-color-primary-contrast: #0b0b0d;
+  --ion-color-primary-contrast-rgb: 11, 11, 13;
+  --ion-color-primary-shade: #ad8a54;
+  --ion-color-primary-tint: #cba76f;
+
+  /* Colores secundarios: Grafito y Carbón */
+  --ion-color-secondary: #141417;
+  --ion-color-secondary-rgb: 20, 20, 23;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+
+  /* Tarjetas y superficies elevadas */
+  --ion-card-background: #1c1c21;
+  --ion-item-background: #141417;
+  --ion-toolbar-background: #0b0b0d;
+  --ion-tab-bar-background: #0b0b0d;
+
+  /* Escala de grises para modo oscuro */
+  --ion-color-step-50: #141417;
+  --ion-color-step-100: #1c1c21;
+  --ion-color-step-150: #26262d;
+  --ion-color-step-200: #32323a;
+  --ion-color-step-300: #4a4a55;
+  --ion-color-step-500: #71717a;
+  --ion-color-step-700: #a1a1aa;
+  --ion-color-step-850: #d4d4d8;
+  --ion-color-step-950: #ffffff;
+
+  /* Fuentes globales */
+  --app-font-family: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --app-font-heading: 'Oswald', 'Montserrat', sans-serif;
 }

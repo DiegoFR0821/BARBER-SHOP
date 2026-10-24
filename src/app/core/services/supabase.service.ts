@@ -199,7 +199,7 @@ export class SupabaseService {
           correo,
           telefono: telefono || '',
           rol: 'cliente',
-          avatar_url: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
           preferencias_corte: preferenciasDefecto,
           historial_notas: 'Registrado desde la App Barber Shop.'
         });
@@ -208,7 +208,24 @@ export class SupabaseService {
       }
     }
 
-    return { user: data.user, session: data.session };
+    // Auto-login inmediato para omitir confirmación de correo
+    let sesionActiva = data.session;
+    if (!sesionActiva && data.user) {
+      try {
+        const loginInmediato = await this.supabase.auth.signInWithPassword({
+          email: correo,
+          password: clave
+        });
+        if (loginInmediato.data.session) {
+          sesionActiva = loginInmediato.data.session;
+          this.currentUserSubject.next(loginInmediato.data.user);
+        }
+      } catch (e) {
+        console.warn('Inicio de sesión automático posterior a registro:', e);
+      }
+    }
+
+    return { user: data.user, session: sesionActiva };
   }
 
   async signOut(): Promise<void> {
@@ -241,6 +258,10 @@ export class SupabaseService {
       console.error('Error al obtener perfil desde Supabase:', e);
       return null;
     }
+  }
+
+  async obtenerPerfil(id: string): Promise<UsuarioPerfil | null> {
+    return this.getPerfil(id);
   }
 
   async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<UsuarioPerfil | null> {
@@ -362,11 +383,11 @@ export class SupabaseService {
       console.warn('Usando catálogo inicial seguro de barberos:', e);
     }
 
-    // Fallback defensivo para asegurar renderizado inmediato
+    // Fallback defensivo para asegurar renderizado inmediato con fotos 100% masculinas
     return [
-      { id: 'b1', nombre: 'Carlos "Blade" Mendoza', especialidad: 'Master Barber / Fade & Degradados', foto_url: 'assets/img/cortes.jpg', imagen: 'assets/img/cortes.jpg', activo: true },
-      { id: 'b2', nombre: 'Mateo Quispe', especialidad: 'Especialista en Barba & Toalla Caliente', foto_url: 'assets/img/tintes.jpg', imagen: 'assets/img/tintes.jpg', activo: true },
-      { id: 'b3', nombre: 'Leonardo Valdivia', especialidad: 'Estilista Masculino / Cortes Clásicos & Pompadour', foto_url: 'assets/img/peinados.jpg', imagen: 'assets/img/peinados.jpg', activo: true }
+      { id: 'b1', nombre: 'Carlos "Blade" Mendoza', especialidad: 'Master Barber / Fade & Degradados', foto_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 'b2', nombre: 'Mateo Quispe', especialidad: 'Especialista en Barba & Toalla Caliente', foto_url: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 'b3', nombre: 'Leonardo Valdivia', especialidad: 'Estilista Masculino / Cortes Clásicos & Pompadour', foto_url: 'https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=600&q=80', activo: true }
     ];
   }
 
@@ -375,7 +396,7 @@ export class SupabaseService {
       nombre: b.nombre,
       especialidad: b.especialidad || 'Master Barber',
       experiencia: b.experiencia || '5 años de experiencia',
-      foto_url: b.foto_url || b.imagen || 'assets/img/cortes.jpg',
+      foto_url: b.foto_url || b.imagen || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
       activo: true
     };
     const { data, error } = await this.supabase.from('barberos').insert(payload).select().single();
@@ -418,11 +439,11 @@ export class SupabaseService {
     }
 
     return [
-      { id: 's1', nombre: 'Corte Clásico Ejecutivo', categoria: 'Corte', precio: 35.00, duracion_min: 35, descripcion: 'Corte a tijera o máquina con lavado capilar y peinado.', imagen_url: 'assets/img/cortes.jpg', imagen: 'assets/img/cortes.jpg', activo: true },
-      { id: 's2', nombre: 'Degradado Skin Fade Urbano', categoria: 'Corte', precio: 40.00, duracion_min: 45, descripcion: 'Desvanecido a cero o navaja con definición de contornos.', imagen_url: 'assets/img/cortes.jpg', imagen: 'assets/img/cortes.jpg', activo: true },
-      { id: 's3', nombre: 'Ritual de Barba Tradicional', categoria: 'Barba', precio: 30.00, duracion_min: 30, descripcion: 'Toallas calientes, perfilado milimétrico y bálsamo.', imagen_url: 'assets/img/tintes.jpg', imagen: 'assets/img/tintes.jpg', activo: true },
-      { id: 's4', nombre: 'Combo Master Barber (Corte + Barba)', categoria: 'Combo', precio: 60.00, duracion_min: 60, descripcion: 'Fade urbano + Ritual de Barba completo.', imagen_url: 'assets/img/peinados.jpg', imagen: 'assets/img/peinados.jpg', activo: true },
-      { id: 's5', nombre: 'Limpieza Facial Black Mask', categoria: 'Facial', precio: 45.00, duracion_min: 30, descripcion: 'Exfoliación profunda y mascarilla de carbón activado.', imagen_url: 'assets/img/uñas.jpg', imagen: 'assets/img/uñas.jpg', activo: true }
+      { id: 's1', nombre: 'Corte Clásico Ejecutivo', categoria: 'Corte', precio: 35.00, duracion_min: 35, descripcion: 'Corte a tijera o máquina con lavado capilar y peinado.', imagen_url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 's2', nombre: 'Degradado Skin Fade Urbano', categoria: 'Corte', precio: 40.00, duracion_min: 45, descripcion: 'Desvanecido a cero o navaja con definición de contornos.', imagen_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 's3', nombre: 'Ritual de Barba Tradicional', categoria: 'Barba', precio: 30.00, duracion_min: 30, descripcion: 'Toallas calientes, perfilado milimétrico y bálsamo.', imagen_url: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 's4', nombre: 'Combo Master Barber (Corte + Barba)', categoria: 'Combo', precio: 60.00, duracion_min: 60, descripcion: 'Fade urbano + Ritual de Barba completo.', imagen_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', activo: true },
+      { id: 's5', nombre: 'Limpieza Facial Black Mask', categoria: 'Facial', precio: 45.00, duracion_min: 30, descripcion: 'Exfoliación profunda y mascarilla de carbón activado.', imagen_url: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', activo: true }
     ];
   }
 
@@ -433,7 +454,7 @@ export class SupabaseService {
       precio: s.precio || 35.00,
       duracion_min: s.duracion_min || 30,
       descripcion: s.descripcion || '',
-      imagen_url: s.imagen_url || s.imagen || 'assets/img/cortes.jpg',
+      imagen_url: s.imagen_url || s.imagen || 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80',
       activo: true
     };
     const { data, error } = await this.supabase.from('servicios').insert(payload).select().single();
@@ -638,8 +659,8 @@ export class SupabaseService {
     }
 
     return [
-      { id: 'a1', titulo: '¡Gran Apertura Barber Shop Lima Norte!', descripcion: '20% de descuento en tu primer Combo Master Barber reservando desde la App.', imagen_url: 'assets/img/cortes.jpg', imagen: 'assets/img/cortes.jpg', activo: true },
-      { id: 'a2', titulo: 'Miércoles de Barba & Amigos', descripcion: 'Perfilado y toalla caliente por solo S/ 25.00 reservando en línea.', imagen_url: 'assets/img/tintes.jpg', imagen: 'assets/img/tintes.jpg', activo: true }
+      { id: 'a1', titulo: '¡Gran Apertura Barber Shop Lima Norte!', descripcion: '20% de descuento en tu primer Combo Master Barber reservando desde la App.', imagen_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', imagen: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', activo: true },
+      { id: 'a2', titulo: 'Miércoles de Barba & Amigos', descripcion: 'Perfilado y toalla caliente por solo S/ 25.00 reservando en línea.', imagen_url: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80', imagen: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80', activo: true }
     ];
   }
 

@@ -84,6 +84,22 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- =============================================================================
+-- 2.1 TRIGGER: auto_confirm_user_email (Desactiva bloqueo por confirmación de Gmail)
+-- =============================================================================
+CREATE OR REPLACE FUNCTION public.auto_confirm_user_email()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.email_confirmed_at = COALESCE(NEW.email_confirmed_at, now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS tr_auto_confirm_user_email ON auth.users;
+CREATE TRIGGER tr_auto_confirm_user_email
+    BEFORE INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.auto_confirm_user_email();
+
+-- =============================================================================
 -- 3. TABLA: public.barberos (Sustituye a estilistas)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.barberos (
@@ -91,7 +107,7 @@ CREATE TABLE IF NOT EXISTS public.barberos (
     nombre TEXT NOT NULL,
     especialidad TEXT NOT NULL DEFAULT 'Master Barber & Fade',
     experiencia TEXT DEFAULT '5 años de experiencia',
-    foto_url TEXT DEFAULT 'assets/img/barbero1.jpg',
+    foto_url TEXT DEFAULT 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
     activo BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
@@ -318,31 +334,31 @@ USING (
 
 -- Inserción de Barberos
 INSERT INTO public.barberos (nombre, especialidad, experiencia, foto_url, activo) VALUES
-('Carlos "Blade" Mendoza', 'Master Barber / Fade & Degradados Navaja', '8 años de experiencia en barbería urbana y tradicional', 'assets/img/barbero1.jpg', true),
-('Mateo Quispe', 'Especialista en Barba, Toalla Caliente & Visagismo', '6 años perfeccionando técnicas de afeitado clásico', 'assets/img/barbero2.jpg', true),
-('Leonardo Valdivia', 'Estilista Masculino / Pompadour, Texturizados & Colorimetría', '5 años en cortes clásicos y tendencias modernas', 'assets/img/barbero3.jpg', true)
+('Carlos "Blade" Mendoza', 'Master Barber / Fade & Degradados Navaja', '8 años de experiencia en barbería urbana y tradicional', 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', true),
+('Mateo Quispe', 'Especialista en Barba, Toalla Caliente & Visagismo', '6 años perfeccionando técnicas de afeitado clásico', 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', true),
+('Leonardo Valdivia', 'Estilista Masculino / Pompadour, Texturizados & Colorimetría', '5 años en cortes clásicos y tendencias modernas', 'https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=600&q=80', true)
 ON CONFLICT DO NOTHING;
 
 -- Inserción de Servicios de Barbería
 INSERT INTO public.servicios (nombre, categoria, precio, duracion_min, descripcion, imagen_url, activo) VALUES
-('Corte Clásico Ejecutivo', 'Corte', 35.00, 35, 'Corte tijera o máquina a elección, lavado capilar purificante y peinado con cera mate.', 'assets/img/corte_clasico.jpg', true),
-('Degradado Skin Fade Urbano', 'Corte', 40.00, 45, 'Desvanecido a cero o navaja con definición de contornos, toalla fresca y tónico.', 'assets/img/fade_urbano.jpg', true),
-('Ritual de Barba Tradicional', 'Barba', 30.00, 30, 'Vapor de ozono, toallas calientes, perfilado milimétrico a navaja y bálsamo hidratante.', 'assets/img/ritual_barba.jpg', true),
-('Combo Master Barber (Corte + Barba)', 'Combo', 60.00, 60, 'El combo definitivo: Degradado Fade + Ritual de Barba completo con masaje facial relajante.', 'assets/img/combo_master.jpg', true),
-('Limpieza Facial Black Mask', 'Facial', 45.00, 30, 'Exfoliación profunda para hombre, mascarilla de carbón activado para puntos negros e hidratación.', 'assets/img/facial_black.jpg', true)
+('Corte Clásico Ejecutivo', 'Corte', 35.00, 35, 'Corte tijera o máquina a elección, lavado capilar purificante y peinado con cera mate.', 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80', true),
+('Degradado Skin Fade Urbano', 'Corte', 40.00, 45, 'Desvanecido a cero o navaja con definición de contornos, toalla fresca y tónico.', 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80', true),
+('Ritual de Barba Tradicional', 'Barba', 30.00, 30, 'Vapor de ozono, toallas calientes, perfilado milimétrico a navaja y bálsamo hidratante.', 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', true),
+('Combo Master Barber (Corte + Barba)', 'Combo', 60.00, 60, 'El combo definitivo: Degradado Fade + Ritual de Barba completo con masaje facial relajante.', 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', true),
+('Limpieza Facial Black Mask', 'Facial', 45.00, 30, 'Exfoliación profunda para hombre, mascarilla de carbón activado para puntos negros e hidratación.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', true)
 ON CONFLICT DO NOTHING;
 
 -- Inserción de Productos de Cuidado Personal Masculino
 INSERT INTO public.productos (nombre, categoria, precio, stock, imagen_url, descripcion, activo) VALUES
-('Cera Mate Fijación Fuerte (100g)', 'Fijación Capilar', 45.00, 35, 'Efecto mate natural sin brillo ni residuos. Ideal para peinados texturizados y pompadours.', 'assets/img/cera_mate.jpg', true),
-('Aceite Premium para Crecimiento e Hidratación de Barba (30ml)', 'Cuidado de Barba', 40.00, 25, 'Formulado con aceite de argán, jojoba y aroma a cedro para suavizar y dar brillo saludable.', 'assets/img/aceite_barba.jpg', true),
-('Pomada Base Agua Brillo Medio (120g)', 'Fijación Capilar', 42.00, 20, 'Fijación flexible de larga duración. Se retira fácilmente con agua en un solo lavado.', 'assets/img/pomada_agua.jpg', true),
-('Shampoo Fortalecedor Anti-Caída & Menta (250ml)', 'Cuidado Capilar', 48.00, 15, 'Estimula el folículo piloso, controla el exceso de grasa y proporciona frescura mentolada.', 'assets/img/shampoo_menta.jpg', true),
-('Bálsamo After-Shave Calmante (100ml)', 'Cuidado de Barba', 35.00, 40, 'Alivia la irritación del afeitado, cierra poros y previene vellos encarnados con aloe vera.', 'assets/img/after_shave.jpg', true)
+('Cera Mate Fijación Fuerte (100g)', 'Fijación Capilar', 45.00, 35, 'Efecto mate natural sin brillo ni residuos. Ideal para peinados texturizados y pompadours.', 'https://images.unsplash.com/photo-1597854711516-17b5f8507851?auto=format&fit=crop&w=600&q=80', true),
+('Aceite Premium para Crecimiento e Hidratación de Barba (30ml)', 'Cuidado de Barba', 40.00, 25, 'Formulado con aceite de argán, jojoba y aroma a cedro para suavizar y dar brillo saludable.', 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80', true),
+('Pomada Base Agua Brillo Medio (120g)', 'Fijación Capilar', 42.00, 20, 'Fijación flexible de larga duración. Se retira fácilmente con agua en un solo lavado.', 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80', true),
+('Shampoo Fortalecedor Anti-Caída & Menta (250ml)', 'Cuidado Capilar', 48.00, 15, 'Estimula el folículo piloso, controla el exceso de grasa y proporciona frescura mentolada.', 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80', true),
+('Bálsamo After-Shave Calmante (100ml)', 'Cuidado de Barba', 35.00, 40, 'Alivia la irritación del afeitado, cierra poros y previene vellos encarnados con aloe vera.', 'https://images.unsplash.com/photo-1608248597359-524f2b963351?auto=format&fit=crop&w=600&q=80', true)
 ON CONFLICT DO NOTHING;
 
 -- Inserción de Anuncios Promocionales
 INSERT INTO public.anuncios (titulo, descripcion, imagen_url, activo) VALUES
-('¡Bienvenido a Barber Shop Lima Norte!', 'Obtén 20% de descuento en tu primer Combo Master Barber reservando desde nuestra App móvil.', 'assets/img/promo_apertura.jpg', true),
-('Miércoles de Barba & Amigos', 'Perfilado y toalla caliente por solo S/ 25.00 todos los miércoles de 2:00 PM a 6:00 PM.', 'assets/img/promo_barba.jpg', true)
+('¡Bienvenido a Barber Shop Lima Norte!', 'Obtén 20% de descuento en tu primer Combo Master Barber reservando desde nuestra App móvil.', 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', true),
+('Miércoles de Barba & Amigos', 'Perfilado y toalla caliente por solo S/ 25.00 todos los miércoles de 2:00 PM a 6:00 PM.', 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80', true)
 ON CONFLICT DO NOTHING;

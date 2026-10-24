@@ -1,129 +1,489 @@
-$color-gold: #aa8529;
-$color-cream-bg: #faf9f6;
-$color-whatsapp: #25D366;
+$bg-dark: #0b0b0d;
+$bg-surface: #141417;
+$bg-card: #1c1c21;
+$gold-primary: #c59d5f;
+$gold-light: #d4af37;
+$text-light: #ffffff;
+$text-muted: #a1a1aa;
+$border-gold: rgba(197, 157, 95, 0.25);
 
-.cream-bg { --background: #{$color-cream-bg}; }
-
-.premium-header ion-toolbar {
-  --background: #ffffff;
-  border-bottom: 1px solid #f2f2f7;
+.contenido-dark {
+  --background: #{$bg-dark};
+  --color: #{$text-light};
 }
 
-.clean-title {
-  font-weight: 800 !important;
-  color: #111;
+.dashboard-wrapper {
+  padding: 18px 16px 30px;
+}
+
+/* ======================================================================
+   HEADER DARK BARBER
+   ====================================================================== */
+.header-dark-barber {
+  background-color: $bg-dark;
+  border-bottom: 1px solid rgba(197, 157, 95, 0.15);
+
+  .toolbar-dark {
+    --background: #{$bg-dark};
+    --color: #{$text-light};
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+    --min-height: 56px;
+  }
+}
+
+.cabecera-titulo {
+  font-family: 'Montserrat', sans-serif;
   font-size: 16px;
-  text-align: center;
-  letter-spacing: 1px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: $text-light;
+  text-align: left;
+  padding-left: 12px;
+
+  .gold-text {
+    color: $gold-primary;
+  }
 }
 
-.noti-icon { font-size: 22px; color: #333; }
+.header-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
 
-/* --- MENÚ DE PERFIL --- */
-.menu-perfil-bg { --background: #ffffff; }
-.menu-profile-header {
-  padding: 30px 16px 20px;
-  border-bottom: 1px solid #f2f2f7;
-  text-align: center;
+  .btn-avatar-header {
+    --padding-start: 4px;
+    --padding-end: 4px;
 
-  .avatar-wrapper {
-    width: 70px; height: 70px;
+    .header-avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: $bg-card;
+      border: 1.5px solid $gold-primary;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      span {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        color: $gold-primary;
+      }
+    }
+  }
+
+  .btn-logout-header {
+    --color: #{$text-muted};
+    font-size: 20px;
+  }
+}
+
+/* ======================================================================
+   SALUDO Y TARJETA DE CITA ACTIVA
+   ====================================================================== */
+.welcome-user-section {
+  margin-bottom: 22px;
+
+  .greeting-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: $text-muted;
+    font-weight: 400;
+  }
+
+  .greeting-title {
+    margin: 4px 0 0;
+    font-family: 'Oswald', 'Montserrat', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-light;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.next-appointment-card-dark {
+  background: linear-gradient(145deg, #1f1f26 0%, #141417 100%);
+  border: 1px solid rgba(197, 157, 95, 0.45);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  .card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .appointment-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: $gold-primary;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .badge-status-dark {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+
+      &.badge-pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+      }
+
+      &.badge-confirmed {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+      }
+    }
+  }
+
+  .appointment-service-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: $text-light;
+    margin: 0 0 6px;
+  }
+
+  .appointment-barber-info {
+    font-size: 13px;
+    color: $text-muted;
+    margin: 0 0 10px;
+
+    strong {
+      color: $text-light;
+    }
+  }
+
+  .appointment-datetime-row {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: $gold-light;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  .btn-gold-card {
+    --background: #{$gold-primary};
+    --color: #0b0b0d;
+    --border-radius: 8px;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 1px;
+    height: 38px;
+    margin: 0;
+  }
+}
+
+.no-appointment-banner-dark {
+  background: $bg-card;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  border: 1px dashed rgba(197, 157, 95, 0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .banner-text {
+    h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: $text-light;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: $text-muted;
+    }
+  }
+
+  .btn-gold-action {
+    --background: #{$gold-primary};
+    --color: #0b0b0d;
+    --border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    height: 36px;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+}
+
+/* ======================================================================
+   FICHA DE CORTE
+   ====================================================================== */
+.cutting-preferences-card-dark {
+  background: $bg-card;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+
+  .pref-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .pref-title-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: $gold-primary;
+      letter-spacing: 1.5px;
+    }
+
+    .pref-edit-link {
+      font-size: 11px;
+      color: $gold-primary;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  }
+
+  .pref-details {
+    margin: 0;
+    font-size: 13px;
+    color: $text-light;
+  }
+
+  .pref-notes {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: $text-muted;
+    font-style: italic;
+  }
+}
+
+/* ======================================================================
+   ACCESOS RÁPIDOS
+   ====================================================================== */
+.section-title-dark {
+  font-family: 'Oswald', 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: $text-light;
+  letter-spacing: 1px;
+  margin: 16px 0 12px;
+  text-transform: uppercase;
+}
+
+.shortcut-grid {
+  margin-bottom: 24px;
+}
+
+.shortcut-card-dark {
+  background: $bg-card;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  padding: 14px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 94px;
+  margin: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.96);
+    border-color: $gold-primary;
+  }
+
+  .icon-circle-gold {
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    margin: 0 auto 12px;
-    background: rgba(170,133,41,0.1);
-    border: 2px solid $color-gold;
-    display: flex; align-items: center; justify-content: center;
+    background: rgba(197, 157, 95, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+
+    ion-icon {
+      font-size: 20px;
+      color: $gold-primary;
+    }
+  }
+
+  span {
+    font-size: 11px;
+    font-weight: 700;
+    color: $text-light;
+  }
+}
+
+/* ======================================================================
+   GALERÍA DE ESTILOS MASCULINOS
+   ====================================================================== */
+.look-gallery-card-dark {
+  background: $bg-card;
+  border-radius: 12px;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  .img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    position: relative;
     overflow: hidden;
 
-    img { width: 100%; height: 100%; object-fit: cover; }
-    span { font-size: 28px; font-weight: bold; color: $color-gold; }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .img-overlay-dark {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(28, 28, 33, 0.95) 100%);
+    }
   }
-  h2 { margin: 0; font-size: 18px; font-weight: 800; color: #111; }
+
+  .info-wrapper {
+    padding: 10px 12px;
+    background: $bg-card;
+
+    .category-text {
+      font-size: 9px;
+      font-weight: 800;
+      color: $gold-primary;
+      display: block;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .title-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: $text-light;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+  }
 }
 
-.menu-options-list { padding: 10px; }
-.menu-item {
-  --border-radius: 8px; font-weight: 600; margin-bottom: 5px;
-  ion-icon { color: $color-gold; }
-  ion-label { color: #222; }
+/* ======================================================================
+   POPUP DE PROMOCIÓN
+   ====================================================================== */
+.popup-container-dark {
+  background: $bg-surface;
+  color: $text-light;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid $border-gold;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
+  position: relative;
+
+  .close-popup-bar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    cursor: pointer;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+
+  .popup-image-hero-wrapper {
+    height: 190px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .placeholder-fallback-gold {
+      width: 100%;
+      height: 100%;
+      background: $bg-card;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $gold-primary;
+      font-size: 40px;
+    }
+  }
+
+  .popup-content-body {
+    padding: 20px 18px 24px;
+    text-align: center;
+
+    .popup-promo-title {
+      font-family: 'Oswald', 'Montserrat', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: $text-light;
+      margin: 0 0 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .popup-promo-desc {
+      font-size: 13px;
+      color: $text-muted;
+      line-height: 1.5;
+      margin: 0 0 18px;
+    }
+
+    .btn-popup-whatsapp {
+      --background: #25d366;
+      --color: #ffffff;
+      --border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      height: 46px;
+      box-shadow: 0 6px 16px rgba(37, 211, 102, 0.3);
+    }
+
+    .popup-dismiss-text {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 12px;
+      color: $text-muted;
+      cursor: pointer;
+    }
+  }
 }
-
-.menu-footer {
-  position: absolute; bottom: 0; width: 100%; padding: 10px;
-  border-top: 1px solid #f2f2f7;
-}
-.logout-item {
-  --border-radius: 8px; font-weight: 700; --color: #dc3545;
-  ion-icon { color: #dc3545; }
-}
-
-/* --- DASHBOARD UI --- */
-.greeting-subtitle { margin: 0; font-size: 14px; color: #666; font-weight: 500; }
-.greeting-title { margin: 4px 0 0; font-size: 26px; font-weight: 800; color: #111; line-height: 1.1; }
-
-.section-title-row {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-  h3 { margin: 0; font-size: 13px; font-weight: 800; color: #111; display: flex; align-items: center; gap: 4px; ion-icon { color: $color-gold; font-size: 16px; } }
-  .badge-gold { font-size: 9px; font-weight: 800; color: $color-gold; background: rgba(170,133,41,0.1); padding: 4px 8px; border-radius: 4px; }
-}
-
-.horizontal-offers-slider {
-  display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; margin-bottom: 20px;
-  &::-webkit-scrollbar { display: none; }
-}
-
-.offer-slide-card {
-  min-width: 260px; width: 260px; padding: 16px; border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; height: 130px;
-  h4 { margin: 0; font-size: 15px; font-weight: 800; }
-  p { margin: 4px 0 0; font-size: 11px; opacity: 0.9; line-height: 1.3; }
-  .code-badge { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; align-self: flex-start; }
-  
-  &.card-gold { background: linear-gradient(135deg, $color-gold 0%, #856b1d 100%); color: white; box-shadow: 0 6px 16px rgba(170,133,41,0.2); .code-badge { background: rgba(255,255,255,0.2); } }
-  &.card-dark { background: linear-gradient(135deg, #222 0%, #444 100%); color: white; box-shadow: 0 6px 16px rgba(0,0,0,0.1); .badge-solid { background: $color-gold; color: #fff; } }
-}
-
-.section-title-text { margin: 10px 0 14px; font-size: 13px; font-weight: 800; color: #111; letter-spacing: 0.5px; }
-
-.shortcut-grid { margin-bottom: 20px; }
-.shortcut-card {
-  background: #ffffff; border: 1px solid rgba(170,133,41,0.15); padding: 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90px; transition: transform 0.2s;
-  &:active { transform: scale(0.96); }
-  ion-icon { font-size: 26px; color: $color-gold; margin-bottom: 8px; }
-  span { font-size: 11px; font-weight: 700; color: #222; }
-}
-
-.look-gallery-card {
-  background: #ffffff; border-radius: 12px; border: 1px solid rgba(170,133,41,0.15); overflow: hidden;
-  .img-wrapper { width: 100%; aspect-ratio: 1/1; background: #eaeaea; img { width: 100%; height: 100%; object-fit: cover; } }
-  .info-wrapper { padding: 8px; .category-text { font-size: 9px; font-weight: 800; color: $color-gold; display: block; } .title-text { font-size: 11px; font-weight: 700; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-}
-
-/* --- MODAL POP-UP MASIVO --- */
-ion-modal#promo-modal {
-  --width: 90%; --max-width: 360px; --height: auto; --border-radius: 16px; --box-shadow: 0 15px 35px rgba(0,0,0,0.2); --background: transparent;
-  align-items: center; justify-content: center;
-}
-
-.popup-container-premium { background: #ffffff; border-radius: 16px; overflow: hidden; position: relative; width: 100%; }
-
-.close-popup-bar {
-  position: absolute; top: 10px; right: 10px; z-index: 20; width: 30px; height: 30px; background: rgba(0,0,0,0.4); color: #fff; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; ion-icon { font-size: 20px; }
-}
-
-.popup-image-hero-wrapper {
-  width: 100%; height: 260px; /* 👈 IMAGEN GIGANTE */
-  background: #f4f5f8; position: relative;
-  img { width: 100%; height: 100%; object-fit: cover; }
-  .placeholder-fallback-gold { width: 100%; height: 100%; background: linear-gradient(135deg, $color-gold 0%, #76601f 100%); display: flex; align-items: center; justify-content: center; color: #fff; ion-icon { font-size: 60px; } }
-}
-
-.popup-content-body {
-  padding: 20px 16px; text-align: center;
-  .popup-promo-title { margin: 0; font-size: 18px; font-weight: 800; color: #111; }
-  .popup-promo-desc { margin: 8px 0 18px; font-size: 13px; color: #555; line-height: 1.4; }
-}
-
-.btn-popup-whatsapp { --background: #{$color-whatsapp}; --border-radius: 10px; font-weight: 700; height: 48px; margin: 0 0 10px 0; }
-.popup-dismiss-text { font-size: 11px; color: #888; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 5px; display: inline-block; }
