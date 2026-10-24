@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuController } from '@ionic/angular/standalone';
 import { UsuarioService } from '../../services/usuario';
+import { SupabaseService } from '../../core/services/supabase.service';
 import { 
   IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
   IonIcon, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, 
@@ -57,7 +58,8 @@ export class ResumenPage implements OnInit {
   constructor(
     private router: Router, 
     private menuCtrl: MenuController,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private supabaseService: SupabaseService
   ){
     addIcons({ 
       notificationsOutline, star, calendar, chevronForwardOutline, 
@@ -139,7 +141,7 @@ export class ResumenPage implements OnInit {
     const confirmar = confirm('¿Deseas cerrar tu sesión?');
     if (confirmar) {
       try {
-        // TODO: Migrar a Supabase en Fase 2 (supabase.auth.signOut())
+        await this.supabaseService.signOut();
         this.usuarioService.limpiarUsuario();
         this.router.navigate(['/login']);
       } catch (error) {

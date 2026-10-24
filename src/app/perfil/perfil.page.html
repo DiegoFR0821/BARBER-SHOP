@@ -14,53 +14,121 @@
       
       <div class="avatar-wrapper">
         <div class="profile-avatar-frame">
-          <img [src]="usuarioPerfil.avatarUrl" alt="Foto de perfil" />
+          <img [src]="usuarioPerfil.avatar_url || usuarioPerfil.imagen" alt="Foto de perfil" />
         </div>
         
-        <button class="btn-edit-avatar" (click)="abrirSelectorArchivo()">
+        <button class="btn-edit-avatar" (click)="abrirSelectorArchivo()" aria-label="Cambiar foto de perfil">
           <ion-icon name="camera-outline"></ion-icon>
         </button>
         
         <input type="file" #fileInput accept="image/*" style="display: none;" (change)="archivoSeleccionado($event)">
-
       </div>
 
-      <h1 class="user-display-name">{{ usuarioPerfil.nombre }}</h1>
+      <h1 class="user-display-name">{{ usuarioPerfil.nombre || 'Cliente Barber Shop' }}</h1>
       
-      <div class="personal-info-card">
+      <div class="membership-badge-holder">
+        <span class="badge-gold">MIEMBRO BARBER SHOP</span>
+        <span class="member-since">RUC: 20611302151 • Lima Norte</span>
+      </div>
+      
+      <!-- TARJETA 1: INFORMACIÓN BÁSICA DE CONTACTO -->
+      <div class="personal-info-card mb-20">
+        <div style="padding: 12px 16px 4px 16px; border-bottom: 1px solid #f0f0f0;">
+          <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #aa8529; text-transform: uppercase;">
+            Datos de Contacto
+          </h3>
+        </div>
+
         <ion-list lines="full" class="bg-transparent">
           <ion-item class="info-item">
             <ion-label position="stacked">Nombre Completo</ion-label>
-            <ion-input type="text" [(ngModel)]="usuarioPerfil.nombre"></ion-input>
+            <ion-input type="text" [(ngModel)]="usuarioPerfil.nombre" placeholder="Tu nombre"></ion-input>
           </ion-item>
 
           <ion-item class="info-item">
-            <ion-label position="stacked">Correo Electrónico</ion-label>
+            <ion-label position="stacked">Correo Electrónico (Cuenta)</ion-label>
             <ion-input type="email" [(ngModel)]="usuarioPerfil.correo" readonly="true"></ion-input>
           </ion-item>
 
+          <ion-item class="info-item" lines="none">
+            <ion-label position="stacked">Teléfono de Contacto</ion-label>
+            <ion-input type="tel" [(ngModel)]="usuarioPerfil.telefono" placeholder="999-999-999"></ion-input>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <!-- TARJETA 2: PREFERENCIAS DE CORTE Y BARBA (SOLUCIÓN A PROBLEMÁTICA DE NEGOCIO) -->
+      <div class="personal-info-card" style="margin-top: 16px;">
+        <div style="padding: 12px 16px 4px 16px; border-bottom: 1px solid #f0f0f0;">
+          <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #aa8529; text-transform: uppercase;">
+            Mis Preferencias de Corte y Barba (Historial)
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #7e7e7e;">
+            Tu barbero asignado consultará esta ficha antes de iniciar tu servicio.
+          </p>
+        </div>
+
+        <ion-list lines="full" class="bg-transparent">
           <ion-item class="info-item">
-            <ion-label position="stacked">Teléfono</ion-label>
-            <ion-input type="tel" [(ngModel)]="usuarioPerfil.telefono"></ion-input>
+            <ion-select label="Estilo de Corte Habitual" labelPlacement="stacked" [(ngModel)]="preferencias.estilo">
+              <ion-select-option value="Fade Clásico">Fade Clásico (Degradado Medio)</ion-select-option>
+              <ion-select-option value="Skin Fade">Skin Fade Urbano (Afeitado a cero)</ion-select-option>
+              <ion-select-option value="Taper Fade">Taper Fade (Patillas y nuca desvanecidas)</ion-select-option>
+              <ion-select-option value="Clásico Tijera">Corte Ejecutivo / Solo Tijera</ion-select-option>
+              <ion-select-option value="Pompadour">Pompadour / Texturizado</ion-select-option>
+              <ion-select-option value="Buzz Cut">Buzz Cut / Militar</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item class="info-item">
+            <ion-select label="Tipo de Cabello" labelPlacement="stacked" [(ngModel)]="preferencias.tipo_cabello">
+              <ion-select-option value="Lacio">Lacio</ion-select-option>
+              <ion-select-option value="Ondulado">Ondulado</ion-select-option>
+              <ion-select-option value="Rizado">Rizado</ion-select-option>
+              <ion-select-option value="Grueso / Rebelde">Grueso / Rebelde</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item class="info-item">
+            <ion-select label="Cuidado y Estilo de Barba" labelPlacement="stacked" [(ngModel)]="preferencias.barba">
+              <ion-select-option value="Perfilada con Navaja">Perfilada con Navaja & Toalla Caliente</ion-select-option>
+              <ion-select-option value="Corta (3mm)">Corta (2mm a 3mm)</ion-select-option>
+              <ion-select-option value="Larga Tradicional">Larga / Poblada Hidratada</ion-select-option>
+              <ion-select-option value="Candado">Estilo Candado Definido</ion-select-option>
+              <ion-select-option value="Afeitado Total">Afeitado Completo al Ras</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item class="info-item">
+            <ion-select label="Frecuencia de Mantenimiento" labelPlacement="stacked" [(ngModel)]="preferencias.frecuencia">
+              <ion-select-option value="Semanal">Semanal (Siempre impecable)</ion-select-option>
+              <ion-select-option value="Quincenal">Quincenal (Recomendado)</ion-select-option>
+              <ion-select-option value="Mensual">Mensual</ion-select-option>
+            </ion-select>
           </ion-item>
 
           <ion-item class="info-item" lines="none">
-            <ion-label position="stacked">Preferencias de Estilo</ion-label>
-            <ion-textarea rows="3" [(ngModel)]="usuarioPerfil.bio"></ion-textarea>
+            <ion-label position="stacked">Notas de Cortes Previos / Instrucciones al Barbero</ion-label>
+            <ion-textarea 
+              rows="3" 
+              [(ngModel)]="usuarioPerfil.historial_notas"
+              placeholder="Ej. Dejar un poco largo arriba para peinar con cera mate, no recortar mucho el remolino de la coronilla.">
+            </ion-textarea>
           </ion-item>
         </ion-list>
       </div>
 
       <ion-button expand="block" class="btn-gold mt-4" (click)="guardarCambiosPerfil()" [disabled]="guardando">
-        {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+        {{ guardando ? 'GUARDANDO CAMBIOS...' : 'GUARDAR PREFERENCIAS' }}
       </ion-button>
     </div>
 
+    <!-- MODAL DE RECORTE DE AVATAR -->
     <ion-modal [isOpen]="abrirRecortador" class="modal-recorte-premium">
       <ng-template>
         <div class="cropper-wrapper">
           <div class="cropper-header">
-            <h3>Ajustar Foto</h3>
+            <h3>Ajustar Foto de Perfil</h3>
           </div>
           <div class="cropper-body">
             <image-cropper

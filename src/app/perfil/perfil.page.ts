@@ -6,13 +6,14 @@ import { Router } from '@angular/router';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
   IonBackButton, IonButton, IonList, IonItem, IonLabel, 
-  IonInput, IonTextarea, IonModal, IonIcon
+  IonInput, IonTextarea, IonModal, IonIcon, IonSelect, IonSelectOption 
 } from '@ionic/angular/standalone';
 
-import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+import { ImageCropperComponent } from 'ngx-image-cropper';
 import { addIcons } from 'ionicons';
 import { pencilOutline, cameraOutline } from 'ionicons/icons';
-import { UsuarioService } from '../services/usuario'; 
+import { UsuarioService, UsuarioPerfil, PreferenciasCliente } from '../services/usuario'; 
+import { SupabaseService } from '../core/services/supabase.service';
 
 @Component({
   selector: 'app-perfil',
@@ -23,19 +24,29 @@ import { UsuarioService } from '../services/usuario';
     CommonModule, FormsModule, IonContent, IonHeader, IonTitle, 
     IonToolbar, IonButtons, IonBackButton, IonButton, IonList, 
     IonItem, IonLabel, IonInput, IonTextarea, IonModal, IonIcon, 
-    ImageCropperComponent
+    IonSelect, IonSelectOption, ImageCropperComponent
   ]
 })
 export class PerfilPage implements OnInit {
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
-  usuarioPerfil = {
+  usuarioPerfil: UsuarioPerfil = {
+    id: '',
     nombre: '',
     correo: '',
     telefono: '',
-    bio: '',
-    avatarUrl: 'https://ionicframework.com/docs/img/demos/avatar.svg' 
+    rol: 'cliente',
+    avatar_url: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    historial_notas: ''
+  };
+
+  preferencias: PreferenciasCliente = {
+    estilo: 'Fade Clásico',
+    tipo_cabello: 'Lacio',
+    barba: 'Perfilada con Navaja',
+    frecuencia: 'Quincenal',
+    notas: ''
   };
 
   abrirRecortador: boolean = false;
@@ -45,7 +56,8 @@ export class PerfilPage implements OnInit {
 
   constructor(
     private router: Router,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private supabaseService: SupabaseService
   ) {
     addIcons({
       'pencil-outline': pencilOutline,
@@ -53,30 +65,59 @@ export class PerfilPage implements OnInit {
     });
   }
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
+    // 1. Cargar inicialmente desde el servicio en memoria local
     const datosMemoria = this.usuarioService.getUsuario();
-    
     if (datosMemoria) {
-      this.usuarioPerfil.nombre = datosMemoria.nombre || '';
-      this.usuarioPerfil.correo = datosMemoria.correo || '';
-      
-      if (datosMemoria.imagen) {
-        this.usuarioPerfil.avatarUrl = datosMemoria.imagen;
-      }
+      this.cargarDatosEnFormulario(datosMemoria);
+    }
 
-      // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').select('*').eq('id', datosMemoria.uid))
+    // 2. Sincronizar en tiempo real desde la tabla 'usuarios' de Supabase
+    const idUsuario = datosMemoria?.id || datosMemoria?.uid || this.supabaseService.currentUserValue?.id;
+    if (idUsuario) {
+      try {
+        const perfilNube = await this.supabaseService.getPerfil(idUsuario);
+        if (perfilNube) {
+          this.cargarDatosEnFormulario(perfilNube);
+          this.usuarioService.setUsuario(perfilNube);
+        }
+      } catch (err) {
+        console.warn('No se pudo sincronizar perfil desde Supabase:', err);
+      }
+    }
+  }
+
+  private cargarDatosEnFormulario(perfil: UsuarioPerfil): void {
+    this.usuarioPerfil = {
+      ...this.usuarioPerfil,
+      ...perfil,
+      id: perfil.id || perfil.uid || this.usuarioPerfil.id,
+      avatar_url: perfil.avatar_url || perfil.imagen || this.usuarioPerfil.avatar_url
+    };
+
+    if (perfil.preferencias_corte) {
+      this.preferencias = {
+        estilo: perfil.preferencias_corte.estilo || 'Fade Clásico',
+        tipo_cabello: perfil.preferencias_corte.tipo_cabello || 'Lacio',
+        barba: perfil.preferencias_corte.barba || 'Perfilada con Navaja',
+        frecuencia: perfil.preferencias_corte.frecuencia || 'Quincenal',
+        notas: perfil.preferencias_corte.notas || ''
+      };
+    }
+
+    if (perfil.historial_notas) {
+      this.usuarioPerfil.historial_notas = perfil.historial_notas;
     }
   }
 
   // ==============================================================
-  // LÓGICA DE SELECCIÓN DE IMAGEN (PC Y MÓVIL) + NGX-CROPPER
+  // GESTIÓN DE AVATAR (RECORTE CIRCULAR)
   // ==============================================================
-  
-  abrirSelectorArchivo() {
+  abrirSelectorArchivo(): void {
     this.fileInput.nativeElement.click(); 
   }
 
-  archivoSeleccionado(event: any) {
+  archivoSeleccionado(event: any): void {
     const archivo = event.target.files[0];
     if (archivo) {
       const reader = new FileReader();
@@ -89,7 +130,7 @@ export class PerfilPage implements OnInit {
     event.target.value = ''; 
   }
 
-  fotoRecortadaEfectuada(event: any) {
+  fotoRecortadaEfectuada(event: any): void {
     if (event.base64) {
       this.imagenTemporalRecortada = event.base64;
     } else if (event.blob) {
@@ -101,51 +142,60 @@ export class PerfilPage implements OnInit {
     }
   }
 
-  aplicarRecorteCircular() {
+  aplicarRecorteCircular(): void {
     if (!this.imagenTemporalRecortada) {
       this.imagenTemporalRecortada = this.imagenOriginalBase64;
     }
     
-    this.usuarioPerfil.avatarUrl = this.imagenTemporalRecortada;
+    this.usuarioPerfil.avatar_url = this.imagenTemporalRecortada;
+    this.usuarioPerfil.imagen = this.imagenTemporalRecortada;
     this.abrirRecortador = false;
-    console.log('¡Foto aplicada correctamente!');
   }
 
-  cancelarRecorte() {
+  cancelarRecorte(): void {
     this.abrirRecortador = false;
     this.imagenOriginalBase64 = '';
     this.imagenTemporalRecortada = '';
   }
 
-  // ==========================================
-  // LÓGICA DE GUARDADO
-  // ==========================================
-  async guardarCambiosPerfil() {
-    const datosMemoria = this.usuarioService.getUsuario();
-    if (!datosMemoria) {
-      alert('Error: No se encontró una sesión activa.');
+  // ==============================================================
+  // ACTUALIZACIÓN DE PERFIL Y PREFERENCIAS EN SUPABASE
+  // ==============================================================
+  async guardarCambiosPerfil(): Promise<void> {
+    const idUsuario = this.usuarioPerfil.id || this.usuarioPerfil.uid || this.supabaseService.currentUserValue?.id;
+    if (!idUsuario) {
+      alert('Error: No se encontró una sesión activa de usuario.');
       return;
     }
 
     this.guardando = true;
 
     try {
-      // TODO: Migrar a Supabase en Fase 2:
-      // Actualizar tabla 'usuarios' con supabase.from('usuarios').update(...)
-      // Subir imagen a Supabase Storage bucket 'avatars'
+      const datosActualizar: Partial<UsuarioPerfil> = {
+        nombre: this.usuarioPerfil.nombre.trim(),
+        telefono: (this.usuarioPerfil.telefono || '').trim(),
+        avatar_url: this.usuarioPerfil.avatar_url,
+        preferencias_corte: this.preferencias,
+        historial_notas: (this.usuarioPerfil.historial_notas || '').trim()
+      };
 
-      datosMemoria.nombre = this.usuarioPerfil.nombre;
-      if (this.usuarioPerfil.avatarUrl && !this.usuarioPerfil.avatarUrl.includes('avatar.svg')) {
-        datosMemoria.imagen = this.usuarioPerfil.avatarUrl;
+      // 1. Guardar en Supabase PostgreSQL (tabla 'usuarios')
+      const actualizado = await this.supabaseService.actualizarPerfil(idUsuario, datosActualizar);
+
+      // 2. Actualizar estado reactivo en memoria local
+      if (actualizado) {
+        this.usuarioService.setUsuario(actualizado);
+      } else {
+        this.usuarioService.actualizarDatos(datosActualizar);
       }
-      this.usuarioService.setUsuario(datosMemoria);
 
       this.guardando = false;
+      alert('¡Tus preferencias de corte y datos de perfil se guardaron exitosamente!');
       this.router.navigate(['/dashboard/resumen']);
 
-    } catch (error) {
-      console.error('Error al actualizar el perfil:', error);
-      alert('Hubo un error al guardar los cambios de tu perfil.');
+    } catch (error: any) {
+      console.error('Error al actualizar perfil en Supabase:', error);
+      alert('Surgió un inconveniente al guardar los datos en Supabase.');
       this.guardando = false;
     }
   }

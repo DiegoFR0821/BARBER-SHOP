@@ -6,11 +6,11 @@
       </ion-button>
     </ion-buttons>
     
-    <ion-title class="cabecera-titulo">ÉTNICA SALÓN</ion-title>
+    <ion-title class="cabecera-titulo">BARBER SHOP</ion-title>
     
     <ion-buttons slot="end">
       <ion-button [routerLink]="['/login']" class="boton-cabecera">Login</ion-button>
-      <ion-button [routerLink]="['/registro']" class="boton-cabecera">registrarse</ion-button>
+      <ion-button [routerLink]="['/registro']" class="boton-cabecera">Registrarse</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -20,45 +20,45 @@
   <div class="hero-section">
     <div class="hero-overlay"></div>
     <div class="hero-contenido">
-      <span class="etiqueta-dorada">Excelencia y Arte</span>
-      <h1 class="titulo-principal">Descubre tu Belleza Única</h1>
-      <ion-button class="boton-dorado" shape="round">RESERVAR CITA</ion-button>
+      <span class="etiqueta-dorada">Barbería & Estética Masculina</span>
+      <h1 class="titulo-principal">Estilo, Maestría y Tradición</h1>
+      <ion-button [routerLink]="['/login']" class="boton-dorado" shape="round">RESERVAR CITA</ion-button>
     </div>
   </div>
 
   <div class="contenedor-principal">
 
     <div class="seccion-centrada">
-      <span class="etiqueta-dorada">QUIÉNES SOMOS</span>
+      <span class="etiqueta-dorada">BARBER SHOP LIMA NORTE</span>
       <h2 class="titulo-seccion">Nuestra Filosofía</h2>
       <p class="texto-parrafo">
-        Nacido de la pasión por la estética atemporal, Étnica Salón redefine la experiencia de belleza a través de una lente de minimalismo cálido y precisión técnica.
+        En Barber Shop Lima Norte fusionamos el ritual del afeitado clásico a navaja con las técnicas de vanguardia en degradados (Skin Fade), visagismo y cuidado estético masculino. Cada detalle está pensado para tu confort y estilo personal.
       </p>
     </div>
 
     <div class="seccion-centrada mb-20">
-      <span class="etiqueta-dorada">NUESTROS ESTILOS</span>
-      <h2 class="titulo-seccion">Experiencias Editoriales</h2>
+      <span class="etiqueta-dorada">SERVICIOS ESTRELLA</span>
+      <h2 class="titulo-seccion">Experiencias de Barbería</h2>
     </div>
 
     <ion-grid>
       <ion-row>
         <ion-col size="12" size-md="6">
           <ion-card class="tarjeta-servicio">
-            <img src="/assets/img/img1.jpg" />
+            <img src="assets/img/img1.jpg" alt="Degradados y Fades Urbanos" />
             <div class="tarjeta-titulo-flotante">
-              <span class="etique ta-tarjeta">SIGNATURE</span>
-              <h3 class="titulo-tarjeta">Coloración Artística</h3>
+              <span class="etiqueta-tarjeta">MASTER FADE</span>
+              <h3 class="titulo-tarjeta">Degradados & Fades</h3>
             </div>
           </ion-card>
         </ion-col>
 
         <ion-col size="12" size-md="6">
           <ion-card class="tarjeta-servicio">
-            <img src="/assets/img/img2.jpg" />
+            <img src="assets/img/img2.jpg" alt="Ritual de Barba y Toalla Caliente" />
             <div class="tarjeta-titulo-flotante">
-              <span class="etiqueta-tarjeta">PREMIUM</span>
-              <h3 class="titulo-tarjeta">Productos Élite</h3>
+              <span class="etiqueta-tarjeta">RITUAL DELUXE</span>
+              <h3 class="titulo-tarjeta">Barba & Toalla Caliente</h3>
             </div>
           </ion-card>
         </ion-col>
@@ -69,20 +69,32 @@
       <h2 class="titulo-seccion text-center">Carta de Servicios</h2>
       
       <div class="fila-precio">
-        <span class="nombre-servicio">Corte & Peinado</span>
+        <span class="nombre-servicio">Corte Clásico Ejecutivo</span>
         <div class="linea-punteada"></div>
-        <span class="precio-servicio">$45</span>
+        <span class="precio-servicio">S/ 35.00</span>
       </div>
 
       <div class="fila-precio">
-        <span class="nombre-servicio">Balayage Signature</span>
+        <span class="nombre-servicio">Degradado Skin Fade Urbano</span>
         <div class="linea-punteada"></div>
-        <span class="precio-servicio">$120</span>
+        <span class="precio-servicio">S/ 40.00</span>
+      </div>
+
+      <div class="fila-precio">
+        <span class="nombre-servicio">Ritual de Barba Tradicional</span>
+        <div class="linea-punteada"></div>
+        <span class="precio-servicio">S/ 30.00</span>
+      </div>
+
+      <div class="fila-precio">
+        <span class="nombre-servicio">Combo Master Barber (Corte + Barba)</span>
+        <div class="linea-punteada"></div>
+        <span class="precio-servicio">S/ 60.00</span>
       </div>
     </div>
 
     <div class="seccion-centrada">
-      <span class="etiqueta-dorada">CLIENTES FELICES</span>
+      <span class="etiqueta-dorada">EXPERIENCIA COMPROBADA</span>
       <ion-card class="tarjeta-testimonio">
         <ion-card-content>
           <div class="estrellas">
@@ -93,48 +105,51 @@
             <ion-icon name="star"></ion-icon>
           </div>
           <p class="texto-testimonio">
-            "Una experiencia transformadora. El ambiente es tan sereno que sales sintiéndote renovada."
+            "Excelente atención y precisión milimétrica en el degradado. El servicio de toalla caliente y perfilado de barba es insuperable en Lima Norte."
           </p>
-          <div class="autor-testimonio">VALERIA MONTES</div>
+          <div class="autor-testimonio">CARLOS SÁNCHEZ - CLIENTE FRECUENTE</div>
         </ion-card-content>
       </ion-card>
     </div>
 
     <div class="seccion-contacto">
-      <span class="etiqueta-dorada text-center block">VISÍTANOS</span>
-      <h2 class="titulo-seccion text-center">En el Corazón de Comas</h2>
+      <span class="etiqueta-dorada text-center block">VISÍTANOS EN LIMA NORTE</span>
+      <h2 class="titulo-seccion text-center">Ubicación y Contacto</h2>
       
       <ion-list lines="none" class="lista-transparente">
         <ion-item>
           <ion-icon name="location-outline" slot="start" class="icono-dorado"></ion-icon>
           <ion-label>
             <h3 class="contacto-titulo">DIRECCIÓN</h3>
-            <p class="contacto-detalle">Av. Principal 123, Comas, Lima</p>
+            <p class="contacto-detalle">Av. Micaela Bastidas N° 1045, Comas, Lima</p>
           </ion-label>
         </ion-item>
 
         <ion-item>
           <ion-icon name="call-outline" slot="start" class="icono-dorado"></ion-icon>
           <ion-label>
-            <h3 class="contacto-titulo">TELÉFONO / HORARIOS</h3>
-            <p class="contacto-detalle">+51 987 654 321</p>
-            <p class="contacto-detalle">Lun - Sáb: 9:00 - 20:00</p>
+            <h3 class="contacto-titulo">HORARIOS DE ATENCIÓN</h3>
+            <p class="contacto-detalle">Lun - Sáb: 9:00 AM - 8:00 PM</p>
+            <p class="contacto-detalle">Domingos: Previa cita VIP</p>
           </ion-label>
         </ion-item>
 
         <ion-item>
           <ion-icon name="logo-whatsapp" slot="start" style="color: #25D366; font-size: 24px;"></ion-icon>
           <ion-label>
-            <h3 class="contacto-titulo">WHATSAPP</h3>
-            <p class="contacto-detalle">Reserva rápida por chat</p>
+            <h3 class="contacto-titulo">WHATSAPP OFICIAL</h3>
+            <p class="contacto-detalle">+51 929 727 435</p>
           </ion-label>
         </ion-item>
       </ion-list>
     </div>
 
-  </div> <footer class="pie-pagina">
-    <div class="logo-pie">ÉTNICA SALÓN</div>
-    <p>© 2026 ÉTNICA SALÓN. TODOS LOS DERECHOS RESERVADOS.</p>
+  </div> 
+  
+  <footer class="pie-pagina">
+    <div class="logo-pie">BARBER SHOP</div>
+    <p>© 2026 BARBER SHOP LIMA NORTE S.A.C. - RUC: 20611302151</p>
+    <p>TODOS LOS DERECHOS RESERVADOS.</p>
   </footer>
 
   <div class="espacio-footer"></div>
@@ -148,6 +163,6 @@
   </div>
   <div class="boton-menu" [routerLink]="['/login']">
     <ion-icon name="person-outline"></ion-icon>
-    <span>Perfil</span>
+    <span>Acceso</span>
   </div>
 </div>

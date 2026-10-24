@@ -8,6 +8,8 @@ import {
 import { addIcons } from 'ionicons';
 import { send, shieldCheckmarkOutline } from 'ionicons/icons';
 import { io, Socket } from 'socket.io-client';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { UsuarioService } from '../../services/usuario';
 
 interface Mensaje {
   usuario: string;
@@ -29,15 +31,17 @@ interface Mensaje {
 export class ComunidadAdminPage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) content!: IonContent;
   
-  // ⚠️ Debe ser el MISMO puerto que usa el cliente
   private URL_SERVIDOR = 'http://localhost:3000'; 
   private socket!: Socket;
 
-  nombreAdmin: string = '👑 Administrador'; // Identificador especial
+  nombreAdmin: string = '👑 Administrador Barber';
   mensajeTexto: string = '';
   mensajes: Mensaje[] = [];
 
-  constructor() {
+  constructor(
+    private supabaseService: SupabaseService,
+    private usuarioService: UsuarioService
+  ) {
     addIcons({ send, 'shield-checkmark-outline': shieldCheckmarkOutline });
   }
 
@@ -52,9 +56,19 @@ export class ComunidadAdminPage implements OnInit, OnDestroy {
     }
   }
 
-  obtenerDatosAdmin() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.auth.getUser() / sesión activa)
-    this.nombreAdmin = '👑 Admin (Staff)';
+  async obtenerDatosAdmin(): Promise<void> {
+    const memUser = this.usuarioService.getUsuario();
+    if (memUser && memUser.nombre) {
+      this.nombreAdmin = `👑 ${memUser.nombre} (Staff Barber)`;
+      return;
+    }
+
+    const authUser = this.supabaseService.currentUserValue;
+    if (authUser) {
+      const perfil = await this.supabaseService.getPerfil(authUser.id);
+      const nombreBase = perfil?.nombre || authUser.email?.split('@')[0] || 'Admin';
+      this.nombreAdmin = `👑 ${nombreBase} (Staff Barber)`;
+    }
   }
 
   conectarSocket() {

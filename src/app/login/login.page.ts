@@ -1,11 +1,9 @@
-// ==========================================
-// 1. IMPORTACIONES Y CONFIGURACIÓN
-// ==========================================
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../services/usuario';
+import { SupabaseService } from '../core/services/supabase.service';
 import { 
   IonContent, IonButton, IonButtons, IonBackButton, 
   IonItem, IonInput, IonText 
@@ -23,9 +21,6 @@ import {
 })
 export class LoginPage implements OnInit {
 
-  // ==========================================
-  // 2. VARIABLES Y ESTADO
-  // ==========================================
   credenciales = {
     correo: '',
     password: ''
@@ -36,18 +31,19 @@ export class LoginPage implements OnInit {
 
   constructor(
     private router: Router,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private supabaseService: SupabaseService
   ) { }
 
   ngOnInit() { }
 
-  // ==========================================
-  // 3. FUNCIONES Y ACCIONES
-  // ==========================================
-  async iniciarSesion() {
-    // Validación inicial
+  /**
+   * Inicia sesión validando credenciales contra Supabase Auth y recuperando
+   * el perfil relacional del usuario (incluyendo rol y preferencias de corte).
+   */
+  async iniciarSesion(): Promise<void> {
     if (!this.credenciales.correo || !this.credenciales.password) {
-      this.mensajeError = 'Por favor, rellena todos los campos.';
+      this.mensajeError = 'Por favor, ingresa tu correo y contraseña.';
       return;
     }
 
@@ -55,23 +51,41 @@ export class LoginPage implements OnInit {
     this.cargando = true;
 
     try {
-      // TODO: Migrar a Supabase en Fase 2:
-      // const { data, error } = await supabase.auth.signInWithPassword({
-      //   email: this.credenciales.correo,
-      //   password: this.credenciales.password
-      // });
-      // Consultar rol en tabla 'usuarios' y guardar en usuarioService
-      console.log('Inicio de sesión preparado para Fase 2');
+      // 1. Autenticación contra Supabase Auth y consulta de la tabla 'usuarios'
+      const { user, perfil } = await this.supabaseService.signIn(
+        this.credenciales.correo.trim(),
+        this.credenciales.password
+      );
+
+      // 2. Almacenamos el perfil recuperado en el servicio de sesión local
+      this.usuarioService.setUsuario(perfil);
+
+      console.log('✅ Ingreso exitoso a Barber Shop. Rol detectado:', perfil.rol);
+
+      // 3. Enrutamiento según el rol obtenido de la base de datos PostgreSQL
+      if (perfil.rol === 'admin') {
+        this.router.navigate(['/admin/resumen-admin']);
+      } else {
+        this.router.navigate(['/dashboard/resumen']);
+      }
+
       this.cargando = false;
 
     } catch (error: any) {
       this.cargando = false;
-      this.mensajeError = 'Ocurrió un error al intentar ingresar.';
-      console.error(error);
+      console.error('Error en autenticación con Supabase:', error);
+
+      if (error?.message?.includes('Invalid login credentials') || error?.code === 'invalid_credentials') {
+        this.mensajeError = 'Correo electrónico o contraseña incorrectos.';
+      } else if (error?.message?.includes('Email not confirmed')) {
+        this.mensajeError = 'Por favor, confirma tu correo electrónico antes de ingresar.';
+      } else {
+        this.mensajeError = error?.message || 'Ocurrió un error al intentar iniciar sesión. Inténtalo nuevamente.';
+      }
     }
   }
 
-  irARegistro() {
+  irARegistro(): void {
     this.router.navigate(['/registro']);
   }
 }

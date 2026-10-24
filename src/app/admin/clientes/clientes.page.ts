@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,8 @@ import {
   shieldOutline, peopleOutline, menuOutline, createOutline, 
   trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline 
 } from 'ionicons/icons';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { UsuarioPerfil, PreferenciasCliente } from '../../services/usuario';
 
 @Component({
   selector: 'app-clientes',
@@ -28,18 +30,35 @@ import {
 })
 export class ClientesPage implements OnInit {
 
-  private router = inject(Router);
-
-  usuarios: any[] = [];
-  usuariosFiltrados: any[] = [];
+  usuarios: UsuarioPerfil[] = [];
+  usuariosFiltrados: UsuarioPerfil[] = [];
   searchTerm: string = '';
 
   // Control del modal de formulario unificado (crear / editar)
   isModalOpen: boolean = false;
   modoEdicion: boolean = false;
-  usuarioActual: any = { uid: '', nombre: '', correo: '', telefono: '', descripcion: '', rol: 'cliente' };
+  
+  usuarioActual: UsuarioPerfil = {
+    id: '',
+    nombre: '',
+    correo: '',
+    telefono: '',
+    rol: 'cliente',
+    historial_notas: ''
+  };
 
-  constructor() {
+  preferenciasEdicion: PreferenciasCliente = {
+    estilo: 'Fade Clásico',
+    tipo_cabello: 'Lacio',
+    barba: 'Perfilada con Navaja',
+    frecuencia: 'Quincenal',
+    notas: ''
+  };
+
+  constructor(
+    private router: Router,
+    private supabaseService: SupabaseService
+  ) {
     addIcons({ 
       shieldOutline, peopleOutline, menuOutline, createOutline, 
       trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline 
@@ -58,81 +77,146 @@ export class ClientesPage implements OnInit {
     this.router.navigate([ruta]);
   }
 
-  async cargarUsuarios() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').select('*'))
+  /**
+   * Carga la lista de usuarios y perfiles desde la tabla 'usuarios' de Supabase
+   */
+  async cargarUsuarios(): Promise<void> {
     try {
-      this.usuarios = [];
+      this.usuarios = await this.supabaseService.obtenerUsuarios();
       this.filtrarUsuarios();
     } catch (error) {
-      console.error('❌ Error leyendo usuarios:', error);
+      console.error('❌ Error leyendo usuarios desde Supabase:', error);
     }
   }
 
-  filtrarUsuarios() {
-    if (!this.searchTerm.trim()) {
+  filtrarUsuarios(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
       this.usuariosFiltrados = [...this.usuarios];
     } else {
       this.usuariosFiltrados = this.usuarios.filter(u => 
-        u.nombre && u.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
+        (u.nombre && u.nombre.toLowerCase().includes(term)) ||
+        (u.correo && u.correo.toLowerCase().includes(term)) ||
+        (u.preferencias_corte?.estilo && u.preferencias_corte.estilo.toLowerCase().includes(term)) ||
+        (u.preferencias_corte?.barba && u.preferencias_corte.barba.toLowerCase().includes(term))
       );
     }
   }
 
-  abrirModalCrear() {
+  abrirModalCrear(): void {
     this.modoEdicion = false;
-    this.usuarioActual = { uid: '', nombre: '', correo: '', telefono: '', descripcion: '', rol: 'cliente' };
+    this.usuarioActual = {
+      id: '',
+      nombre: '',
+      correo: '',
+      telefono: '',
+      rol: 'cliente',
+      historial_notas: ''
+    };
+    this.preferenciasEdicion = {
+      estilo: 'Fade Clásico',
+      tipo_cabello: 'Lacio',
+      barba: 'Perfilada con Navaja',
+      frecuencia: 'Quincenal',
+      notas: ''
+    };
     this.isModalOpen = true;
   }
 
-  abrirModalEditar(user: any) {
+  abrirModalEditar(user: UsuarioPerfil): void {
     this.modoEdicion = true;
-    this.usuarioActual = { ...user };
+    this.usuarioActual = { ...user, id: user.id || user.uid || '' };
     if (!this.usuarioActual.telefono) this.usuarioActual.telefono = '';
-    if (!this.usuarioActual.descripcion) this.usuarioActual.descripcion = '';
+    if (!this.usuarioActual.historial_notas) this.usuarioActual.historial_notas = user.descripcion || '';
     if (!this.usuarioActual.rol) this.usuarioActual.rol = 'cliente';
+
+    if (user.preferencias_corte) {
+      this.preferenciasEdicion = { ...user.preferencias_corte };
+    } else {
+      this.preferenciasEdicion = {
+        estilo: 'Fade Clásico',
+        tipo_cabello: 'Lacio',
+        barba: 'Perfilada con Navaja',
+        frecuencia: 'Quincenal',
+        notas: ''
+      };
+    }
+
     this.isModalOpen = true;
   }
 
-  cerrarModal() {
+  cerrarModal(): void {
     this.isModalOpen = false;
   }
 
-  async guardarUsuario() {
+  /**
+   * Guarda o actualiza los datos del cliente y sus preferencias de corte en Supabase
+   */
+  async guardarUsuario(): Promise<void> {
     if (!this.usuarioActual.nombre || !this.usuarioActual.correo) {
       alert('El nombre y el correo electrónico son campos obligatorios.');
       return;
     }
 
-    // TODO: Migrar a Supabase en Fase 2 (update o insert en tabla 'usuarios')
     try {
+      const payload: Partial<UsuarioPerfil> = {
+        nombre: this.usuarioActual.nombre.trim(),
+        correo: this.usuarioActual.correo.trim(),
+        telefono: (this.usuarioActual.telefono || '').trim(),
+        rol: this.usuarioActual.rol || 'cliente',
+        preferencias_corte: this.preferenciasEdicion,
+        historial_notas: (this.usuarioActual.historial_notas || '').trim()
+      };
+
+      if (this.modoEdicion && this.usuarioActual.id) {
+        // OPERACIÓN: ACTUALIZAR EN SUPABASE
+        await this.supabaseService.actualizarPerfil(this.usuarioActual.id, payload);
+      } else {
+        // OPERACIÓN: CREAR EN SUPABASE
+        await this.supabaseService.crearUsuarioAdmin(payload);
+      }
+
       this.cerrarModal();
-      this.cargarUsuarios();
+      await this.cargarUsuarios();
+      alert('¡Ficha de cliente sincronizada con Supabase exitosamente!');
     } catch (error) {
-      console.error('Error al intentar guardar el usuario:', error);
-      alert('Surgió un problema al guardar los datos del perfil.');
+      console.error('Error al intentar guardar el usuario en Supabase:', error);
+      alert('Surgió un problema al guardar los datos del cliente.');
     }
   }
 
-  async eliminarUsuario(uid: string) {
-    const confirmar = confirm('¿Estás seguro de eliminar a este usuario permanentemente del sistema?');
+  /**
+   * Elimina un usuario de la base de datos de Supabase
+   */
+  async eliminarUsuario(id?: string): Promise<void> {
+    if (!id) return;
+    const confirmar = confirm('¿Estás seguro de eliminar a este cliente permanentemente de Barber Shop?');
     if (confirmar) {
-      // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').delete().eq('id', uid))
       try {
-        this.cargarUsuarios();
+        await this.supabaseService.eliminarUsuario(id);
+        await this.cargarUsuarios();
       } catch (error) {
-        console.error('Error al intentar remover el documento:', error);
+        console.error('Error al intentar eliminar usuario de Supabase:', error);
+        alert('No se pudo eliminar el usuario de la base de datos.');
       }
     }
   }
 
-  async cambiarRolDirecto(user: any) {
+  /**
+   * Alterna el rol entre cliente y admin en la tabla 'usuarios'
+   */
+  async cambiarRolDirecto(user: UsuarioPerfil): Promise<void> {
+    const id = user.id || user.uid;
+    if (!id) return;
+
     const nuevoRol = user.rol === 'admin' ? 'cliente' : 'admin';
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').update({ rol: nuevoRol }).eq('id', user.uid))
     try {
+      await this.supabaseService.cambiarRolUsuario(id, nuevoRol);
       user.rol = nuevoRol;
-      this.cargarUsuarios();
+      await this.cargarUsuarios();
     } catch (error) {
-      console.error(error);
+      console.error('Error al alternar rol en Supabase:', error);
+      alert('No se pudo cambiar el rol del usuario.');
     }
   }
 }

@@ -9,20 +9,22 @@
     </div>
 
     <div class="brand-brandup">
-      <h1 class="brand-logo-text">ÉTNICA</h1>
-      <h3 class="brand-sub-text">SALÓN</h3>
+      <h1 class="brand-logo-text">BARBER</h1>
+      <h3 class="brand-sub-text">SHOP</h3>
     </div>
 
     <div class="form-card-mobile">
       <h2 class="form-title">Crear Cuenta</h2>
-      <p class="form-subtitle">Experience luxury hair and skin care curated for your unique essence.</p>
+      <p class="form-subtitle">Únete a Barber Shop Lima Norte. Personaliza tus preferencias de corte y agenda con tu barbero favorito.</p>
 
+      <!-- PASO 1: Datos Personales -->
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
             label="Nombre Completo" 
             labelPlacement="floating" 
             type="text"
+            placeholder="Ej. Juan Pérez"
             [(ngModel)]="nombre">
           </ion-input>
         </ion-item>
@@ -31,9 +33,23 @@
       <div class="input-custom-holder">
         <ion-item lines="none" class="input-premium-item">
           <ion-input 
+            label="Teléfono / Celular" 
+            labelPlacement="floating" 
+            type="tel"
+            placeholder="999-999-999"
+            [(ngModel)]="telefono">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <!-- PASO 2: Acceso y Seguridad -->
+      <div class="input-custom-holder">
+        <ion-item lines="none" class="input-premium-item">
+          <ion-input 
             label="Correo Electrónico" 
             labelPlacement="floating" 
             type="email"
+            placeholder="ejemplo@correo.com"
             [(ngModel)]="correo">
           </ion-input>
         </ion-item>
@@ -45,8 +61,25 @@
             label="Contraseña" 
             labelPlacement="floating" 
             type="password"
+            placeholder="Mínimo 6 caracteres"
             [(ngModel)]="clave">
           </ion-input>
+        </ion-item>
+      </div>
+
+      <!-- PASO 3: Estilo de Corte Inicial (Preferencia Rápida) -->
+      <div class="input-custom-holder">
+        <ion-item lines="none" class="input-premium-item">
+          <ion-select 
+            label="Estilo de Corte Preferido" 
+            labelPlacement="floating" 
+            [(ngModel)]="estiloPreferido">
+            <ion-select-option value="Fade Clásico">Fade Clásico (Degradado Medio)</ion-select-option>
+            <ion-select-option value="Skin Fade">Skin Fade Urbano (Afeitado a cero)</ion-select-option>
+            <ion-select-option value="Clásico Tijera">Corte Ejecutivo / Solo Tijera</ion-select-option>
+            <ion-select-option value="Pompadour">Pompadour / Texturizado</ion-select-option>
+            <ion-select-option value="Buzz Cut">Buzz Cut / Militar</ion-select-option>
+          </ion-select>
         </ion-item>
       </div>
 
@@ -55,7 +88,11 @@
       </ion-text>
 
       <ion-button expand="block" class="btn-gold-submit" (click)="registrarUsuario()" [disabled]="cargando">
-        {{ cargando ? 'CREANDO...' : 'SIGN UP' }}
+        {{ cargando ? 'REGISTRANDO...' : 'REGISTRARME' }}
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" class="btn-link-registro" (click)="irALogin()">
+        ¿Ya tienes cuenta? Inicia sesión aquí
       </ion-button>
     </div>
 
