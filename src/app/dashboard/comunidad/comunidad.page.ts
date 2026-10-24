@@ -41,7 +41,7 @@ export class ComunidadPage implements OnInit, OnDestroy {
   mensajeTexto: string = '';
   mensajes: MensajeVista[] = [];
   enviando: boolean = false;
-  private canalRealtime?: RealtimeChannel;
+  public chatChannel?: RealtimeChannel;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -59,6 +59,15 @@ export class ComunidadPage implements OnInit, OnDestroy {
   async ionViewWillEnter() {
     this.obtenerNombreUsuario();
     await this.cargarHistorialComunidad();
+    this.iniciarSuscripcionRealtime();
+  }
+
+  ionViewWillLeave() {
+    this.limpiarSuscripcionRealtime();
+  }
+
+  ngOnDestroy() {
+    this.limpiarSuscripcionRealtime();
   }
 
   obtenerNombreUsuario() {
@@ -78,39 +87,69 @@ export class ComunidadPage implements OnInit, OnDestroy {
   async cargarHistorialComunidad() {
     const lista = await this.supabaseService.getMensajesComunidad();
     this.mensajes = lista.map(m => this.mapearMensajeVista(m));
-    this.hacerScrollAbajo();
+    this.scrollToBottom();
   }
 
-  private mapearMensajeVista(m: MensajeComunidad): MensajeVista {
+  private mapearMensajeVista(m: any): MensajeVista {
     const fechaObj = m.created_at ? new Date(m.created_at) : new Date();
     const horaFormateada = fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const autorNombre = m.autor_nombre || m.usuario || 'Cliente Barber Shop';
+    const autorRol = m.autor_rol || m.rol || 'cliente';
+    const textoMensaje = m.mensaje || m.texto || '';
     const esMio = Boolean(
       (this.usuarioId && m.usuario_id === this.usuarioId) ||
-      (m.autor_nombre && m.autor_nombre.toLowerCase() === this.nombreActual.toLowerCase())
+      (autorNombre && autorNombre.toLowerCase() === this.nombreActual.toLowerCase())
     );
 
     return {
       id: m.id,
-      usuario: m.autor_nombre || 'Cliente Barber Shop',
-      rol: m.autor_rol || 'cliente',
-      texto: m.mensaje,
+      usuario: autorNombre,
+      rol: autorRol,
+      texto: textoMensaje,
       hora: horaFormateada,
       esMio
     };
   }
 
+  /**
+   * Suscripción WebSocket en tiempo real (Chat Grupal en Vivo) sobre public.mensajes_comunidad
+   */
   iniciarSuscripcionRealtime() {
-    this.canalRealtime = this.supabaseService.suscribirMensajesComunidad(
-      (nuevo) => {
-        if (!this.mensajes.some(x => x.id === nuevo.id)) {
-          this.mensajes.push(this.mapearMensajeVista(nuevo));
-          this.hacerScrollAbajo();
+    if (this.chatChannel) {
+      this.supabaseService.client.removeChannel(this.chatChannel);
+    }
+
+    this.chatChannel = this.supabaseService.client
+      .channel('mensajes_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mensajes_comunidad' },
+        (payload) => {
+          const nuevoMensaje = this.mapearMensajeVista(payload.new);
+          if (!this.mensajes.some(m => m.id === nuevoMensaje.id)) {
+            this.mensajes.push(nuevoMensaje);
+            this.scrollToBottom();
+          }
         }
-      },
-      (idEliminado) => {
-        this.mensajes = this.mensajes.filter(x => x.id !== idEliminado);
-      }
-    );
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'mensajes_comunidad' },
+        (payload) => {
+          const idEliminado = (payload.old as any)?.id;
+          if (idEliminado) {
+            this.mensajes = this.mensajes.filter(m => m.id !== idEliminado);
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  private limpiarSuscripcionRealtime() {
+    if (this.chatChannel) {
+      this.supabaseService.client.removeChannel(this.chatChannel);
+      this.chatChannel = undefined;
+    }
   }
 
   async enviarMensaje() {
@@ -129,12 +168,13 @@ export class ComunidadPage implements OnInit, OnDestroy {
         mensaje: texto
       });
 
-      if (!this.mensajes.some(x => x.id === creado.id)) {
-        this.mensajes.push(this.mapearMensajeVista(creado));
+      const nuevoMensaje = this.mapearMensajeVista(creado);
+      if (!this.mensajes.some(m => m.id === nuevoMensaje.id)) {
+        this.mensajes.push(nuevoMensaje);
       }
-      this.hacerScrollAbajo();
+      this.scrollToBottom();
     } catch (e) {
-      console.warn('Mensaje agregado en memoria local:', e);
+      console.warn('Mensaje agregado en sesión activa:', e);
       const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       this.mensajes.push({
         id: 'local-' + Date.now(),
@@ -144,13 +184,13 @@ export class ComunidadPage implements OnInit, OnDestroy {
         hora: horaActual,
         esMio: true
       });
-      this.hacerScrollAbajo();
+      this.scrollToBottom();
     } finally {
       this.enviando = false;
     }
   }
 
-  hacerScrollAbajo() {
+  scrollToBottom() {
     setTimeout(() => {
       if (this.content) {
         this.content.scrollToBottom(300);
@@ -158,9 +198,7 @@ export class ComunidadPage implements OnInit, OnDestroy {
     }, 100);
   }
 
-  ngOnDestroy() {
-    if (this.canalRealtime) {
-      this.supabaseService.client.removeChannel(this.canalRealtime);
-    }
+  hacerScrollAbajo() {
+    this.scrollToBottom();
   }
 }

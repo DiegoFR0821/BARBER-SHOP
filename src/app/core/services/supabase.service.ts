@@ -107,9 +107,14 @@ export class SupabaseService {
   private readonly UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   constructor() {
+    const rawUrl = (environment.supabaseUrl || '').trim();
+    const rawKey = (environment.supabaseAnonKey || '').trim();
+    const safeUrl = rawUrl.startsWith('http') ? rawUrl : 'https://placeholder-barbershop.supabase.co';
+    const safeKey = rawKey || 'placeholder-anon-key';
+
     this.supabase = createClient(
-      environment.supabaseUrl,
-      environment.supabaseAnonKey,
+      safeUrl,
+      safeKey,
       {
         auth: {
           persistSession: true,
@@ -1826,11 +1831,11 @@ export class SupabaseService {
       const { data, error } = await this.supabase
         .from('mensajes_comunidad')
         .select('*')
-        .order('created_at', { ascending: true })
-        .limit(100);
+        .order('created_at', { ascending: false })
+        .limit(25);
 
       if (!error && data && data.length > 0) {
-        return data as MensajeComunidad[];
+        return (data as MensajeComunidad[]).reverse();
       }
     } catch (e) {
       console.warn('Aviso al cargar mensajes de comunidad desde Supabase:', e);
