@@ -9,8 +9,8 @@
     <ion-buttons slot="end" class="header-user-actions">
       <ion-button fill="clear" class="btn-avatar-header" (click)="irAPerfil()" title="Mi Perfil">
         <div class="header-avatar-circle">
-          <img *ngIf="fotoCliente" [src]="fotoCliente" alt="Avatar" />
-          <span *ngIf="!fotoCliente">{{ nombreCliente.charAt(0) | uppercase }}</span>
+          <img *ngIf="fotoCliente && !avatarError" [src]="fotoCliente" (error)="onAvatarError()" alt="Avatar" />
+          <span *ngIf="!fotoCliente || avatarError">{{ (nombreCliente || 'C').charAt(0) | uppercase }}</span>
         </div>
       </ion-button>
       <ion-button fill="clear" class="btn-logout-header" (click)="cerrarSesion()" title="Cerrar Sesión">
@@ -137,32 +137,30 @@
 
   </div>
 
-  <!-- MODAL EMERGENTE DE ANUNCIOS DESDE SUPABASE -->
-  <ion-modal id="promo-modal" [isOpen]="isPromoOpen" (didDismiss)="cerrarYContinuarSecuencia()">
-    <ng-template>
-      <div class="popup-container-dark">
-        <div class="close-popup-bar" (click)="cerrarYContinuarSecuencia()">
-          <ion-icon name="close-outline"></ion-icon>
-        </div>
-        
-        <div class="popup-image-hero-wrapper">
-          <img *ngIf="anuncioActual?.imagen || anuncioActual?.imagen_url" [src]="anuncioActual?.imagen || anuncioActual?.imagen_url" alt="Promo">
-          <div *ngIf="!anuncioActual?.imagen && !anuncioActual?.imagen_url" class="placeholder-fallback-gold">
-            <ion-icon name="sparkles-outline"></ion-icon>
-          </div>
-        </div>
-
-        <div class="popup-content-body">
-          <h2 class="popup-promo-title">{{ anuncioActual?.titulo }}</h2>
-          <p class="popup-promo-desc">{{ anuncioActual?.descripcion }}</p>
-          <ion-button expand="block" class="btn-popup-whatsapp" (click)="contactarWhatsAppPromocion()">
-            <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
-            RESERVAR POR WHATSAPP
-          </ion-button>
-          <span class="popup-dismiss-text" (click)="cerrarYContinuarSecuencia()">Cerrar</span>
+  <!-- VENTANA MODAL FLOTANTE CENTRADA (POP-UP COMPACTO 1 SOLA VEZ POR SESIÓN) -->
+  <div *ngIf="isPromoOpen && anuncioActual" slot="fixed" class="promo-floating-backdrop" (click)="cerrarYContinuarSecuencia()">
+    <div class="popup-container-dark" (click)="$event.stopPropagation()">
+      <div class="close-popup-bar" (click)="cerrarYContinuarSecuencia()" title="Cerrar anuncio">
+        <ion-icon name="close-outline"></ion-icon>
+      </div>
+      
+      <div class="popup-image-hero-wrapper">
+        <img *ngIf="anuncioActual.imagen || anuncioActual.imagen_url" [src]="anuncioActual.imagen || anuncioActual.imagen_url" alt="Promo">
+        <div *ngIf="!anuncioActual.imagen && !anuncioActual.imagen_url" class="placeholder-fallback-gold">
+          <ion-icon name="sparkles-outline"></ion-icon>
         </div>
       </div>
-    </ng-template>
-  </ion-modal>
+
+      <div class="popup-content-body">
+        <h2 class="popup-promo-title">{{ anuncioActual.titulo }}</h2>
+        <p class="popup-promo-desc">{{ anuncioActual.descripcion }}</p>
+        <ion-button expand="block" class="btn-popup-whatsapp" (click)="contactarWhatsAppPromocion()">
+          <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
+          RESERVAR POR WHATSAPP
+        </ion-button>
+        <span class="popup-dismiss-text" (click)="cerrarYContinuarSecuencia()">Cerrar</span>
+      </div>
+    </div>
+  </div>
 
 </ion-content>

@@ -11,7 +11,7 @@
   <div class="chat-container">
     
     <div class="system-message">
-      <span>Bienvenido al chat de Barber Shop Lima Norte S.A.C. ¡Comparte con la comunidad!</span>
+      <span>Bienvenido al muro en vivo de Barber Shop Lima Norte S.A.C. ¡Comparte con la comunidad!</span>
     </div>
 
     <div *ngFor="let msj of mensajes" 
@@ -19,11 +19,15 @@
          [ngClass]="msj.esMio ? 'message-mine' : 'message-other'">
       
       <div *ngIf="!msj.esMio" class="avatar-circle">
-        {{ msj.usuario.charAt(0) | uppercase }}
+        {{ (msj.usuario || 'B').charAt(0) | uppercase }}
       </div>
 
       <div class="message-bubble">
-        <span class="message-user" *ngIf="!msj.esMio">{{ msj.usuario }}</span>
+        <span class="message-user" *ngIf="!msj.esMio">
+          {{ msj.usuario }}
+          <span class="role-badge" *ngIf="msj.rol === 'admin'">STAFF</span>
+          <span class="role-badge" *ngIf="msj.rol === 'barbero'">BARBERO</span>
+        </span>
         <p class="message-text">{{ msj.texto }}</p>
         <span class="message-time">{{ msj.hora }}</span>
       </div>
@@ -42,7 +46,7 @@
         type="text">
       </ion-input>
     </ion-item>
-    <ion-button fill="clear" class="send-btn" (click)="enviarMensaje()" [disabled]="!mensajeTexto.trim()">
+    <ion-button fill="clear" class="send-btn" (click)="enviarMensaje()" [disabled]="!mensajeTexto.trim() || enviando">
       <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
   </div>

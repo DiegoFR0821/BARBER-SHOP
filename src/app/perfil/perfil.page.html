@@ -13,36 +13,41 @@
     <div class="profile-main-container">
       
       <div class="avatar-wrapper">
-        <div class="profile-avatar-frame">
-          <img [src]="usuarioPerfil.avatar_url || usuarioPerfil.imagen" alt="Foto de perfil" />
+        <div class="profile-avatar-frame" (click)="abrirSelectorArchivo()" title="Toca para cambiar tu foto de perfil">
+          <img 
+            *ngIf="(usuarioPerfil.avatar_url || usuarioPerfil.imagen) && !avatarError" 
+            [src]="usuarioPerfil.avatar_url || usuarioPerfil.imagen" 
+            (error)="onAvatarError()" 
+            alt="Foto de perfil" />
+          <span *ngIf="avatarError || (!usuarioPerfil.avatar_url && !usuarioPerfil.imagen)" class="avatar-initials-gold">
+            {{ (usuarioPerfil.nombre || 'B').charAt(0) | uppercase }}
+          </span>
         </div>
         
-        <button class="btn-edit-avatar" (click)="abrirSelectorArchivo()" aria-label="Cambiar foto de perfil">
+        <button type="button" class="btn-edit-avatar" (click)="abrirSelectorArchivo()" aria-label="Cambiar foto de perfil">
           <ion-icon name="camera-outline"></ion-icon>
         </button>
         
-        <input type="file" #fileInput accept="image/*" style="display: none;" (change)="archivoSeleccionado($event)">
+        <input type="file" #fileInput accept="image/*" hidden (change)="archivoSeleccionado($event)">
       </div>
 
       <h1 class="user-display-name">{{ usuarioPerfil.nombre || 'Cliente Barber Shop' }}</h1>
       
       <div class="membership-badge-holder">
         <span class="badge-gold">MIEMBRO BARBER SHOP</span>
-        <span class="member-since">RUC: 20611302151 • Lima Norte</span>
+        <span class="member-since">RUC: 20611302151 &bull; Lima Norte</span>
       </div>
       
       <!-- TARJETA 1: INFORMACIÓN BÁSICA DE CONTACTO -->
       <div class="personal-info-card mb-20">
-        <div style="padding: 12px 16px 4px 16px; border-bottom: 1px solid #f0f0f0;">
-          <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #aa8529; text-transform: uppercase;">
-            Datos de Contacto
-          </h3>
+        <div class="card-section-header">
+          <h3>Datos de Contacto</h3>
         </div>
 
         <ion-list lines="full" class="bg-transparent">
           <ion-item class="info-item">
             <ion-label position="stacked">Nombre Completo</ion-label>
-            <ion-input type="text" [(ngModel)]="usuarioPerfil.nombre" placeholder="Tu nombre"></ion-input>
+            <ion-input type="text" [(ngModel)]="usuarioPerfil.nombre" placeholder="Tu nombre completo"></ion-input>
           </ion-item>
 
           <ion-item class="info-item">
@@ -52,20 +57,16 @@
 
           <ion-item class="info-item" lines="none">
             <ion-label position="stacked">Teléfono de Contacto</ion-label>
-            <ion-input type="tel" [(ngModel)]="usuarioPerfil.telefono" placeholder="999-999-999"></ion-input>
+            <ion-input type="tel" [(ngModel)]="usuarioPerfil.telefono" placeholder="Ej. 999 888 777"></ion-input>
           </ion-item>
         </ion-list>
       </div>
 
       <!-- TARJETA 2: PREFERENCIAS DE CORTE Y BARBA (SOLUCIÓN A PROBLEMÁTICA DE NEGOCIO) -->
       <div class="personal-info-card" style="margin-top: 16px;">
-        <div style="padding: 12px 16px 4px 16px; border-bottom: 1px solid #f0f0f0;">
-          <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #aa8529; text-transform: uppercase;">
-            Mis Preferencias de Corte y Barba (Historial)
-          </h3>
-          <p style="margin: 4px 0 0 0; font-size: 12px; color: #7e7e7e;">
-            Tu barbero asignado consultará esta ficha antes de iniciar tu servicio.
-          </p>
+        <div class="card-section-header">
+          <h3>Mis Preferencias de Corte y Barba (Historial)</h3>
+          <p>Tu barbero asignado consultará esta ficha antes de iniciar tu servicio.</p>
         </div>
 
         <ion-list lines="full" class="bg-transparent">
@@ -92,6 +93,7 @@
           <ion-item class="info-item">
             <ion-select label="Cuidado y Estilo de Barba" labelPlacement="stacked" [(ngModel)]="preferencias.barba">
               <ion-select-option value="Perfilada con Navaja">Perfilada con Navaja & Toalla Caliente</ion-select-option>
+              <ion-select-option value="Perfilada">Perfilada Clásica</ion-select-option>
               <ion-select-option value="Corta (3mm)">Corta (2mm a 3mm)</ion-select-option>
               <ion-select-option value="Larga Tradicional">Larga / Poblada Hidratada</ion-select-option>
               <ion-select-option value="Candado">Estilo Candado Definido</ion-select-option>
@@ -119,34 +121,10 @@
       </div>
 
       <ion-button expand="block" class="btn-gold mt-4" (click)="guardarCambiosPerfil()" [disabled]="guardando">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
         {{ guardando ? 'GUARDANDO CAMBIOS...' : 'GUARDAR PREFERENCIAS' }}
       </ion-button>
     </div>
-
-    <!-- MODAL DE RECORTE DE AVATAR -->
-    <ion-modal [isOpen]="abrirRecortador" class="modal-recorte-premium">
-      <ng-template>
-        <div class="cropper-wrapper">
-          <div class="cropper-header">
-            <h3>Ajustar Foto de Perfil</h3>
-          </div>
-          <div class="cropper-body">
-            <image-cropper
-              [imageBase64]="imagenOriginalBase64"
-              [maintainAspectRatio]="true"
-              [aspectRatio]="1 / 1"
-              [roundCropper]="true"
-              format="jpeg"
-              (imageCropped)="fotoRecortadaEfectuada($event)">
-            </image-cropper>
-          </div>
-          <div class="cropper-footer">
-            <ion-button fill="clear" color="light" (click)="cancelarRecorte()">Cancelar</ion-button>
-            <ion-button class="btn-confirm-crop" (click)="aplicarRecorteCircular()">Aplicar</ion-button>
-          </div>
-        </div>
-      </ng-template>
-    </ion-modal>
 
   </ion-content>
 </div>

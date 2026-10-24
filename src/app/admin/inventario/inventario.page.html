@@ -1,5 +1,5 @@
 <ion-header class="ion-no-border premium-header">
-  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button class="gold-burger"></ion-menu-button>
     </ion-buttons>
@@ -16,13 +16,13 @@
   <div class="dashboard-wrapper" style="padding: 12px 16px;">
     
     <ion-searchbar 
-      placeholder="Buscar producto por nombre..." 
+      placeholder="Buscar producto por nombre o categoría..." 
       [(ngModel)]="searchTerm" 
       (ionInput)="filtrarProductos()"
       class="custom-searchbar-minimal">
     </ion-searchbar>
 
-    <p *ngIf="productosFiltrados.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
+    <p *ngIf="productosFiltrados.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
       El inventario está vacío. Toca el botón + para añadir productos.
     </p>
 
@@ -33,17 +33,20 @@
           <div class="grid-product-card">
             
             <div class="product-image-container">
-              <img *ngIf="prod.imagen" [src]="prod.imagen" class="product-cover-img" alt="producto">
-              <div *ngIf="!prod.imagen" class="no-image-placeholder">
+              <img *ngIf="prod.imagen || prod.imagen_url" [src]="prod.imagen || prod.imagen_url" class="product-cover-img" alt="producto">
+              <div *ngIf="!prod.imagen && !prod.imagen_url" class="no-image-placeholder">
                 <ion-icon name="cube-outline"></ion-icon>
               </div>
               
-              <div class="stock-badge" [ngClass]="prod.stock <= 3 ? 'bg-red' : 'bg-gold'">
+              <div class="stock-badge" [ngClass]="prod.stock <= 5 ? 'bg-red' : 'bg-gold'">
                 Stock: {{ prod.stock }}
               </div>
             </div>
 
             <div class="product-details">
+              <span style="font-size: 9px; font-weight: 800; color: #c59d5f; text-transform: uppercase; letter-spacing: 0.5px;">
+                {{ prod.categoria || 'Cuidado Masculino' }}
+              </span>
               <h4 class="prod-title">{{ prod.nombre }}</h4>
               <p class="prod-desc">{{ prod.descripcion || 'Sin descripción' }}</p>
               
@@ -77,22 +80,22 @@
   <ion-modal [isOpen]="isModalOpen" (didDismiss)="cerrarModal()">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold; font-size: 16px;">
-            {{ modoEdicion ? 'Actualizar Producto' : 'Nuevo Producto' }}
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">
+            {{ modoEdicion ? 'ACTUALIZAR PRODUCTO' : 'NUEVO PRODUCTO' }}
           </ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="cerrarModal()" color="dark">
+            <ion-button (click)="cerrarModal()" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
         
         <div class="image-upload-wrapper" (click)="abrirSelectorArchivo()">
-          <img *ngIf="productoActual.imagen" [src]="productoActual.imagen" class="preview-img">
+          <img *ngIf="productoActual.imagen" [src]="productoActual.imagen" class="preview-img" alt="Preview">
           <div *ngIf="!productoActual.imagen" class="upload-placeholder">
             <ion-icon name="camera-outline"></ion-icon>
             <span>Toca para añadir foto</span>
@@ -100,23 +103,35 @@
         </div>
         <input type="file" id="file-upload-producto" accept="image/*" style="display: none;" (change)="cargarImagenProducto($event)">
 
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.25); margin-bottom: 24px;">
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+        <div class="modal-form-card">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Nombre del Producto" labelPlacement="floating" type="text" [(ngModel)]="productoActual.nombre"></ion-input>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+
+          <ion-item lines="full" class="modal-form-item">
+            <ion-select label="Categoría" labelPlacement="floating" [(ngModel)]="productoActual.categoria">
+              <ion-select-option value="Fijación Capilar">Fijación Capilar</ion-select-option>
+              <ion-select-option value="Cuidado de Barba">Cuidado de Barba</ion-select-option>
+              <ion-select-option value="Cuidado Capilar">Cuidado Capilar</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Descripción" labelPlacement="floating" type="text" [(ngModel)]="productoActual.descripcion"></ion-input>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Precio (S/.)" labelPlacement="floating" type="number" [(ngModel)]="productoActual.precio"></ion-input>
           </ion-item>
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+
+          <ion-item lines="none" class="modal-form-item">
             <ion-input label="Stock Disponible" labelPlacement="floating" type="number" [(ngModel)]="productoActual.stock"></ion-input>
           </ion-item>
         </div>
 
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarProducto()">
-          <ion-icon slot="start" name="save-outline"></ion-icon> SINCRO PRODUCTO
+        <ion-button expand="block" [disabled]="guardando" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarProducto()">
+          <ion-icon slot="start" name="save-outline"></ion-icon>
+          {{ guardando ? 'SINCRONIZANDO...' : 'GUARDAR EN INVENTARIO' }}
         </ion-button>
       </ion-content>
     </ng-template>

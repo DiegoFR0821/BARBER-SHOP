@@ -22,15 +22,15 @@
       class="custom-searchbar-minimal">
     </ion-searchbar>
 
-    <p *ngIf="anunciosFiltrados.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
+    <p *ngIf="anunciosFiltrados.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
       No hay ventanas emergentes configuradas para los clientes.
     </p>
 
     <div class="minimalist-announcement-card" *ngFor="let promo of anunciosFiltrados">
       
       <div class="announcement-preview-box">
-        <img *ngIf="promo.imagen" [src]="promo.imagen" class="banner-thumb-img" alt="banner">
-        <div *ngIf="!promo.imagen" class="icon-frame-circle bg-gold-light">
+        <img *ngIf="promo.imagen || promo.imagen_url" [src]="promo.imagen || promo.imagen_url" class="banner-thumb-img" alt="banner">
+        <div *ngIf="!promo.imagen && !promo.imagen_url" class="icon-frame-circle bg-gold-light">
           <ion-icon name="megaphone-outline" class="color-gold"></ion-icon>
         </div>
       </div>
@@ -48,15 +48,15 @@
       <div class="announcement-right-actions">
         <div class="horizontal-btn-group">
           
-          <ion-button fill="clear" class="action-btn-item" [style.--color]="promo.activo ? '#28a745' : '#888'" (click)="alternarEstadoAnuncio(promo)">
+          <ion-button fill="clear" class="action-btn-item" [style.--color]="promo.activo ? '#28a745' : '#888'" (click)="alternarEstadoAnuncio(promo)" title="Activar / Pausar">
             <ion-icon slot="icon-only" [name]="promo.activo ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
           </ion-button>
 
-          <ion-button fill="clear" class="action-btn-item color-grey" (click)="abrirModalEditar(promo)">
+          <ion-button fill="clear" class="action-btn-item color-grey" (click)="abrirModalEditar(promo)" title="Editar">
             <ion-icon slot="icon-only" name="create-outline"></ion-icon>
           </ion-button>
           
-          <ion-button fill="clear" class="action-btn-item color-red" (click)="eliminarAnuncio(promo.id)">
+          <ion-button fill="clear" class="action-btn-item color-red" (click)="eliminarAnuncio(promo.id)" title="Eliminar">
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
           </ion-button>
 
@@ -75,22 +75,22 @@
   <ion-modal [isOpen]="isModalOpen" (didDismiss)="cerrarModal()">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold; font-size: 16px;">
-            {{ modoEdicion ? 'Editar Ventana Emergente' : 'Nuevo Pop-up Promocional' }}
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">
+            {{ modoEdicion ? 'EDITAR POP-UP PROMOCIONAL' : 'NUEVO POP-UP PROMOCIONAL' }}
           </ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="cerrarModal()" color="dark">
+            <ion-button (click)="cerrarModal()" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
         
         <div class="banner-upload-box" (click)="abrirSelectorArchivo()">
-          <img *ngIf="anuncioActual.imagen" [src]="anuncioActual.imagen" class="preview-banner-img">
+          <img *ngIf="anuncioActual.imagen" [src]="anuncioActual.imagen" class="preview-banner-img" alt="Banner">
           <div *ngIf="!anuncioActual.imagen" class="upload-banner-placeholder">
             <ion-icon name="camera-outline"></ion-icon>
             <span>Toca para cargar banner del Pop-up</span>
@@ -98,26 +98,26 @@
         </div>
         <input type="file" id="file-upload-anuncio" accept="image/*" style="display: none;" (change)="cargarImagenAnuncio($event)">
 
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.25); margin-bottom: 24px;">
+        <div class="modal-form-card">
           
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
-            <ion-input label="Título del Anuncio" labelPlacement="floating" type="text" [(ngModel)]="anuncioActual.titulo" placeholder="Ej. ¡20% de Descuento en Tintes!"></ion-input>
+          <ion-item lines="full" class="modal-form-item">
+            <ion-input label="Título del Anuncio" labelPlacement="floating" type="text" [(ngModel)]="anuncioActual.titulo" placeholder="Ej. ¡20% de Descuento en Combo Master Barber!"></ion-input>
           </ion-item>
 
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-textarea label="Cuerpo del Mensaje / Descripción" labelPlacement="floating" rows="3" [(ngModel)]="anuncioActual.descripcion" placeholder="Escribe los detalles que verá el cliente al iniciar sesión..."></ion-textarea>
           </ion-item>
 
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0; margin-top: 8px;">
-            <ion-label style="font-size: 14px; color: #555;">Publicar inmediatamente</ion-label>
-            <ion-toggle slot="end" [(ngModel)]="anuncioActual.activo" style="--handle-background-checked: #aa8529; --background-checked: rgba(170,133,41,0.3);"></ion-toggle>
+          <ion-item lines="none" class="modal-form-item" style="margin-top: 8px;">
+            <ion-label style="font-size: 14px; color: #ffffff;">Publicar inmediatamente</ion-label>
+            <ion-toggle slot="end" [(ngModel)]="anuncioActual.activo" style="--handle-background-checked: #c59d5f; --background-checked: rgba(197,157,95,0.35);"></ion-toggle>
           </ion-item>
 
         </div>
 
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarAnuncio()">
+        <ion-button expand="block" [disabled]="guardando" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarAnuncio()">
           <ion-icon slot="start" name="save-outline"></ion-icon>
-          SINCRO MODAL
+          {{ guardando ? 'SINCRONIZANDO...' : 'GUARDAR PROMOCIÓN' }}
         </ion-button>
       </ion-content>
     </ng-template>

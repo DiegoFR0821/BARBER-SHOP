@@ -394,25 +394,55 @@ $border-gold: rgba(197, 157, 95, 0.25);
 }
 
 /* ======================================================================
-   POPUP DE PROMOCIÓN
+   VENTANA MODAL FLOTANTE CENTRADA (POP-UP COMPACTO 1 VEZ POR SESIÓN)
    ====================================================================== */
+.promo-floating-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInPromo 0.25s ease-out;
+}
+
+@keyframes fadeInPromo {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .popup-container-dark {
+  width: 100%;
+  max-width: 350px;
   background: $bg-surface;
   color: $text-light;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid $border-gold;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
+  border: 1.5px solid rgba(197, 157, 95, 0.55);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
   position: relative;
 
   .close-popup-bar {
     position: absolute;
     top: 12px;
     right: 12px;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(11, 11, 13, 0.85);
+    border: 1px solid rgba(197, 157, 95, 0.4);
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -426,7 +456,7 @@ $border-gold: rgba(197, 157, 95, 0.25);
   }
 
   .popup-image-hero-wrapper {
-    height: 190px;
+    height: 175px;
     overflow: hidden;
 
     img {
@@ -448,12 +478,12 @@ $border-gold: rgba(197, 157, 95, 0.25);
   }
 
   .popup-content-body {
-    padding: 20px 18px 24px;
+    padding: 18px 18px 22px;
     text-align: center;
 
     .popup-promo-title {
       font-family: 'Oswald', 'Montserrat', sans-serif;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 700;
       color: $text-light;
       margin: 0 0 8px;
@@ -463,8 +493,8 @@ $border-gold: rgba(197, 157, 95, 0.25);
     .popup-promo-desc {
       font-size: 13px;
       color: $text-muted;
-      line-height: 1.5;
-      margin: 0 0 18px;
+      line-height: 1.45;
+      margin: 0 0 16px;
     }
 
     .btn-popup-whatsapp {
@@ -474,7 +504,7 @@ $border-gold: rgba(197, 157, 95, 0.25);
       font-weight: 800;
       font-size: 13px;
       letter-spacing: 1px;
-      height: 46px;
+      height: 44px;
       box-shadow: 0 6px 16px rgba(37, 211, 102, 0.3);
     }
 
@@ -482,8 +512,14 @@ $border-gold: rgba(197, 157, 95, 0.25);
       display: inline-block;
       margin-top: 12px;
       font-size: 12px;
+      font-weight: 600;
       color: $text-muted;
       cursor: pointer;
+      padding: 4px 12px;
+
+      &:hover {
+        color: $gold-primary;
+      }
     }
   }
 }

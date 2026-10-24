@@ -6,7 +6,7 @@ import { UsuarioService, UsuarioPerfil } from '../../services/usuario';
 import { SupabaseService, Cita, Anuncio } from '../../core/services/supabase.service';
 import { 
   IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
-  IonIcon, IonBadge, IonModal, IonGrid, IonRow, IonCol
+  IonIcon, IonBadge, IonGrid, IonRow, IonCol
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -24,7 +24,7 @@ import {
   standalone: true,
   imports: [
     CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, 
-    IonButtons, IonButton, IonIcon, IonBadge, IonModal, IonGrid, IonRow, IonCol
+    IonButtons, IonButton, IonIcon, IonBadge, IonGrid, IonRow, IonCol
   ]
 })
 export class ResumenPage implements OnInit {
@@ -33,15 +33,15 @@ export class ResumenPage implements OnInit {
   usuarioActual: UsuarioPerfil | null = null;
   nombreCliente: string = 'Cliente'; 
   fotoCliente: string = '';
+  avatarError: boolean = false;
   tieneNotificaciones: boolean = false; 
 
   // Próxima cita agendada
   proximaCita: Cita | null = null;
 
-  // Cola de Promociones / Anuncios desde Supabase
+  // Promoción de bienvenida desde Supabase (Control de aparición única por sesión)
   anunciosActivos: Anuncio[] = [];
   anuncioActual: Anuncio | null = null;
-  indiceAnuncio: number = 0;
   isPromoOpen: boolean = false;    
 
   numeroWhatsApp: string = '51929727435';
@@ -100,15 +100,48 @@ export class ResumenPage implements OnInit {
       if (this.usuarioActual.nombre) {
         this.nombreCliente = this.usuarioActual.nombre.split(' ')[0];
       }
-      this.fotoCliente = this.usuarioActual.avatar_url || this.usuarioActual.imagen || '';
+      const urlFoto = this.usuarioActual.avatar_url || this.usuarioActual.imagen || '';
+      if (urlFoto && !urlFoto.includes('ionicframework.com/docs/img/demos/avatar.svg')) {
+        this.fotoCliente = urlFoto;
+        this.avatarError = false;
+      } else {
+        this.fotoCliente = '';
+      }
     }
+  }
+
+  onAvatarError() {
+    this.avatarError = true;
+    this.fotoCliente = '';
   }
 
   async cargarDatosSupabase() {
     await Promise.all([
+      this.sincronizarPerfilCabecera(),
       this.cargarProximaCita(),
-      this.cargarPromocionesCola()
+      this.verificarYMostrarPromoUnica()
     ]);
+  }
+
+  async sincronizarPerfilCabecera() {
+    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || this.supabaseService.currentUserValue?.id;
+    if (!clienteId) return;
+
+    try {
+      const perfilFresco = await this.supabaseService.getPerfil(clienteId);
+      if (perfilFresco) {
+        this.usuarioService.setUsuario(perfilFresco);
+        this.usuarioActual = perfilFresco;
+        if (perfilFresco.nombre) {
+          this.nombreCliente = perfilFresco.nombre.split(' ')[0];
+        }
+        const urlFoto = perfilFresco.avatar_url || perfilFresco.imagen || '';
+        if (urlFoto && !urlFoto.includes('ionicframework.com/docs/img/demos/avatar.svg')) {
+          this.fotoCliente = urlFoto;
+          this.avatarError = false;
+        }
+      }
+    } catch {}
   }
 
   /**
@@ -132,34 +165,38 @@ export class ResumenPage implements OnInit {
   }
 
   /**
-   * Carga los anuncios activos desde Supabase
+   * Muestra el modal promocional flotante SOLO 1 VEZ por sesión de usuario.
+   * Si el usuario cambia de pestaña (Citas, Tienda, Asistente, Comunidad) y regresa a Inicio,
+   * no vuelve a abrirse hasta que cierre sesión (signOut).
    */
-  async cargarPromocionesCola() {
+  async verificarYMostrarPromoUnica() {
+    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || this.supabaseService.currentUserValue?.id || 'invitado';
+    const sessionKey = `promo_modal_visto_${clienteId}`;
+
+    // Si ya fue visto en esta sesión, no volver a mostrarlo
+    if (sessionStorage.getItem(sessionKey) === 'true' || sessionStorage.getItem('promo_modal_visto_sesion') === 'true') {
+      return;
+    }
+
     try {
       this.anunciosActivos = await this.supabaseService.getAnunciosActivos();
       if (this.anunciosActivos.length > 0) {
-        this.indiceAnuncio = 0;
-        this.dispararAnuncioModal();
+        this.anuncioActual = this.anunciosActivos[0];
+        this.isPromoOpen = true;
+        // Marcar inmediatamente como mostrado en esta sesión
+        sessionStorage.setItem(sessionKey, 'true');
+        sessionStorage.setItem('promo_modal_visto_sesion', 'true');
       }
     } catch (error) {
       console.error('Error cargando anuncios desde Supabase:', error);
     }
   }
 
-  dispararAnuncioModal() {
-    this.anuncioActual = this.anunciosActivos[this.indiceAnuncio];
-    this.isPromoOpen = true;
-  }
-
   cerrarYContinuarSecuencia() {
+    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || this.supabaseService.currentUserValue?.id || 'invitado';
+    sessionStorage.setItem(`promo_modal_visto_${clienteId}`, 'true');
+    sessionStorage.setItem('promo_modal_visto_sesion', 'true');
     this.isPromoOpen = false;
-    this.indiceAnuncio++;
-
-    if (this.indiceAnuncio < this.anunciosActivos.length) {
-      setTimeout(() => {
-        this.dispararAnuncioModal();
-      }, 7000); 
-    }
   }
 
   contactarWhatsAppPromocion() {

@@ -5,7 +5,8 @@ import {
   SupabaseClient, 
   User, 
   Session, 
-  AuthChangeEvent 
+  AuthChangeEvent,
+  RealtimeChannel
 } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { UsuarioPerfil, PreferenciasCliente } from '../../services/usuario';
@@ -67,6 +68,29 @@ export interface Anuncio {
   created_at?: string;
 }
 
+export interface ProductoBarberia {
+  id: string;
+  nombre: string;
+  categoria: string;
+  precio: number;
+  stock: number;
+  imagen_url?: string;
+  imagen?: string;
+  descripcion?: string;
+  activo: boolean;
+  created_at?: string;
+}
+
+export interface MensajeComunidad {
+  id: string;
+  usuario_id?: string | null;
+  autor_nombre: string;
+  autor_rol: string;
+  autor_avatar?: string;
+  mensaje: string;
+  created_at?: string;
+}
+
 /**
  * Servicio centralizado de conexión y gestión de Supabase para Barber Shop Lima Norte S.A.C.
  * Implementa el patrón Singleton (providedIn: 'root') y estándares ISO/IEC 25010 y OWASP Mobile:
@@ -74,7 +98,7 @@ export interface Anuncio {
  * - Refresco automático de tokens JWT.
  * - Prevención estricta de colisiones de router con detectSessionInUrl: false.
  * - Manejo especializado de concurrencia de citas (captura de error 23505).
- * - Consultas relacionales PostgREST de alto rendimiento (< 2.0s).
+ * - Transacciones atómicas de carrito e inventario y chat en tiempo real.
  */
 @Injectable({
   providedIn: 'root'
@@ -136,26 +160,89 @@ export class SupabaseService {
   // =========================================================================
 
   async signIn(correo: string, clave: string): Promise<{ user: User; session: Session | null; perfil: UsuarioPerfil }> {
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email: correo,
+    const correoLimpio = correo.trim().toLowerCase();
+    const esCuentaAdminOficial = correoLimpio === 'admin@barbershop.pe' && clave === 'Admin123456!';
+
+    let { data, error } = await this.supabase.auth.signInWithPassword({
+      email: correoLimpio,
       password: clave
     });
+
+    // Auto-provisión de la cuenta oficial de administrador si aún no se ejecutó el bloque SQL en auth.users
+    if (error && esCuentaAdminOficial) {
+      try {
+        const signUpAdmin = await this.supabase.auth.signUp({
+          email: correoLimpio,
+          password: clave,
+          options: {
+            data: {
+              nombre: 'Administrador General',
+              telefono: '929727435',
+              rol: 'admin'
+            }
+          }
+        });
+
+        if (signUpAdmin.data?.user) {
+          const retryLogin = await this.supabase.auth.signInWithPassword({
+            email: correoLimpio,
+            password: clave
+          });
+          data = retryLogin.data;
+          error = retryLogin.error;
+        }
+      } catch (adminInitErr) {
+        console.warn('Aviso al inicializar cuenta admin en Supabase Auth:', adminInitErr);
+      }
+    }
 
     if (error) throw error;
     if (!data.user) throw new Error('No se pudo recuperar la información del usuario.');
 
+    // Si es el correo oficial de admin, garantizamos su registro y rol 'admin' en public.usuarios
+    if (correoLimpio === 'admin@barbershop.pe') {
+      try {
+        await this.supabase.from('usuarios').upsert({
+          id: data.user.id,
+          nombre: 'Administrador General',
+          correo: correoLimpio,
+          telefono: '929727435',
+          rol: 'admin',
+          avatar_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=300&q=80',
+          historial_notas: 'Cuenta oficial de Administración - BARBER SHOP LIMA NORTE S.A.C.',
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) {
+        console.warn('No se pudo sincronizar upsert de admin:', e);
+      }
+    }
+
     let perfil = await this.getPerfil(data.user.id);
+    const metaTelefono = data.user.user_metadata?.['telefono'] || '';
+
     if (!perfil) {
       perfil = {
         id: data.user.id,
         uid: data.user.id,
-        nombre: data.user.user_metadata['nombre'] || correo.split('@')[0],
-        correo: correo,
-        rol: data.user.user_metadata['rol'] || 'cliente',
-        avatar_url: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        imagen: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        nombre: data.user.user_metadata?.['nombre'] || (correoLimpio === 'admin@barbershop.pe' ? 'Administrador General' : correoLimpio.split('@')[0]),
+        correo: correoLimpio,
+        telefono: metaTelefono,
+        rol: correoLimpio === 'admin@barbershop.pe' ? 'admin' : (data.user.user_metadata?.['rol'] || 'cliente'),
+        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+        imagen: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
         historial_notas: 'Cliente regular'
       };
+    } else {
+      if (correoLimpio === 'admin@barbershop.pe') {
+        perfil.rol = 'admin';
+      }
+      // Si el teléfono estaba en user_metadata pero faltaba en public.usuarios, lo sincronizamos
+      if (!perfil.telefono && metaTelefono) {
+        perfil.telefono = metaTelefono;
+        try {
+          await this.supabase.from('usuarios').update({ telefono: metaTelefono }).eq('id', data.user.id);
+        } catch {}
+      }
     }
 
     return { user: data.user, session: data.session, perfil };
@@ -168,21 +255,24 @@ export class SupabaseService {
     telefono?: string, 
     preferencias?: PreferenciasCliente
   ): Promise<{ user: User | null; session: Session | null }> {
+    const correoLimpio = correo.trim().toLowerCase();
+    const telefonoLimpio = (telefono || '').trim();
+
     const preferenciasDefecto: PreferenciasCliente = preferencias || {
       estilo: 'Fade Clásico',
       tipo_cabello: 'Lacio',
-      barba: 'Perfilada',
+      barba: 'Perfilada con Navaja',
       frecuencia: 'Quincenal',
       notas: 'Preferencia inicial al registrarse'
     };
 
     const { data, error } = await this.supabase.auth.signUp({
-      email: correo,
+      email: correoLimpio,
       password: clave,
       options: {
         data: {
           nombre,
-          telefono: telefono || '',
+          telefono: telefonoLimpio,
           rol: 'cliente',
           preferencias_corte: preferenciasDefecto
         }
@@ -191,29 +281,12 @@ export class SupabaseService {
 
     if (error) throw error;
 
-    if (data.user) {
-      try {
-        await this.supabase.from('usuarios').upsert({
-          id: data.user.id,
-          nombre,
-          correo,
-          telefono: telefono || '',
-          rol: 'cliente',
-          avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-          preferencias_corte: preferenciasDefecto,
-          historial_notas: 'Registrado desde la App Barber Shop.'
-        });
-      } catch (upsertErr) {
-        console.warn('Aviso: el trigger on_auth_user_created gestionará el perfil:', upsertErr);
-      }
-    }
-
-    // Auto-login inmediato para omitir confirmación de correo
+    // 1. Primero garantizamos sesión activa para que auth.uid() esté disponible frente a las políticas RLS
     let sesionActiva = data.session;
     if (!sesionActiva && data.user) {
       try {
         const loginInmediato = await this.supabase.auth.signInWithPassword({
-          email: correo,
+          email: correoLimpio,
           password: clave
         });
         if (loginInmediato.data.session) {
@@ -225,10 +298,38 @@ export class SupabaseService {
       }
     }
 
+    // 2. Ahora con sesión autenticada realizamos el upsert en public.usuarios incluyendo el teléfono
+    if (data.user) {
+      try {
+        await this.supabase.from('usuarios').upsert({
+          id: data.user.id,
+          nombre,
+          correo: correoLimpio,
+          telefono: telefonoLimpio,
+          rol: 'cliente',
+          avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+          preferencias_corte: preferenciasDefecto,
+          historial_notas: 'Registrado desde la App Barber Shop.',
+          updated_at: new Date().toISOString()
+        });
+      } catch (upsertErr) {
+        console.warn('Aviso: el trigger on_auth_user_created gestionará el perfil:', upsertErr);
+      }
+    }
+
     return { user: data.user, session: sesionActiva };
   }
 
   async signOut(): Promise<void> {
+    try {
+      // Limpiar banderas de sesión del modal promocional al cerrar sesión
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('promo_modal_visto')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch {}
+
     const { error } = await this.supabase.auth.signOut();
     this.currentUserSubject.next(null);
     if (error) console.warn('Aviso al cerrar sesión en Supabase:', error);
@@ -248,8 +349,15 @@ export class SupabaseService {
 
       if (error || !data) return null;
 
+      const metaTelefono = this.currentUserValue?.id === id 
+        ? (this.currentUserValue?.user_metadata?.['telefono'] || '') 
+        : '';
+
+      const telefonoFinal = data.telefono || metaTelefono || '';
+
       return {
         ...data,
+        telefono: telefonoFinal,
         uid: data.id,
         imagen: data.avatar_url,
         descripcion: data.historial_notas
@@ -278,9 +386,38 @@ export class SupabaseService {
       .update(payload)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+
+    // Si por algún motivo el registro no existía en public.usuarios, hacemos upsert
+    if (!data) {
+      const correoFallback = datos.correo || this.currentUserValue?.email || '';
+      const upsertPayload = {
+        id,
+        nombre: datos.nombre || 'Cliente Barber Shop',
+        correo: correoFallback,
+        telefono: datos.telefono || '',
+        rol: datos.rol || 'cliente',
+        avatar_url: payload.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+        preferencias_corte: datos.preferencias_corte,
+        historial_notas: payload.historial_notas || '',
+        updated_at: new Date().toISOString()
+      };
+      const { data: upserted, error: upsertErr } = await this.supabase
+        .from('usuarios')
+        .upsert(upsertPayload)
+        .select()
+        .single();
+
+      if (upsertErr) throw upsertErr;
+      return {
+        ...upserted,
+        uid: upserted.id,
+        imagen: upserted.avatar_url,
+        descripcion: upserted.historial_notas
+      } as UsuarioPerfil;
+    }
 
     return {
       ...data,
@@ -317,7 +454,7 @@ export class SupabaseService {
       correo: datos.correo,
       telefono: datos.telefono || '',
       rol: datos.rol || 'cliente',
-      avatar_url: datos.avatar_url || datos.imagen || 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      avatar_url: datos.avatar_url || datos.imagen || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
       historial_notas: datos.historial_notas || datos.descripcion || 'Registrado por administración.',
       preferencias_corte: datos.preferencias_corte || {
         estilo: 'Fade Clásico',
@@ -364,9 +501,6 @@ export class SupabaseService {
   // FASE 3: BARBEROS Y SERVICIOS
   // =========================================================================
 
-  /**
-   * Obtiene la lista de barberos activos en Barber Shop Lima Norte
-   */
   async getBarberosActivos(): Promise<Barbero[]> {
     try {
       const { data, error } = await this.supabase
@@ -383,7 +517,6 @@ export class SupabaseService {
       console.warn('Usando catálogo inicial seguro de barberos:', e);
     }
 
-    // Fallback defensivo para asegurar renderizado inmediato con fotos 100% masculinas
     return [
       { id: 'b1', nombre: 'Carlos "Blade" Mendoza', especialidad: 'Master Barber / Fade & Degradados', foto_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', activo: true },
       { id: 'b2', nombre: 'Mateo Quispe', especialidad: 'Especialista en Barba & Toalla Caliente', foto_url: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', imagen: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', activo: true },
@@ -419,9 +552,6 @@ export class SupabaseService {
     return true;
   }
 
-  /**
-   * Obtiene la lista de servicios masculinos activos
-   */
   async getServiciosActivos(): Promise<ServicioBarberia[]> {
     try {
       const { data, error } = await this.supabase
@@ -481,10 +611,6 @@ export class SupabaseService {
   // FASE 3: CITAS Y DISPONIBILIDAD (PREVENCIÓN DE CONCURRENCIA)
   // =========================================================================
 
-  /**
-   * Consulta las horas ocupadas de un barbero en una fecha dada aprovechando
-   * los índices B-Tree de PostgreSQL (tiempo de respuesta < 2.0s).
-   */
   async getHorariosOcupados(barberoId: string, fecha: string): Promise<string[]> {
     if (!barberoId || !fecha) return [];
 
@@ -504,11 +630,6 @@ export class SupabaseService {
     }
   }
 
-  /**
-   * Inserta una nueva cita en public.citas.
-   * CAPTURA ESPECÍFICAMENTE EL ERROR 23505 (violación de unicidad de concurrencia)
-   * del índice idx_citas_concurrencia_activa para prevenir solapamiento en milisegundos.
-   */
   async crearCita(citaPayload: {
     cliente_id: string;
     barbero_id: string;
@@ -534,7 +655,6 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      // Código PostgreSQL 23505: unique_violation (idx_citas_concurrencia_activa)
       if (error.code === '23505' || error.message?.includes('idx_citas_concurrencia_activa')) {
         throw new Error('CONCURRENCY_ERROR: Este barbero acaba de ser agendado en ese horario exacto por otro cliente. Por favor, selecciona otro horario disponible.');
       }
@@ -544,9 +664,6 @@ export class SupabaseService {
     return data as Cita;
   }
 
-  /**
-   * Obtiene las citas del cliente en sesión con JOIN relacional (Barbero y Servicio)
-   */
   async getCitasCliente(clienteId: string): Promise<Cita[]> {
     if (!clienteId) return [];
 
@@ -577,10 +694,6 @@ export class SupabaseService {
     }
   }
 
-  /**
-   * Obtiene todas las citas para el Administrador con JOIN a Cliente, Barbero y Servicio,
-   * incluyendo preferencias_corte y notas para el barbero.
-   */
   async getTodasLasCitasAdmin(): Promise<Cita[]> {
     try {
       const { data, error } = await this.supabase
@@ -612,9 +725,6 @@ export class SupabaseService {
     }
   }
 
-  /**
-   * Actualiza el estado de una cita ('confirmada', 'completada', 'cancelada')
-   */
   async actualizarEstadoCita(citaId: string, estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada'): Promise<boolean> {
     const { error } = await this.supabase
       .from('citas')
@@ -625,9 +735,6 @@ export class SupabaseService {
     return true;
   }
 
-  /**
-   * Elimina una cita de la base de datos
-   */
   async eliminarCita(citaId: string): Promise<boolean> {
     const { error } = await this.supabase
       .from('citas')
@@ -639,7 +746,236 @@ export class SupabaseService {
   }
 
   // =========================================================================
-  // FASE 3: ANUNCIOS Y DASHBOARD KPI
+  // FASE 4: PRODUCTOS, INVENTARIO Y CARRITO TRANSACCIONAL
+  // =========================================================================
+
+  private normalizarProducto(p: any): ProductoBarberia {
+    let imagenUrl = p.imagen_url || p.imagen || '';
+    let desc = p.descripcion || '';
+
+    // Si en algún seed previo imagen_url y descripcion se guardaron invertidos, los corregimos al vuelo
+    if (desc.startsWith('http') && !imagenUrl.startsWith('http') && !imagenUrl.startsWith('data:')) {
+      const temp = imagenUrl;
+      imagenUrl = desc;
+      desc = temp;
+    }
+
+    return {
+      ...p,
+      precio: Number(p.precio || 0),
+      stock: Number(p.stock ?? 0),
+      imagen_url: imagenUrl,
+      imagen: imagenUrl,
+      descripcion: desc
+    };
+  }
+
+  private getCatalogoProductosRespaldo(): ProductoBarberia[] {
+    return [
+      {
+        id: 'p1',
+        nombre: 'Cera Mate Fijación Fuerte (100g)',
+        categoria: 'Fijación Capilar',
+        precio: 45.00,
+        stock: 35,
+        imagen_url: 'https://images.unsplash.com/photo-1597854711516-17b5f8507851?auto=format&fit=crop&w=600&q=80',
+        imagen: 'https://images.unsplash.com/photo-1597854711516-17b5f8507851?auto=format&fit=crop&w=600&q=80',
+        descripcion: 'Efecto mate natural sin brillo ni residuos. Ideal para peinados texturizados y pompadours.',
+        activo: true
+      },
+      {
+        id: 'p2',
+        nombre: 'Aceite Premium para Barba (30ml)',
+        categoria: 'Cuidado de Barba',
+        precio: 40.00,
+        stock: 25,
+        imagen_url: 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80',
+        imagen: 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80',
+        descripcion: 'Formulado con aceite de argán, jojoba y aroma a cedro para hidratar y dar brillo saludable.',
+        activo: true
+      },
+      {
+        id: 'p3',
+        nombre: 'Pomada Base Agua Brillo Medio (120g)',
+        categoria: 'Fijación Capilar',
+        precio: 42.00,
+        stock: 20,
+        imagen_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+        imagen: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+        descripcion: 'Fijación flexible de larga duración. Se retira fácilmente con agua en un solo lavado.',
+        activo: true
+      },
+      {
+        id: 'p4',
+        nombre: 'Shampoo Fortalecedor & Menta (250ml)',
+        categoria: 'Cuidado Capilar',
+        precio: 48.00,
+        stock: 15,
+        imagen_url: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+        imagen: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+        descripcion: 'Estimula el folículo piloso, controla el exceso de grasa y proporciona frescura mentolada.',
+        activo: true
+      },
+      {
+        id: 'p5',
+        nombre: 'Bálsamo After-Shave Calmante (100ml)',
+        categoria: 'Cuidado de Barba',
+        precio: 35.00,
+        stock: 40,
+        imagen_url: 'https://images.unsplash.com/photo-1608248597359-524f2b963351?auto=format&fit=crop&w=600&q=80',
+        imagen: 'https://images.unsplash.com/photo-1608248597359-524f2b963351?auto=format&fit=crop&w=600&q=80',
+        descripcion: 'Alivia la irritación del afeitado, cierra poros y previene vellos encarnados.',
+        activo: true
+      }
+    ];
+  }
+
+  async getProductosActivos(): Promise<ProductoBarberia[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('productos')
+        .select('*')
+        .eq('activo', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        return data.map(p => this.normalizarProducto(p));
+      }
+    } catch (e) {
+      console.warn('Usando catálogo de respaldo para productos:', e);
+    }
+    return this.getCatalogoProductosRespaldo();
+  }
+
+  async getTodosLosProductosAdmin(): Promise<ProductoBarberia[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        return data.map(p => this.normalizarProducto(p));
+      }
+    } catch (e) {
+      console.warn('Error obteniendo inventario en admin:', e);
+    }
+    return this.getCatalogoProductosRespaldo();
+  }
+
+  async crearProducto(prod: Partial<ProductoBarberia>): Promise<ProductoBarberia> {
+    const payload = {
+      nombre: prod.nombre,
+      categoria: prod.categoria || 'Fijación Capilar',
+      precio: Number(prod.precio || 0),
+      stock: Number(prod.stock ?? 0),
+      descripcion: prod.descripcion || '',
+      imagen_url: prod.imagen_url || prod.imagen || 'https://images.unsplash.com/photo-1597854711516-17b5f8507851?auto=format&fit=crop&w=600&q=80',
+      activo: prod.activo ?? true
+    };
+
+    const { data, error } = await this.supabase
+      .from('productos')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.normalizarProducto(data);
+  }
+
+  async actualizarProducto(id: string, prod: Partial<ProductoBarberia>): Promise<ProductoBarberia> {
+    const payload: any = {
+      nombre: prod.nombre,
+      categoria: prod.categoria || 'Fijación Capilar',
+      precio: Number(prod.precio || 0),
+      stock: Number(prod.stock ?? 0),
+      descripcion: prod.descripcion || '',
+      imagen_url: prod.imagen_url || prod.imagen || ''
+    };
+    if (prod.activo !== undefined) {
+      payload.activo = prod.activo;
+    }
+
+    const { data, error } = await this.supabase
+      .from('productos')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.normalizarProducto(data);
+  }
+
+  async eliminarProducto(id: string): Promise<boolean> {
+    const { error } = await this.supabase.from('productos').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  }
+
+  /**
+   * Procesa la compra del carrito invocando la función RPC transaccional procesar_compra_carrito
+   * en PostgreSQL. Incluye fallback directo sobre public.productos si algún ítem requiere actualización manual.
+   */
+  async procesarCompraCarrito(
+    items: { id: string; cantidad: number; stock?: number }[],
+    clienteId?: string
+  ): Promise<{ success: boolean; message: string }> {
+    if (!items || items.length === 0) {
+      throw new Error('El carrito de compras está vacío.');
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const itemsUuid = items
+      .filter(i => uuidRegex.test(String(i.id)))
+      .map(i => ({ id: i.id, cantidad: Number(i.cantidad) }));
+
+    if (itemsUuid.length > 0) {
+      const { data, error } = await this.supabase.rpc('procesar_compra_carrito', {
+        p_items: itemsUuid,
+        p_cliente_id: clienteId && uuidRegex.test(clienteId) ? clienteId : null
+      });
+
+      if (!error && data) {
+        return data as { success: boolean; message: string };
+      }
+
+      // Si el error es explícitamente por falta de stock en el RPC, propagamos el mensaje al cliente
+      if (error && error.message?.toLowerCase().includes('stock insuficiente')) {
+        throw new Error(error.message);
+      }
+
+      // Fallback defensivo: descuento directo si la función RPC aún no fue creada
+      for (const item of itemsUuid) {
+        const { data: prodActual } = await this.supabase
+          .from('productos')
+          .select('stock, nombre')
+          .eq('id', item.id)
+          .maybeSingle();
+
+        if (prodActual) {
+          if (prodActual.stock < item.cantidad) {
+            throw new Error(`Stock insuficiente para "${prodActual.nombre}" (Disponibles: ${prodActual.stock}).`);
+          }
+          await this.supabase
+            .from('productos')
+            .update({ stock: prodActual.stock - item.cantidad })
+            .eq('id', item.id);
+        }
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Compra procesada exitosamente y stock actualizado.'
+    };
+  }
+
+  // =========================================================================
+  // FASE 3 & 4: ANUNCIOS (CLIENTE Y ADMIN CRUD)
   // =========================================================================
 
   async getAnunciosActivos(): Promise<Anuncio[]> {
@@ -659,14 +995,188 @@ export class SupabaseService {
     }
 
     return [
-      { id: 'a1', titulo: '¡Gran Apertura Barber Shop Lima Norte!', descripcion: '20% de descuento en tu primer Combo Master Barber reservando desde la App.', imagen_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', imagen: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', activo: true },
+      { id: 'a1', titulo: '¡Bienvenido a Barber Shop Lima Norte!', descripcion: 'Obtén 20% de descuento en tu primer Combo Master Barber reservando desde nuestra App móvil.', imagen_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', imagen: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', activo: true },
       { id: 'a2', titulo: 'Miércoles de Barba & Amigos', descripcion: 'Perfilado y toalla caliente por solo S/ 25.00 reservando en línea.', imagen_url: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80', imagen: 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=800&q=80', activo: true }
     ];
   }
 
-  /**
-   * Calcula las métricas del panel administrativo en una sola llamada de agregación
-   */
+  async getTodosLosAnunciosAdmin(): Promise<Anuncio[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('anuncios')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        return data.map(a => ({ ...a, imagen: a.imagen_url }));
+      }
+    } catch (e) {
+      console.warn('Error cargando anuncios en admin:', e);
+    }
+    return this.getAnunciosActivos();
+  }
+
+  async crearAnuncio(anuncio: Partial<Anuncio>): Promise<Anuncio> {
+    const payload = {
+      titulo: anuncio.titulo,
+      descripcion: anuncio.descripcion,
+      imagen_url: anuncio.imagen_url || anuncio.imagen || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80',
+      activo: anuncio.activo ?? true
+    };
+
+    const { data, error } = await this.supabase
+      .from('anuncios')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { ...data, imagen: data.imagen_url };
+  }
+
+  async actualizarAnuncio(id: string, anuncio: Partial<Anuncio>): Promise<Anuncio> {
+    const payload: any = {
+      titulo: anuncio.titulo,
+      descripcion: anuncio.descripcion,
+      imagen_url: anuncio.imagen_url || anuncio.imagen || '',
+      activo: anuncio.activo ?? true
+    };
+
+    const { data, error } = await this.supabase
+      .from('anuncios')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { ...data, imagen: data.imagen_url };
+  }
+
+  async alternarEstadoAnuncio(id: string, activo: boolean): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('anuncios')
+      .update({ activo })
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  }
+
+  async eliminarAnuncio(id: string): Promise<boolean> {
+    const { error } = await this.supabase.from('anuncios').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  }
+
+  // =========================================================================
+  // FASE 4: CHAT DE COMUNIDAD CON SUPABASE & REALTIME
+  // =========================================================================
+
+  async getMensajesComunidad(): Promise<MensajeComunidad[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('mensajes_comunidad')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        return data as MensajeComunidad[];
+      }
+    } catch (e) {
+      console.warn('Aviso al cargar mensajes de comunidad desde Supabase:', e);
+    }
+
+    return [
+      {
+        id: 'm1',
+        autor_nombre: 'Staff Barber Shop',
+        autor_rol: 'admin',
+        mensaje: '¡Bienvenidos al canal oficial de la comunidad Barber Shop Lima Norte S.A.C.! 💈 Compartan sus experiencias y consultas.',
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'm2',
+        autor_nombre: 'Carlos "Blade" Mendoza',
+        autor_rol: 'barbero',
+        mensaje: '¡Saludos amigos! Hoy tenemos disponibilidad para degradados Skin Fade y ritual de barba con toalla caliente. 🔥✂️',
+        created_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  async enviarMensajeComunidad(payload: {
+    usuario_id?: string | null;
+    autor_nombre: string;
+    autor_rol: string;
+    autor_avatar?: string;
+    mensaje: string;
+  }): Promise<MensajeComunidad> {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uidValido = payload.usuario_id && uuidRegex.test(payload.usuario_id) ? payload.usuario_id : null;
+
+    const insertData = {
+      usuario_id: uidValido,
+      autor_nombre: payload.autor_nombre || 'Cliente Barber Shop',
+      autor_rol: payload.autor_rol || 'cliente',
+      autor_avatar: payload.autor_avatar || '',
+      mensaje: payload.mensaje.trim()
+    };
+
+    const { data, error } = await this.supabase
+      .from('mensajes_comunidad')
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as MensajeComunidad;
+  }
+
+  async eliminarMensajeComunidad(id: string): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('mensajes_comunidad')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  }
+
+  suscribirMensajesComunidad(
+    onInsert: (nuevo: MensajeComunidad) => void,
+    onDelete?: (idEliminado: string) => void
+  ): RealtimeChannel {
+    return this.supabase
+      .channel('realtime:mensajes_comunidad')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mensajes_comunidad' },
+        (payload) => {
+          if (payload.new) {
+            onInsert(payload.new as MensajeComunidad);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'mensajes_comunidad' },
+        (payload) => {
+          if (payload.old && (payload.old as any).id && onDelete) {
+            onDelete((payload.old as any).id);
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  // =========================================================================
+  // DASHBOARD KPI ADMIN
+  // =========================================================================
+
   async getMetricasDashboardAdmin(): Promise<{
     totalCitasHoy: number;
     totalClientes: number;
@@ -679,7 +1189,6 @@ export class SupabaseService {
     try {
       const hoy = new Date().toISOString().split('T')[0];
 
-      // Consultas paralelas de conteo
       const [citasHoyRes, clientesRes, stockRes, serviciosRes, todasCitasRes] = await Promise.all([
         this.supabase.from('citas').select('*', { count: 'exact' }).eq('fecha', hoy).neq('estado', 'cancelada'),
         this.supabase.from('usuarios').select('*', { count: 'exact' }).eq('rol', 'cliente'),
@@ -702,7 +1211,7 @@ export class SupabaseService {
         titulo: `Cita: ${c.cliente?.nombre || 'Cliente'}`,
         detalle: `${c.servicio?.nombre || 'Corte'} (${c.fecha} - ${c.hora})`,
         icono: 'calendar-outline',
-        color: '#aa8529'
+        color: '#c59d5f'
       }));
 
       const ingresosEstimados = ultimas.reduce((acc: number, c: any) => acc + (c.servicio?.precio || 0), 0);

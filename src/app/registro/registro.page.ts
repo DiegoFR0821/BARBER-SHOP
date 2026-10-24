@@ -70,9 +70,18 @@ export class RegistroPage implements OnInit {
       // 2. Si hay sesión activa inmediata (gracias al trigger/auto-login), entra directo al dashboard
       if (session && user) {
         const perfil = await this.supabaseService.obtenerPerfil(user.id);
-        if (perfil) {
-          this.usuarioService.setUsuario(perfil);
-        }
+        const perfilCompleto = {
+          ...(perfil || {}),
+          id: user.id,
+          uid: user.id,
+          nombre: this.nombre.trim(),
+          correo: this.correo.trim().toLowerCase(),
+          telefono: this.telefono.trim() || perfil?.telefono || '',
+          rol: perfil?.rol || 'cliente',
+          avatar_url: perfil?.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+          imagen: perfil?.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'
+        };
+        this.usuarioService.setUsuario(perfilCompleto as any);
         alert(`💈 ¡Bienvenido a Barber Shop, ${this.nombre.trim()}! Tu cuenta ha sido activada.`);
         this.router.navigate(['/dashboard/resumen']);
       } else {
