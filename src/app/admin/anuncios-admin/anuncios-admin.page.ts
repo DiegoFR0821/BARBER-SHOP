@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import {
   megaphoneOutline, createOutline, trashOutline, closeOutline, 
   saveOutline, add, cameraOutline, imageOutline, eyeOutline, eyeOffOutline 
 } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 import { SupabaseService, Anuncio } from '../../core/services/supabase.service';
 
 @Component({
@@ -27,7 +28,7 @@ import { SupabaseService, Anuncio } from '../../core/services/supabase.service';
     IonItem, IonFab, IonFabButton, IonToggle, IonTextarea
   ]
 })
-export class AnunciosAdminPage implements OnInit {
+export class AnunciosAdminPage implements OnInit, OnDestroy {
 
   private router = inject(Router);
   private supabaseService = inject(SupabaseService);
@@ -43,6 +44,9 @@ export class AnunciosAdminPage implements OnInit {
   guardando: boolean = false;
   anuncioActual: any = { id: '', titulo: '', descripcion: '', imagen: '', activo: true };
 
+  private syncSub?: Subscription;
+  private realtimeChannel: any;
+
   constructor() {
     addIcons({ 
       megaphoneOutline, createOutline, trashOutline, closeOutline, 
@@ -52,10 +56,20 @@ export class AnunciosAdminPage implements OnInit {
 
   async ngOnInit() {
     await this.cargarAnuncios();
+    this.syncSub = this.supabaseService.datosActualizados$.subscribe(() => {
+      this.cargarAnuncios();
+    });
+    this.realtimeChannel = this.supabaseService.suscribirCambiosAdmin(() => {
+      this.cargarAnuncios();
+    });
   }
 
   async ionViewWillEnter() {
     await this.cargarAnuncios();
+  }
+
+  ngOnDestroy() {
+    this.syncSub?.unsubscribe();
   }
 
   async cargarAnuncios() {
@@ -102,40 +116,34 @@ export class AnunciosAdminPage implements OnInit {
     document.getElementById('file-upload-anuncio')?.click();
   }
 
-  cargarImagenAnuncio(event: any) {
+  async cargarImagenAnuncio(event: any) {
     const file = event.target?.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_W = 600;
-        const MAX_H = 380;
-        canvas.width = MAX_W;
-        canvas.height = MAX_H;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, MAX_W, MAX_H);
-          this.anuncioActual.imagen = canvas.toDataURL('image/jpeg', 0.82);
-        } else {
-          this.anuncioActual.imagen = e.target.result;
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    try {
+      this.anuncioActual.imagen = await this.supabaseService.comprimirImagenArchivo(file, 400, 400, 0.7);
+      const t = await this.toastCtrl.create({
+        message: '📸 Banner procesado y optimizado (JPEG 400x400).',
+        duration: 1600,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
+    } catch (err) {
+      console.error('Error comprimiendo banner:', err);
+    }
   }
 
-  // Permite activar/desactivar el pop-up directamente desde la tarjeta con un switch rápido
+  onImagenError(promo: Anuncio) {
+    const fallback = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80';
+    promo.imagen = fallback;
+    promo.imagen_url = fallback;
+  }
+
   async alternarEstadoAnuncio(promo: Anuncio) {
     const nuevoEstado = !promo.activo;
     try {
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (promo.id && uuidRegex.test(promo.id)) {
-        await this.supabaseService.alternarEstadoAnuncio(promo.id, nuevoEstado);
-      }
+      await this.supabaseService.alternarEstadoAnuncio(promo.id, nuevoEstado);
       promo.activo = nuevoEstado;
       const t = await this.toastCtrl.create({
         message: nuevoEstado ? '👁️ Anuncio activado en Inicio.' : '⏸️ Anuncio pausado.',
@@ -152,7 +160,13 @@ export class AnunciosAdminPage implements OnInit {
 
   async guardarAnuncio() {
     if (!this.anuncioActual.titulo || !this.anuncioActual.descripcion) {
-      alert('Por favor, ingresa el título y la descripción para la ventana emergente.');
+      const t = await this.toastCtrl.create({
+        message: '⚠️ Ingresa el título y la descripción de la promoción.',
+        duration: 2200,
+        color: 'warning',
+        position: 'bottom'
+      });
+      await t.present();
       return;
     }
 
@@ -165,8 +179,7 @@ export class AnunciosAdminPage implements OnInit {
         activo: Boolean(this.anuncioActual.activo)
       };
 
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (this.modoEdicion && this.anuncioActual.id && uuidRegex.test(this.anuncioActual.id)) {
+      if (this.modoEdicion && this.anuncioActual.id) {
         await this.supabaseService.actualizarAnuncio(this.anuncioActual.id, payload);
       } else {
         await this.supabaseService.crearAnuncio(payload);
@@ -186,7 +199,6 @@ export class AnunciosAdminPage implements OnInit {
     } catch (error) {
       this.guardando = false;
       console.error('Error al guardar el anuncio:', error);
-      alert('Surgió un error al guardar los datos del Pop-up.');
     }
   }
 

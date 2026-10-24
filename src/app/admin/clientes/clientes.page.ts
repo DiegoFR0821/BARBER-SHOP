@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,13 +6,14 @@ import {
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
   IonMenuButton, IonSearchbar, IonIcon, IonButton, 
   IonLabel, IonAvatar, IonBadge, IonModal, IonInput, IonItem,
-  IonFab, IonFabButton, IonSelect, IonSelectOption
+  IonFab, IonFabButton, IonSelect, IonSelectOption, ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   shieldOutline, peopleOutline, menuOutline, createOutline, 
-  trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline 
+  trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline, refreshOutline
 } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { UsuarioPerfil, PreferenciasCliente } from '../../services/usuario';
 
@@ -28,13 +29,16 @@ import { UsuarioPerfil, PreferenciasCliente } from '../../services/usuario';
     IonItem, IonFab, IonFabButton, IonSelect, IonSelectOption
   ]
 })
-export class ClientesPage implements OnInit {
+export class ClientesPage implements OnInit, OnDestroy {
+
+  private router = inject(Router);
+  private supabaseService = inject(SupabaseService);
+  private toastCtrl = inject(ToastController);
 
   usuarios: UsuarioPerfil[] = [];
   usuariosFiltrados: UsuarioPerfil[] = [];
   searchTerm: string = '';
 
-  // Control del modal de formulario unificado (crear / editar)
   isModalOpen: boolean = false;
   modoEdicion: boolean = false;
   
@@ -55,31 +59,38 @@ export class ClientesPage implements OnInit {
     notas: ''
   };
 
-  constructor(
-    private router: Router,
-    private supabaseService: SupabaseService
-  ) {
+  private syncSub?: Subscription;
+  private realtimeChannel: any;
+
+  constructor() {
     addIcons({ 
       shieldOutline, peopleOutline, menuOutline, createOutline, 
-      trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline 
+      trashOutline, closeOutline, saveOutline, add, callOutline, mailOutline, refreshOutline
     });
   }
 
   ngOnInit() {
     this.cargarUsuarios();
+    this.syncSub = this.supabaseService.datosActualizados$.subscribe(() => {
+      this.cargarUsuarios();
+    });
+    this.realtimeChannel = this.supabaseService.suscribirCambiosAdmin(() => {
+      this.cargarUsuarios();
+    });
   }
 
   ionViewWillEnter() {
     this.cargarUsuarios();
   }
 
+  ngOnDestroy() {
+    this.syncSub?.unsubscribe();
+  }
+
   irA(ruta: string) {
     this.router.navigate([ruta]);
   }
 
-  /**
-   * Carga la lista de usuarios y perfiles desde la tabla 'usuarios' de Supabase
-   */
   async cargarUsuarios(): Promise<void> {
     try {
       this.usuarios = await this.supabaseService.obtenerUsuarios();
@@ -149,12 +160,15 @@ export class ClientesPage implements OnInit {
     this.isModalOpen = false;
   }
 
-  /**
-   * Guarda o actualiza los datos del cliente y sus preferencias de corte en Supabase
-   */
   async guardarUsuario(): Promise<void> {
     if (!this.usuarioActual.nombre || !this.usuarioActual.correo) {
-      alert('El nombre y el correo electrónico son campos obligatorios.');
+      const t = await this.toastCtrl.create({
+        message: '⚠️ El nombre y el correo electrónico son obligatorios.',
+        duration: 2200,
+        color: 'warning',
+        position: 'bottom'
+      });
+      await t.present();
       return;
     }
 
@@ -169,25 +183,26 @@ export class ClientesPage implements OnInit {
       };
 
       if (this.modoEdicion && this.usuarioActual.id) {
-        // OPERACIÓN: ACTUALIZAR EN SUPABASE
         await this.supabaseService.actualizarPerfil(this.usuarioActual.id, payload);
       } else {
-        // OPERACIÓN: CREAR EN SUPABASE
         await this.supabaseService.crearUsuarioAdmin(payload);
       }
 
       this.cerrarModal();
       await this.cargarUsuarios();
-      alert('¡Ficha de cliente sincronizada con Supabase exitosamente!');
+
+      const t = await this.toastCtrl.create({
+        message: '✅ Ficha de cliente sincronizada en Supabase.',
+        duration: 2200,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (error) {
       console.error('Error al intentar guardar el usuario en Supabase:', error);
-      alert('Surgió un problema al guardar los datos del cliente.');
     }
   }
 
-  /**
-   * Elimina un usuario de la base de datos de Supabase
-   */
   async eliminarUsuario(id?: string): Promise<void> {
     if (!id) return;
     const confirmar = confirm('¿Estás seguro de eliminar a este cliente permanentemente de Barber Shop?');
@@ -197,14 +212,10 @@ export class ClientesPage implements OnInit {
         await this.cargarUsuarios();
       } catch (error) {
         console.error('Error al intentar eliminar usuario de Supabase:', error);
-        alert('No se pudo eliminar el usuario de la base de datos.');
       }
     }
   }
 
-  /**
-   * Alterna el rol entre cliente y admin en la tabla 'usuarios'
-   */
   async cambiarRolDirecto(user: UsuarioPerfil): Promise<void> {
     const id = user.id || user.uid;
     if (!id) return;
@@ -214,9 +225,15 @@ export class ClientesPage implements OnInit {
       await this.supabaseService.cambiarRolUsuario(id, nuevoRol);
       user.rol = nuevoRol;
       await this.cargarUsuarios();
+      const t = await this.toastCtrl.create({
+        message: `Rol actualizado a ${nuevoRol.toUpperCase()}`,
+        duration: 1800,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (error) {
       console.error('Error al alternar rol en Supabase:', error);
-      alert('No se pudo cambiar el rol del usuario.');
     }
   }
 }

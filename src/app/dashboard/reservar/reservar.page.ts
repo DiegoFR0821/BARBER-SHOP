@@ -5,7 +5,7 @@ import {
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
   IonIcon, IonButton, IonGrid, IonRow, IonCol, 
   IonDatetime, IonSegment, IonSegmentButton, IonLabel, 
-  IonItem, IonTextarea 
+  IonItem, IonTextarea, ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -30,21 +30,17 @@ import { UsuarioService, UsuarioPerfil } from '../../services/usuario';
 })
 export class ReservarPage implements OnInit {
 
-  // Control de pestañas: 'agendar' (Flujo 3 pasos) | 'mis-citas'
   vistaActiva: 'agendar' | 'mis-citas' = 'agendar';
 
-  // Catálogos cargados desde Supabase
   servicios: ServicioBarberia[] = [];
   barberos: Barbero[] = [];
   misCitas: Cita[] = [];
 
-  // Horarios de atención fijos en Barber Shop Lima Norte
   horariosFijos: string[] = [
     '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
     '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
   ];
 
-  // Estado del flujo de agendamiento
   reserva = {
     servicioId: '',
     barberoId: '',
@@ -59,12 +55,12 @@ export class ReservarPage implements OnInit {
   cargandoHorarios: boolean = false;
   guardandoCita: boolean = false;
 
-  // Ficha técnica del cliente
   usuarioActual: UsuarioPerfil | null = null;
 
   constructor(
     private supabaseService: SupabaseService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private toastCtrl: ToastController
   ) {
     addIcons({ 
       calendar, cutOutline, personOutline, timeOutline, 
@@ -81,14 +77,8 @@ export class ReservarPage implements OnInit {
   ionViewWillEnter() {
     this.usuarioActual = this.usuarioService.getUsuario();
     this.cargarDatos();
-    if (this.vistaActiva === 'mis-citas') {
-      this.cargarMisCitas();
-    }
   }
 
-  /**
-   * Carga dinámica de Barberos y Servicios masculinos desde Supabase
-   */
   async cargarDatos() {
     try {
       const [barberosRes, serviciosRes] = await Promise.all([
@@ -147,10 +137,8 @@ export class ReservarPage implements OnInit {
       return;
     }
 
-    // Normalizar formato de fecha YYYY-MM-DD
     const fechaLimpia = this.reserva.fecha.split('T')[0];
     
-    // Regla de negocio: El local no atiende domingos
     const diaSemana = new Date(fechaLimpia + 'T00:00:00').getDay();
     if (diaSemana === 0) {
       alert('❌ Barber Shop Lima Norte no atiende los domingos. Por favor selecciona una fecha de Lunes a Sábado.');
@@ -162,13 +150,11 @@ export class ReservarPage implements OnInit {
     this.cargandoHorarios = true;
 
     try {
-      // Consulta optimizada con índices B-Tree en Supabase
       this.citasOcupadas = await this.supabaseService.getHorariosOcupados(
         this.reserva.barberoId,
         fechaLimpia
       );
 
-      // Si la hora previamente seleccionada ahora está ocupada, se desmarca
       if (this.reserva.hora && this.citasOcupadas.includes(this.reserva.hora)) {
         this.reserva.hora = '';
       }
@@ -186,7 +172,7 @@ export class ReservarPage implements OnInit {
   }
 
   // =========================================================================
-  // PASO 3: CONFIRMACIÓN Y PREVENCIÓN DE CONCURRENCIA (Captura error 23505)
+  // PASO 3: CONFIRMACIÓN Y SINCRONIZACIÓN CON PANEL ADMIN
   // =========================================================================
 
   async confirmarCita() {
@@ -195,7 +181,8 @@ export class ReservarPage implements OnInit {
       return;
     }
 
-    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || this.supabaseService.currentUserValue?.id;
+    const authUser = this.supabaseService.currentUserValue;
+    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || authUser?.id;
     if (!clienteId) {
       alert('Debes iniciar sesión para agendar una cita.');
       return;
@@ -204,34 +191,43 @@ export class ReservarPage implements OnInit {
     this.guardandoCita = true;
     const fechaLimpia = this.reserva.fecha.split('T')[0];
 
-    // Construir nota con las preferencias de corte del cliente
     const pref = this.usuarioActual?.preferencias_corte;
     let notaCompleta = this.reserva.notas.trim();
     if (pref?.estilo) {
-      notaCompleta = `[Ficha: ${pref.estilo} | Barba: ${pref.barba || 'Perfilada'}] ${notaCompleta}`;
+      notaCompleta = `[Ficha: ${pref.estilo} | Barba: ${pref.barba || 'Perfilada'}] ${notaCompleta}`.trim();
     }
 
     try {
-      // Inserción atómica en Supabase protegida por el índice idx_citas_concurrencia_activa
       await this.supabaseService.crearCita({
         cliente_id: clienteId,
         barbero_id: this.reserva.barberoId,
         servicio_id: this.reserva.servicioId,
         fecha: fechaLimpia,
         hora: this.reserva.hora,
-        notas_corte: notaCompleta
+        notas_corte: notaCompleta,
+        nombreCliente: this.usuarioActual?.nombre || authUser?.user_metadata?.['nombre'] || authUser?.email?.split('@')[0] || 'Cliente Barber Shop',
+        correoCliente: this.usuarioActual?.correo || authUser?.email || '',
+        telefonoCliente: this.usuarioActual?.telefono || authUser?.user_metadata?.['telefono'] || '',
+        preferenciasCliente: pref,
+        nombreBarbero: this.barberoSeleccionado?.nombre || 'Barbero de Turno',
+        nombreServicio: this.servicioSeleccionado?.nombre || 'Servicio Barber Shop',
+        precioServicio: Number(this.servicioSeleccionado?.precio || 35)
       });
 
-      alert(`💈 ¡Cita confirmada con éxito en Barber Shop! Te esperamos el ${fechaLimpia} a las ${this.reserva.hora}.`);
+      const toast = await this.toastCtrl.create({
+        message: `💈 ¡Cita confirmada para el ${fechaLimpia} a las ${this.reserva.hora}!`,
+        duration: 2800,
+        color: 'success',
+        position: 'bottom'
+      });
+      await toast.present();
       
-      // Reiniciar formulario
       this.reserva = { servicioId: '', barberoId: '', fecha: '', hora: '', notas: '' };
       this.servicioSeleccionado = null;
       this.barberoSeleccionado = null;
       this.citasOcupadas = [];
       this.guardandoCita = false;
 
-      // Recargar listado y cambiar a la vista de mis citas
       await this.cargarMisCitas();
       this.vistaActiva = 'mis-citas';
 
@@ -239,10 +235,8 @@ export class ReservarPage implements OnInit {
       this.guardandoCita = false;
       console.error('Error al agendar cita en Supabase:', error);
 
-      // CAPTURA ESPECÍFICA DE CONCURRENCIA (PostgreSQL 23505)
       if (error?.message?.includes('CONCURRENCY_ERROR') || error?.code === '23505') {
         alert('⚠️ ¡Atención! Otro cliente acaba de reservar este mismo horario con el barbero seleccionado. Por favor, elige otra hora disponible.');
-        // Refrescamos disponibilidad inmediatamente
         await this.verificarDisponibilidad();
       } else {
         alert(error?.message || 'Surgió un inconveniente al registrar la cita.');
@@ -250,17 +244,19 @@ export class ReservarPage implements OnInit {
     }
   }
 
-  // =========================================================================
-  // CANCELACIÓN DE CITAS DEL CLIENTE
-  // =========================================================================
-
   async cancelarCita(cita: Cita) {
     const confirmar = confirm(`¿Estás seguro de cancelar tu cita de ${cita.nombreServicio} para el ${cita.fecha} a las ${cita.hora}?`);
     if (confirmar) {
       try {
         await this.supabaseService.actualizarEstadoCita(cita.id, 'cancelada');
-        alert('Tu cita ha sido cancelada.');
         await this.cargarMisCitas();
+        const t = await this.toastCtrl.create({
+          message: 'Tu cita ha sido cancelada.',
+          duration: 2000,
+          color: 'warning',
+          position: 'bottom'
+        });
+        await t.present();
       } catch (e) {
         console.error('Error al cancelar cita:', e);
         alert('No se pudo cancelar la cita.');

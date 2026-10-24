@@ -5,9 +5,9 @@
     </ion-buttons>
     <ion-title class="clean-title">CLIENTES & PREFERENCIAS</ion-title>
     <ion-buttons slot="end" class="ion-padding-end">
-      <ion-avatar style="width: 32px; height: 32px;">
-        <div class="header-avatar-placeholder">B</div>
-      </ion-avatar>
+      <ion-button fill="clear" (click)="cargarUsuarios()" title="Refrescar clientes">
+        <ion-icon name="refresh-outline" style="color: #c59d5f; font-size: 20px;"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -22,7 +22,7 @@
       class="custom-searchbar-minimal">
     </ion-searchbar>
 
-    <p *ngIf="usuariosFiltrados.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
+    <p *ngIf="usuariosFiltrados.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
       No se encontraron clientes registrados en la base de datos de Barber Shop.
     </p>
 
@@ -31,7 +31,7 @@
       
       <div class="customer-avatar-box">
         <div class="avatar-frame-circle" [ngClass]="user?.rol === 'admin' ? 'bg-gold-light' : 'bg-grey-light'">
-          <span class="avatar-letter font-bold" [ngClass]="user?.rol === 'admin' ? 'color-gold' : 'color-dark'">
+          <span class="avatar-letter font-bold" [ngClass]="user?.rol === 'admin' ? 'color-gold' : 'color-light'">
             {{ user?.nombre ? (user.nombre.charAt(0) | uppercase) : 'C' }}
           </span>
         </div>
@@ -43,7 +43,7 @@
           <ion-badge [color]="user?.rol === 'admin' ? 'warning' : 'primary'" class="role-badge-style">
             {{ (user?.rol || 'cliente') | uppercase }}
           </ion-badge>
-          <ion-badge *ngIf="user?.preferencias_corte?.estilo" color="tertiary" style="font-size: 10px; border-radius: 4px;">
+          <ion-badge *ngIf="user?.preferencias_corte?.estilo" style="--background: rgba(197, 157, 95, 0.22); --color: #c59d5f; font-size: 10px; border-radius: 4px; border: 1px solid rgba(197, 157, 95, 0.4);">
             {{ user.preferencias_corte?.estilo }}
           </ion-badge>
         </div>
@@ -57,10 +57,10 @@
         </p>
         
         <!-- FICHA DE PREFERENCIAS DE CORTE Y BARBA -->
-        <div *ngIf="user?.preferencias_corte" style="margin-top: 6px; padding: 6px 10px; background: #fdfaf3; border-radius: 6px; border: 1px dashed rgba(170, 133, 41, 0.3);">
-          <p style="margin: 0; font-size: 11px; color: #555;">
-            ✂️ <strong>Barba:</strong> {{ user.preferencias_corte?.barba || 'Sin especificar' }} | 
-            💈 <strong>Cabello:</strong> {{ user.preferencias_corte?.tipo_cabello || 'Normal' }}
+        <div *ngIf="user?.preferencias_corte" class="customer-prefs-box">
+          <p style="margin: 0; font-size: 11px; color: #e4e4e7;">
+            ✂️ <strong style="color: #c59d5f;">Barba:</strong> {{ user.preferencias_corte?.barba || 'Sin especificar' }} | 
+            💈 <strong style="color: #c59d5f;">Cabello:</strong> {{ user.preferencias_corte?.tipo_cabello || 'Normal' }}
           </p>
         </div>
 
@@ -100,35 +100,35 @@
   <ion-modal [isOpen]="isModalOpen" (didDismiss)="cerrarModal()">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold; font-size: 16px;">
-            {{ modoEdicion ? 'Modificar Ficha de Cliente' : 'Nuevo Cliente Barber Shop' }}
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">
+            {{ modoEdicion ? 'MODIFICAR FICHA DE CLIENTE' : 'NUEVO CLIENTE BARBER SHOP' }}
           </ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="cerrarModal()" color="dark">
+            <ion-button (click)="cerrarModal()" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.25); margin-bottom: 24px;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
+        <div class="modal-form-card">
           
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Nombre Completo" labelPlacement="floating" type="text" [(ngModel)]="usuarioActual.nombre" placeholder="Ej. Carlos Mendoza"></ion-input>
           </ion-item>
 
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Correo Electrónico" labelPlacement="floating" type="email" [(ngModel)]="usuarioActual.correo" placeholder="cliente@barbershop.pe"></ion-input>
           </ion-item>
 
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Teléfono / WhatsApp" labelPlacement="floating" type="tel" [(ngModel)]="usuarioActual.telefono" placeholder="999-999-999"></ion-input>
           </ion-item>
 
           <!-- PREFERENCIAS DE CORTE Y BARBA -->
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Estilo de Corte" labelPlacement="floating" [(ngModel)]="preferenciasEdicion.estilo">
               <ion-select-option value="Fade Clásico">Fade Clásico (Degradado Medio)</ion-select-option>
               <ion-select-option value="Skin Fade">Skin Fade Urbano (Cero / Navaja)</ion-select-option>
@@ -139,7 +139,7 @@
             </ion-select>
           </ion-item>
 
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Estilo de Barba" labelPlacement="floating" [(ngModel)]="preferenciasEdicion.barba">
               <ion-select-option value="Perfilada con Navaja">Perfilada con Navaja & Toalla Caliente</ion-select-option>
               <ion-select-option value="Corta (3mm)">Corta (2mm a 3mm)</ion-select-option>
@@ -149,11 +149,11 @@
             </ion-select>
           </ion-item>
 
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Historial de Notas / Indicaciones al Barbero" labelPlacement="floating" type="text" [(ngModel)]="usuarioActual.historial_notas" placeholder="Detalles de corte, navaja, remolinos..."></ion-input>
           </ion-item>
 
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="none" class="modal-form-item">
             <ion-select label="Asignar Rol" labelPlacement="floating" [(ngModel)]="usuarioActual.rol">
               <ion-select-option value="cliente">Cliente Regular</ion-select-option>
               <ion-select-option value="barbero">Barbero / Personal Staff</ion-select-option>
@@ -163,7 +163,7 @@
 
         </div>
 
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarUsuario()">
+        <ion-button expand="block" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarUsuario()">
           <ion-icon slot="start" name="save-outline"></ion-icon>
           SINCRONIZAR CON SUPABASE
         </ion-button>

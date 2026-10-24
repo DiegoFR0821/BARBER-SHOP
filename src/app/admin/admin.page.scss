@@ -1,14 +1,14 @@
 /* Fondo general del menú */
 .admin-menu {
-  --background: #222222;
+  --background: #0b0b0d;
   --color: #ffffff;
 }
 
 /* Sección de la foto de perfil del admin */
 .menu-header {
   padding: 40px 20px 20px;
-  background: #1a1a1a;
-  border-bottom: 2px solid #aa8529; /* Acento dorado */
+  background: #141417;
+  border-bottom: 1.5px solid #c59d5f;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,32 +17,33 @@
   .avatar-admin {
     width: 60px;
     height: 60px;
-    background: #aa8529;
+    background: #c59d5f;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 12px;
-    box-shadow: 0 4px 10px rgba(170, 133, 41, 0.4);
+    box-shadow: 0 4px 14px rgba(197, 157, 95, 0.45);
 
     .initial {
-      color: #ffffff;
+      color: #0b0b0d;
       font-size: 24px;
-      font-weight: bold;
+      font-weight: 900;
     }
   }
 
   .admin-greeting {
     color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 800;
     margin-bottom: 4px;
     display: block;
   }
 
   .admin-role {
-    color: #aa8529;
-    font-size: 14px;
+    color: #c59d5f;
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 1px;
     display: block;
   }
@@ -56,23 +57,23 @@ ion-list#admin-list {
 
 .menu-item {
   --background: transparent;
-  --color: #bbbbbb;
-  margin: 0 10px 5px;
-  border-radius: 8px;
-  font-weight: 500;
+  --color: #a1a1aa;
+  margin: 0 10px 6px;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
 
   ion-icon {
-    color: #888888;
+    color: #a1a1aa;
   }
 
-  /* Cuando el admin está en esta página, se ilumina en dorado */
   &.selected {
-    --background: rgba(170, 133, 41, 0.15);
-    --color: #aa8529;
+    --background: rgba(197, 157, 95, 0.16);
+    --color: #c59d5f;
+    font-weight: 800;
 
     ion-icon {
-      color: #aa8529;
+      color: #c59d5f;
     }
   }
 }
@@ -84,9 +85,9 @@ ion-list#admin-list {
   width: 100%;
 
   .logout-item {
-    --color: #ff6b6b;
+    --color: #f87171;
     ion-icon {
-      color: #ff6b6b;
+      color: #f87171;
     }
   }
 }

@@ -1,13 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { 
   IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
-  IonIcon, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, ToastController
+  IonIcon, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, IonFooter, ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cartOutline, imageOutline, addOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { cartOutline, imageOutline, addOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 import { SupabaseService, ProductoBarberia } from '../../core/services/supabase.service';
 
 @Component({
@@ -16,15 +17,18 @@ import { SupabaseService, ProductoBarberia } from '../../core/services/supabase.
   styleUrls: ['./tienda.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, 
+    CommonModule, FormsModule, RouterModule, IonContent, IonHeader, IonToolbar, IonTitle, 
     IonButtons, IonButton, IonIcon, IonGrid, IonRow, IonCol, IonBadge, 
-    IonSearchbar
+    IonSearchbar, IonFooter
   ]
 })
-export class TiendaPage implements OnInit {
+export class TiendaPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private supabaseService = inject(SupabaseService);
   private toastCtrl = inject(ToastController);
+  private subDatos?: Subscription;
+
+  readonly FOTO_MASCULINA_RESPALDO = 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80';
 
   productos: ProductoBarberia[] = [];
   productosFiltrados: ProductoBarberia[] = [];
@@ -32,19 +36,29 @@ export class TiendaPage implements OnInit {
   categoriaSeleccionada: string = 'Todos';
   categorias: string[] = ['Todos', 'Fijación Capilar', 'Cuidado de Barba', 'Cuidado Capilar'];
   cantidadCarrito: number = 0;
+  subtotalCarrito: number = 0;
 
   constructor() {
-    addIcons({ cartOutline, imageOutline, addOutline, checkmarkCircleOutline });
+    addIcons({ cartOutline, imageOutline, addOutline, checkmarkCircleOutline, arrowForwardOutline });
   }
 
   async ngOnInit() {
     await this.cargarProductos();
     this.actualizarCantidadCarrito();
+    this.subDatos = this.supabaseService.datosActualizados$.subscribe((tabla) => {
+      if (tabla === 'productos') {
+        this.cargarProductos();
+      }
+    });
   }
 
   async ionViewWillEnter() {
     await this.cargarProductos();
     this.actualizarCantidadCarrito();
+  }
+
+  ngOnDestroy() {
+    this.subDatos?.unsubscribe();
   }
 
   async cargarProductos() {
@@ -54,6 +68,11 @@ export class TiendaPage implements OnInit {
     } catch (error) {
       console.error('Error cargando productos desde Supabase:', error);
     }
+  }
+
+  onImagenError(prod: ProductoBarberia) {
+    prod.imagen = this.FOTO_MASCULINA_RESPALDO;
+    prod.imagen_url = this.FOTO_MASCULINA_RESPALDO;
   }
 
   seleccionarCategoria(cat: string) {
@@ -93,6 +112,7 @@ export class TiendaPage implements OnInit {
   actualizarCantidadCarrito() {
     const items = this.obtenerItemsGuardados();
     this.cantidadCarrito = items.reduce((acc: number, item: any) => acc + (Number(item.cantidad) || 1), 0);
+    this.subtotalCarrito = items.reduce((acc: number, item: any) => acc + (Number(item.precio || 0) * (Number(item.cantidad) || 1)), 0);
   }
 
   async agregarAlCarrito(producto: ProductoBarberia) {
@@ -109,7 +129,7 @@ export class TiendaPage implements OnInit {
 
     try {
       const items = this.obtenerItemsGuardados();
-      const index = items.findIndex((i: any) => i.id === producto.id);
+      const index = items.findIndex((i: any) => i.id === producto.id || i.nombre === producto.nombre);
 
       if (index >= 0) {
         const nuevaCantidad = (Number(items[index].cantidad) || 1) + 1;
@@ -128,7 +148,7 @@ export class TiendaPage implements OnInit {
       } else {
         items.push({
           ...producto,
-          imagen: producto.imagen || producto.imagen_url,
+          imagen: producto.imagen || producto.imagen_url || this.FOTO_MASCULINA_RESPALDO,
           cantidad: 1
         });
       }
@@ -137,10 +157,10 @@ export class TiendaPage implements OnInit {
       this.actualizarCantidadCarrito();
 
       const toast = await this.toastCtrl.create({
-        message: `🛒 ${producto.nombre} añadido a tu cesta.`,
-        duration: 1800,
+        message: `🛒 ${producto.nombre} añadido al carrito.`,
+        duration: 1600,
         color: 'success',
-        position: 'bottom'
+        position: 'top'
       });
       await toast.present();
     } catch (e) {

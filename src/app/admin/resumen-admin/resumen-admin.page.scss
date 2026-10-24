@@ -1,24 +1,24 @@
-$color-gold: #aa8529;
-$color-cream-bg: #faf9f6;
+$color-gold: #c59d5f;
+$color-dark-bg: #0b0b0d;
+$color-card-bg: #1c1c21;
 
 .cream-bg {
-  --background: #{$color-cream-bg};
+  --background: #{$color-dark-bg};
 }
 
 .premium-header {
   ion-toolbar {
-    --background: #ffffff;
-    border-bottom: 1px solid #f2f2f7;
+    --background: #0b0b0d;
+    border-bottom: 1px solid rgba(197, 157, 95, 0.22);
   }
 }
 
-// Respetando la fuente global de la aplicación
 .clean-title {
-  font-weight: 700 !important;
-  color: #111111;
+  font-weight: 800 !important;
+  color: #ffffff;
   font-size: 16px;
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .gold-burger {
@@ -28,12 +28,14 @@ $color-cream-bg: #faf9f6;
 .header-avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: #f2f2f7;
-  color: #555;
+  background: rgba(197, 157, 95, 0.18);
+  color: #c59d5f;
+  border: 1px solid rgba(197, 157, 95, 0.45);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 800;
 }
 
 .dashboard-wrapper {
@@ -47,37 +49,42 @@ $color-cream-bg: #faf9f6;
   .main-page-title {
     font-size: 22px;
     font-weight: 800;
-    color: #111;
+    color: #ffffff;
     margin: 0;
+    letter-spacing: 0.6px;
   }
   
   .welcome-text {
-    font-size: 14px;
-    color: #666;
+    font-size: 12px;
+    color: #c59d5f;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     margin: 4px 0 0;
   }
 }
 
 .section-heading-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #111;
+  font-size: 13px;
+  font-weight: 800;
+  color: #c59d5f;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
   margin: 28px 0 16px 4px;
 }
 
-/* 📊 TARJETAS MINIMALISTAS ANCHO COMPLETO */
+/* 📊 TARJETAS DARK LUXURY ANCHO COMPLETO */
 .metrics-grid {
   margin-bottom: 12px;
 }
 
 .minimalist-card {
   position: relative;
-  background: #ffffff;
-  border: 1px solid rgba(170, 133, 41, 0.25); /* Borde fino y sutil del color corporativo */
+  background: $color-card-bg;
+  border: 1px solid rgba(197, 157, 95, 0.28);
   padding: 20px;
-  border-radius: 12px; /* Borde radius reducido */
-  margin-bottom: 10px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.06); /* Sombra ligeramente más pronunciada */
+  border-radius: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -90,16 +97,18 @@ $color-cream-bg: #faf9f6;
   }
 
   .card-title-lbl {
-    font-size: 13px;
-    font-weight: 600;
-    color: #666;
+    font-size: 12px;
+    font-weight: 700;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
   }
 
   .card-big-number {
     font-size: 38px;
     font-weight: 800;
-    color: #111;
-    margin: 4px 0;
+    color: #ffffff;
+    margin: 6px 0;
     line-height: 1;
   }
 
@@ -109,21 +118,21 @@ $color-cream-bg: #faf9f6;
   }
 
   .card-icon-overlay {
-    font-size: 46px;
-    opacity: 0.15;
+    font-size: 48px;
+    opacity: 0.25;
     z-index: 1;
   }
 }
 
 /* Colores utilitarios */
 .color-gold { color: $color-gold; }
-.text-green { color: #28a745; }
-.text-red { color: #dc3545; }
-.color-red { color: #dc3545; }
-.text-muted { color: #888; }
+.text-green { color: #34d399; }
+.text-red { color: #f87171; }
+.color-red { color: #f87171; }
+.text-muted { color: #a1a1aa; }
 .font-bold { font-weight: 700; }
 
-/* ⚡ GESTIÓN RÁPIDA (Botones blancos cuadrados) */
+/* ⚡ GESTIÓN RÁPIDA (Botones oscuros cuadrados con borde dorado) */
 .quick-nav-grid {
   margin-bottom: 10px;
 }
@@ -142,11 +151,11 @@ $color-cream-bg: #faf9f6;
 
   .square-icon-box {
     width: 100%;
-    aspect-ratio: 1; /* Cuadrado perfecto */
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid rgba(170, 133, 41, 0.15);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    aspect-ratio: 1;
+    background: $color-card-bg;
+    border-radius: 14px;
+    border: 1px solid rgba(197, 157, 95, 0.28);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -159,12 +168,13 @@ $color-cream-bg: #faf9f6;
 
   .square-btn-label {
     font-size: 11px;
-    font-weight: 700;
-    color: #333;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.6px;
   }
 }
 
-/* 🕒 ACTIVIDAD RECIENTE CON DIVISORES */
+/* 🕒 ACTIVIDAD RECIENTE */
 .activity-header-row {
   display: flex;
   justify-content: space-between;
@@ -175,7 +185,7 @@ $color-cream-bg: #faf9f6;
 
   .view-all-link {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 800;
     color: $color-gold;
     text-decoration: none;
     cursor: pointer;
@@ -189,17 +199,14 @@ $color-cream-bg: #faf9f6;
 .activity-item-container {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: 12px 14px;
+  background: $color-card-bg;
+  border: 1px solid rgba(197, 157, 95, 0.2);
+  border-radius: 12px;
+  margin-bottom: 10px;
 
   .activity-avatar-box {
     flex-shrink: 0;
-  }
-
-  .avatar-img-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    object-fit: cover;
   }
 
   .avatar-icon-circle {
@@ -209,10 +216,10 @@ $color-cream-bg: #faf9f6;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(197, 157, 95, 0.14);
+    border: 1px solid rgba(197, 157, 95, 0.35);
     
     ion-icon { font-size: 20px; }
-    &.bg-red-light { background: rgba(220, 53, 69, 0.1); }
-    &.bg-grey-light { background: #eaeaea; }
   }
 
   .activity-body-text {
@@ -224,37 +231,15 @@ $color-cream-bg: #faf9f6;
       margin: 0;
       font-size: 14px;
       font-weight: 700;
-      color: #111;
+      color: #ffffff;
     }
 
     .activity-sub-line {
       margin: 4px 0 0;
       font-size: 12px;
-      color: #666;
+      color: #a1a1aa;
     }
   }
-
-  .activity-right-badge {
-    flex-shrink: 0;
-    padding-left: 8px;
-  }
-
-  .badge-status {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-
-    &.status-confirmed { background: rgba(40, 167, 69, 0.15); color: #28a745; }
-    &.status-reorder { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
-  }
-}
-
-.activity-divider {
-  height: 1px;
-  background-color: rgba(170, 133, 41, 0.15);
-  width: 100%;
 }
 
 /* 🎯 BOTÓN FLOTANTE CUADRADO */
@@ -264,13 +249,14 @@ $color-cream-bg: #faf9f6;
   
   .square-fab-btn {
     --background: #{$color-gold};
-    --border-radius: 12px; /* Esto hace que el botón principal sea cuadrado con bordes suaves */
-    box-shadow: 0 6px 16px rgba(170,133,41,0.35);
+    --color: #0b0b0d;
+    --border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(197, 157, 95, 0.4);
   }
 
-  /* Los botones desplegables los mantenemos redondos o puedes dejarlos por defecto */
   ion-fab-list ion-fab-button {
-    --background: #ffffff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    --background: #1c1c21;
+    border: 1px solid rgba(197, 157, 95, 0.35);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   }
 }

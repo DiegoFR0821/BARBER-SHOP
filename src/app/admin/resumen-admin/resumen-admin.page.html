@@ -6,7 +6,7 @@
     <ion-title class="clean-title">BARBER SHOP ADMIN</ion-title>
     <ion-buttons slot="end" class="ion-padding-end">
       <ion-button fill="clear" (click)="cargarDashboardReal()" title="Recargar métricas">
-        <ion-icon name="refresh-outline" style="color: #aa8529; font-size: 20px;"></ion-icon>
+        <ion-icon name="refresh-outline" style="color: #c59d5f; font-size: 20px;"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,22 +17,22 @@
     
     <div class="title-section">
       <h1 class="main-page-title">PANEL DE CONTROL</h1>
-      <p class="welcome-text">BARBER SHOP LIMA NORTE S.A.C.</p>
+      <p class="welcome-text">BARBER SHOP LIMA NORTE S.A.C. • RUC 20611302151</p>
     </div>
 
     <ion-grid class="ion-no-padding metrics-grid">
       <ion-row>
-        <!-- Tarjeta 1: Citas del día -->
+        <!-- Tarjeta 1: Citas Agendadas -->
         <ion-col size="12">
-          <div class="minimalist-card">
+          <div class="minimalist-card" (click)="irA('/admin/citas')" style="cursor: pointer;">
             <div class="card-left">
-              <span class="card-title-lbl">Citas Agendadas Hoy</span>
+              <span class="card-title-lbl">Citas Agendadas Activas</span>
               <h1 class="card-big-number">{{ totalCitas }}</h1>
               <span class="card-trend text-green" *ngIf="citasPendientes > 0">
-                ⏳ {{ citasPendientes }} cita(s) pendiente(s) de confirmación
+                ⏳ {{ citasPendientes }} cita(s) pendiente(s) de atención
               </span>
               <span class="card-trend text-green" *ngIf="citasPendientes === 0">
-                ✓ Todo al día en el salón
+                ✓ Agenda sincronizada en tiempo real
               </span>
             </div>
             <ion-icon name="calendar-outline" class="card-icon-overlay color-gold"></ion-icon>
@@ -41,11 +41,11 @@
 
         <!-- Tarjeta 2: Clientes Registrados -->
         <ion-col size="12">
-          <div class="minimalist-card">
+          <div class="minimalist-card" (click)="irA('/admin/clientes')" style="cursor: pointer;">
             <div class="card-left">
               <span class="card-title-lbl">Clientes Registrados</span>
               <h1 class="card-big-number">{{ totalClientes }}</h1>
-              <span class="card-trend text-muted">Perfiles con ficha técnica</span>
+              <span class="card-trend text-muted">Perfiles con ficha técnica de corte y barba</span>
             </div>
             <ion-icon name="people-outline" class="card-icon-overlay color-gold"></ion-icon>
           </div>
@@ -53,7 +53,7 @@
 
         <!-- Tarjeta 3: Alerta de Inventario / Stock -->
         <ion-col size="12">
-          <div class="minimalist-card">
+          <div class="minimalist-card" (click)="irA('/admin/inventario')" style="cursor: pointer;">
             <div class="card-left">
               <span class="card-title-lbl">Productos con Bajo Stock</span>
               <h1 class="card-big-number">{{ totalProductos }}</h1>
@@ -100,11 +100,11 @@
     </div>
 
     <div class="premium-activity-list">
-      <p *ngIf="actividadReciente.length === 0" style="text-align: center; color: #8e8e93; font-size: 13px; padding: 16px 0;">
+      <p *ngIf="actividadReciente.length === 0" style="text-align: center; color: #a1a1aa; font-size: 13px; padding: 16px 0;">
         No hay citas recientes registradas en la base de datos.
       </p>
 
-      <div class="activity-item-container" *ngFor="let act of actividadReciente">
+      <div class="activity-item-container" *ngFor="let act of actividadReciente" (click)="irA('/admin/citas')" style="cursor: pointer;">
         <div class="activity-avatar-box">
           <div class="avatar-icon-circle bg-gold-light">
             <ion-icon [name]="act.icono || 'cut-outline'" class="color-gold"></ion-icon>
@@ -121,9 +121,9 @@
   <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="premium-fab">
     <ion-fab-button class="square-fab-btn"><ion-icon name="add"></ion-icon></ion-fab-button>
     <ion-fab-list side="top">
-      <ion-fab-button (click)="irA('/admin/citas')" color="light"><ion-icon name="calendar-outline" class="color-gold"></ion-icon></ion-fab-button>
-      <ion-fab-button (click)="irA('/admin/clientes')" color="light"><ion-icon name="people-outline" class="color-gold"></ion-icon></ion-fab-button>
-      <ion-fab-button (click)="irA('/admin/inventario')" color="light"><ion-icon name="cube-outline" class="color-gold"></ion-icon></ion-fab-button>
+      <ion-fab-button (click)="irA('/admin/citas')" color="dark"><ion-icon name="calendar-outline" class="color-gold"></ion-icon></ion-fab-button>
+      <ion-fab-button (click)="irA('/admin/clientes')" color="dark"><ion-icon name="people-outline" class="color-gold"></ion-icon></ion-fab-button>
+      <ion-fab-button (click)="irA('/admin/inventario')" color="dark"><ion-icon name="cube-outline" class="color-gold"></ion-icon></ion-fab-button>
     </ion-fab-list>
   </ion-fab>
 </ion-content>

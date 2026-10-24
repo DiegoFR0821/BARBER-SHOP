@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -13,6 +13,7 @@ import {
   menuOutline, trendingUpOutline, sparklesOutline, arrowForwardOutline, 
   add, cartOutline, personAddOutline, refreshOutline
 } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 import { SupabaseService } from '../../core/services/supabase.service';
 
 @Component({
@@ -26,7 +27,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
     IonRow, IonCol, IonBadge, IonAvatar, IonButton, IonFab, IonFabButton, IonFabList
   ]
 })
-export class ResumenAdminPage implements OnInit {
+export class ResumenAdminPage implements OnInit, OnDestroy {
 
   private router = inject(Router);
   private supabaseService = inject(SupabaseService);
@@ -40,6 +41,9 @@ export class ResumenAdminPage implements OnInit {
   actividadReciente: any[] = [];
   cargando: boolean = false;
 
+  private syncSub?: Subscription;
+  private realtimeChannel: any;
+
   constructor() {
     addIcons({ 
       cubeOutline, peopleOutline, calendarOutline, cutOutline, 
@@ -50,10 +54,20 @@ export class ResumenAdminPage implements OnInit {
 
   ngOnInit() {
     this.cargarDashboardReal();
+    this.syncSub = this.supabaseService.datosActualizados$.subscribe(() => {
+      this.cargarDashboardReal();
+    });
+    this.realtimeChannel = this.supabaseService.suscribirCambiosAdmin(() => {
+      this.cargarDashboardReal();
+    });
   }
 
   ionViewWillEnter() {
     this.cargarDashboardReal();
+  }
+
+  ngOnDestroy() {
+    this.syncSub?.unsubscribe();
   }
 
   irA(ruta: string) {

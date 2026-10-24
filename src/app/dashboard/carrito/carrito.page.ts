@@ -139,7 +139,7 @@ export class CarritoPage implements OnInit {
       const clienteId = usuario?.id || usuario?.uid || this.supabaseService.currentUserValue?.id;
 
       await this.supabaseService.procesarCompraCarrito(
-        this.itemsCarrito.map(i => ({ id: i.id, cantidad: Number(i.cantidad || 1), stock: i.stock })),
+        this.itemsCarrito.map(i => ({ id: i.id, nombre: i.nombre, cantidad: Number(i.cantidad || 1), stock: i.stock })),
         clienteId
       );
 

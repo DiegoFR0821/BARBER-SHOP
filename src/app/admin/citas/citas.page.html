@@ -1,26 +1,26 @@
 <ion-header class="ion-no-border premium-header">
-  <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
+  <ion-toolbar class="dark-toolbar">
     <ion-buttons slot="start">
       <ion-menu-button class="gold-burger"></ion-menu-button>
     </ion-buttons>
     <ion-title class="clean-title">CONTROL DE CITAS & STAFF</ion-title>
     <ion-buttons slot="end" class="ion-padding-end">
       <ion-button fill="clear" (click)="cargarTodo()" title="Refrescar">
-        <ion-icon name="refresh-outline" style="color: #aa8529; font-size: 20px;"></ion-icon>
+        <ion-icon name="refresh-outline" style="color: #c59d5f; font-size: 20px;"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
   
-  <ion-toolbar style="--background: #ffffff;">
-    <ion-segment [(ngModel)]="seccionActiva" style="--background: #f4f5f8; margin: 0 16px 8px; width: calc(100% - 32px); border-radius: 8px;">
+  <ion-toolbar class="dark-segment-toolbar">
+    <ion-segment [(ngModel)]="seccionActiva" class="dark-luxury-segment">
       <ion-segment-button value="reservas">
-        <ion-label style="font-size: 12px; font-weight: bold;">Citas Activas</ion-label>
+        <ion-label>CITAS ACTIVAS</ion-label>
       </ion-segment-button>
       <ion-segment-button value="servicios">
-        <ion-label style="font-size: 12px; font-weight: bold;">Servicios</ion-label>
+        <ion-label>SERVICIOS</ion-label>
       </ion-segment-button>
       <ion-segment-button value="barberos">
-        <ion-label style="font-size: 12px; font-weight: bold;">Barberos</ion-label>
+        <ion-label>BARBEROS</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -39,8 +39,8 @@
         class="custom-searchbar-minimal">
       </ion-searchbar>
       
-      <p *ngIf="citasFiltradas.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
-        No se encontraron citas agendadas en Supabase.
+      <p *ngIf="citasFiltradas.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
+        No se encontraron citas agendadas en este momento.
       </p>
 
       <div class="minimalist-appointment-card" *ngFor="let cita of citasFiltradas">
@@ -59,7 +59,7 @@
             {{ cita.fecha }} — {{ cita.hora }}
           </p>
           <p class="appointment-staff-detail">Barbero: {{ cita.nombreBarbero || 'Asignado en local' }}</p>
-          <p *ngIf="cita.notas_corte" style="font-size: 11px; color: #8a6d3b; margin: 3px 0 0 0; font-style: italic;">
+          <p *ngIf="cita.notas_corte" style="font-size: 11px; color: #c59d5f; margin: 4px 0 0 0; font-style: italic;">
             📝 "{{ cita.notas_corte }}"
           </p>
         </div>
@@ -96,7 +96,7 @@
 
     <!-- ==================== SECCIÓN 2: SERVICIOS MASCULINOS ==================== -->
     <div *ngIf="seccionActiva === 'servicios'">
-      <p *ngIf="servicios.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
+      <p *ngIf="servicios.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
         Aún no has agregado servicios a la barbería.
       </p>
 
@@ -109,8 +109,8 @@
         </div>
         <div class="card-body-content" style="display: flex; flex-direction: column; justify-content: center;">
           <h4 class="appointment-client-name" style="margin: 0;">{{ srv.nombre }}</h4>
-          <p class="appointment-service-detail" style="margin: 2px 0 0 0; font-size: 12px;">
-            S/ {{ srv.precio }} &bull; {{ srv.duracion_min }} min &bull; <span style="color: #666;">{{ srv.categoria }}</span>
+          <p class="appointment-service-detail" style="margin: 4px 0 0 0; font-size: 12px;">
+            S/ {{ srv.precio }} &bull; {{ srv.duracion_min }} min &bull; <span style="color: #a1a1aa;">{{ srv.categoria }}</span>
           </p>
         </div>
         <div class="card-right-actions" style="justify-content: center;">
@@ -128,21 +128,21 @@
 
     <!-- ==================== SECCIÓN 3: BARBEROS DEL STAFF ==================== -->
     <div *ngIf="seccionActiva === 'barberos'">
-      <p *ngIf="barberos.length === 0" style="text-align: center; color: #8e8e93; margin-top: 30px; font-size: 13px;">
+      <p *ngIf="barberos.length === 0" style="text-align: center; color: #a1a1aa; margin-top: 30px; font-size: 13px;">
         No hay barberos registrados en el equipo.
       </p>
 
       <div class="minimalist-appointment-card" *ngFor="let barb of barberos">
         <div class="card-icon-avatar-box">
-          <img *ngIf="barb.foto_url || barb.imagen" [src]="barb.foto_url || barb.imagen" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(170, 133, 41, 0.2);" />
+          <img *ngIf="barb.foto_url || barb.imagen" [src]="barb.foto_url || barb.imagen" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 1.5px solid #c59d5f;" />
           <div *ngIf="!barb.foto_url && !barb.imagen" class="icon-frame-circle bg-gold-light">
             <ion-icon name="person-outline" class="color-gold"></ion-icon>
           </div>
         </div>
         <div class="card-body-content" style="display: flex; flex-direction: column; justify-content: center;">
           <h4 class="appointment-client-name" style="margin: 0;">{{ barb.nombre }}</h4>
-          <p class="appointment-service-detail" style="margin: 2px 0 0 0; font-size: 11px;">{{ barb.especialidad }}</p>
-          <p class="appointment-time-detail" style="margin: 2px 0 0 0; font-size: 11px; color: #888;">{{ barb.experiencia || 'Staff Oficial' }}</p>
+          <p class="appointment-service-detail" style="margin: 3px 0 0 0; font-size: 12px;">{{ barb.especialidad }}</p>
+          <p class="appointment-time-detail" style="margin: 2px 0 0 0; font-size: 11px; color: #a1a1aa;">{{ barb.experiencia || 'Staff Oficial' }}</p>
         </div>
         <div class="card-right-actions" style="justify-content: center;">
           <div class="crud-btn-group">
@@ -170,41 +170,41 @@
   <ion-modal [isOpen]="isModalReservaOpen" (didDismiss)="isModalReservaOpen = false">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold;">{{ modoEdicion ? 'Modificar Estado' : 'Agendar Cita' }}</ion-title>
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">{{ modoEdicion ? 'MODIFICAR ESTADO DE CITA' : 'AGENDAR CITA' }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isModalReservaOpen=false" color="dark">
+            <ion-button (click)="isModalReservaOpen=false" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15); margin-bottom: 24px;">
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
+        <div class="modal-form-card">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Cliente" labelPlacement="floating" [(ngModel)]="reservaActual.clienteId" placeholder="Seleccione cliente">
               <ion-select-option *ngFor="let c of clientes" [value]="c.id || c.uid">{{ c.nombre }} ({{ c.correo }})</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Servicio" labelPlacement="floating" [(ngModel)]="reservaActual.servicioId" placeholder="Seleccione servicio">
               <ion-select-option *ngFor="let s of servicios" [value]="s.id">{{ s.nombre }} — S/ {{ s.precio }}</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Barbero Asignado" labelPlacement="floating" [(ngModel)]="reservaActual.barberoId" placeholder="Seleccione barbero">
               <ion-select-option *ngFor="let b of barberos" [value]="b.id">{{ b.nombre }} ({{ b.especialidad }})</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Fecha de Cita" labelPlacement="floating" type="date" [(ngModel)]="reservaActual.fecha"></ion-input>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Hora" labelPlacement="floating" [(ngModel)]="reservaActual.hora">
               <ion-select-option *ngFor="let hora of horariosFijos" [value]="hora">{{ hora }}</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Estado" labelPlacement="floating" [(ngModel)]="reservaActual.estado">
               <ion-select-option value="pendiente">Pendiente</ion-select-option>
               <ion-select-option value="confirmada">Confirmada</ion-select-option>
@@ -212,44 +212,45 @@
               <ion-select-option value="cancelada">Cancelada</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="none" class="modal-form-item">
             <ion-input label="Notas de corte / requerimientos" labelPlacement="floating" [(ngModel)]="reservaActual.notas_corte" placeholder="Ej: Degradado bajo, barba marcada"></ion-input>
           </ion-item>
         </div>
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarReserva()">
-          <ion-icon slot="start" name="save-outline"></ion-icon> SINCRO RESERVA SUPABASE
+        <ion-button expand="block" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarReserva()">
+          <ion-icon slot="start" name="save-outline"></ion-icon> GUARDAR CITA EN SUPABASE
         </ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>
 
   <!-- MODAL: GESTIONAR SERVICIO -->
-  <ion-modal [isOpen]="isModalServicioOpen" (didDismiss)="isModalServicioOpen = false" [initialBreakpoint]="0.7" [breakpoints]="[0, 0.7]">
+  <ion-modal [isOpen]="isModalServicioOpen" (didDismiss)="isModalServicioOpen = false">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold;">Configurar Servicio Barbería</ion-title>
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">CONFIGURAR SERVICIO BARBERÍA</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isModalServicioOpen=false" color="dark">
+            <ion-button (click)="isModalServicioOpen=false" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" style="--background: #fbfbfd; text-align: center;">
-        <div style="width: 100px; height: 100px; background: #ffffff; border-radius: 12px; margin: 10px auto 10px; overflow: hidden; border: 1px solid rgba(170, 133, 41, 0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff; text-align: center;">
+        <div style="width: 110px; height: 110px; background: #1c1c21; border-radius: 14px; margin: 10px auto; overflow: hidden; border: 2px dashed rgba(197, 157, 95, 0.45); cursor: pointer;" (click)="abrirSelectorArchivo()">
           <img *ngIf="servicioActual.imagen" [src]="servicioActual.imagen" style="width: 100%; height: 100%; object-fit: cover;" />
-          <ion-icon *ngIf="!servicioActual.imagen" name="image-outline" style="font-size: 40px; color: #aa8529; margin-top:30px;"></ion-icon>
+          <ion-icon *ngIf="!servicioActual.imagen" name="image-outline" style="font-size: 40px; color: #c59d5f; margin-top: 32px;"></ion-icon>
         </div>
         <input type="file" id="file-upload-servicio" accept="image/*" style="display: none;" (change)="cargarImagenServicio($event)">
-        <ion-button fill="clear" style="--color: #aa8529; font-weight: bold;" (click)="abrirSelectorArchivo()">
-          <ion-icon name="camera-outline" slot="start"></ion-icon> Subir Foto
+        <ion-button fill="outline" size="small" style="--border-color: #c59d5f; --color: #c59d5f; font-weight: 700;" (click)="abrirSelectorArchivo()">
+          <ion-icon name="camera-outline" slot="start"></ion-icon> CAMBIAR FOTO DE SERVICIO
         </ion-button>
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15); margin-top: 20px; margin-bottom: 24px; text-align: left;">
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+
+        <div class="modal-form-card" style="margin-top: 16px; text-align: left;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Nombre del Servicio" labelPlacement="floating" [(ngModel)]="servicioActual.nombre"></ion-input>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Categoría" labelPlacement="floating" [(ngModel)]="servicioActual.categoria">
               <ion-select-option value="Corte">Corte</ion-select-option>
               <ion-select-option value="Barba">Barba</ion-select-option>
@@ -257,14 +258,14 @@
               <ion-select-option value="Combo">Combo Premium</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Precio (S/)" labelPlacement="floating" type="number" [(ngModel)]="servicioActual.precio"></ion-input>
           </ion-item>
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="none" class="modal-form-item">
             <ion-input label="Duración (minutos)" labelPlacement="floating" type="number" [(ngModel)]="servicioActual.duracion_min"></ion-input>
           </ion-item>
         </div>
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarServicio()">
+        <ion-button expand="block" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarServicio()">
           <ion-icon slot="start" name="save-outline"></ion-icon> GUARDAR SERVICIO
         </ion-button>
       </ion-content>
@@ -275,41 +276,41 @@
   <ion-modal [isOpen]="isModalBarberoOpen" (didDismiss)="isModalBarberoOpen = false">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold;">Configurar Barbero</ion-title>
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">CONFIGURAR BARBERO</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isModalBarberoOpen=false" color="dark">
+            <ion-button (click)="isModalBarberoOpen=false" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" style="--background: #fbfbfd; text-align: center;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff; text-align: center;">
         
-        <div style="width: 100px; height: 100px; background: #ffffff; border-radius: 50%; margin: 10px auto; overflow: hidden; border: 1px solid rgba(170, 133, 41, 0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
+        <div style="width: 110px; height: 110px; background: #1c1c21; border-radius: 50%; margin: 10px auto; overflow: hidden; border: 2px dashed rgba(197, 157, 95, 0.45); cursor: pointer;" (click)="abrirSelectorBarbero()">
           <img *ngIf="barberoActual.imagen" [src]="barberoActual.imagen" style="width: 100%; height: 100%; object-fit: cover;" />
-          <ion-icon *ngIf="!barberoActual.imagen" name="person-outline" style="font-size: 40px; color: #aa8529; margin-top:28px;"></ion-icon>
+          <ion-icon *ngIf="!barberoActual.imagen" name="person-outline" style="font-size: 40px; color: #c59d5f; margin-top: 32px;"></ion-icon>
         </div>
         <input type="file" id="file-upload-barbero" accept="image/*" style="display: none;" (change)="cargarImagenBarbero($event)">
-        <ion-button fill="clear" style="--color: #aa8529; font-weight: bold;" (click)="abrirSelectorBarbero()">
-          <ion-icon name="camera-outline" slot="start"></ion-icon> Subir Foto Barbero
+        <ion-button fill="outline" size="small" style="--border-color: #c59d5f; --color: #c59d5f; font-weight: 700;" (click)="abrirSelectorBarbero()">
+          <ion-icon name="camera-outline" slot="start"></ion-icon> CAMBIAR FOTO DE BARBERO
         </ion-button>
 
-        <div style="background: #ffffff; border-radius: 12px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15); margin-top: 20px; margin-bottom: 24px; text-align: left;">
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+        <div class="modal-form-card" style="margin-top: 16px; text-align: left;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-input label="Nombre Completo" labelPlacement="floating" [(ngModel)]="barberoActual.nombre"></ion-input>
           </ion-item>
-          <ion-item lines="full" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="full" class="modal-form-item">
             <ion-select label="Especialidad de Barbería" labelPlacement="floating" [(ngModel)]="barberoActual.especialidad">
               <ion-select-option *ngFor="let esp of especialidadesBarberia" [value]="esp">{{ esp }}</ion-select-option>
             </ion-select>
           </ion-item>
-          <ion-item lines="none" style="--background: transparent; --padding-start: 0;">
+          <ion-item lines="none" class="modal-form-item">
             <ion-input label="Experiencia / Años" labelPlacement="floating" [(ngModel)]="barberoActual.experiencia" placeholder="Ej: 5 años de trayectoria"></ion-input>
           </ion-item>
         </div>
 
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px;" (click)="guardarBarbero()">
+        <ion-button expand="block" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 50px;" (click)="guardarBarbero()">
           <ion-icon slot="start" name="save-outline"></ion-icon> GUARDAR BARBERO
         </ion-button>
       </ion-content>
@@ -317,46 +318,46 @@
   </ion-modal>
 
   <!-- MODAL: FICHA TÉCNICA DEL CLIENTE -->
-  <ion-modal [isOpen]="isModalFichaClienteOpen" (didDismiss)="isModalFichaClienteOpen = false" [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6]">
+  <ion-modal [isOpen]="isModalFichaClienteOpen" (didDismiss)="isModalFichaClienteOpen = false">
     <ng-template>
       <ion-header class="ion-no-border">
-        <ion-toolbar style="--background: #ffffff; padding: 10px 0;">
-          <ion-title style="color: #aa8529; font-weight: bold;">Ficha Técnica de Barbería</ion-title>
+        <ion-toolbar style="--background: #0b0b0d; padding: 10px 0; border-bottom: 1px solid rgba(197, 157, 95, 0.25);">
+          <ion-title style="color: #c59d5f; font-weight: 800; font-size: 15px;">FICHA TÉCNICA DE BARBERÍA</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isModalFichaClienteOpen=false" color="dark">
+            <ion-button (click)="isModalFichaClienteOpen=false" style="--color: #ffffff;">
               <ion-icon name="close-outline" slot="icon-only" style="font-size: 24px;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" style="--background: #fbfbfd;">
-        <div style="background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(170, 133, 41, 0.15);">
-          <h3 style="margin-top: 0; color: #111; font-size: 16px; font-weight: 700;">
+      <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
+        <div class="modal-form-card" style="padding: 16px;">
+          <h3 style="margin-top: 0; color: #ffffff; font-size: 16px; font-weight: 800;">
             Cliente: {{ citaSeleccionadaParaFicha?.nombreCliente }}
           </h3>
-          <p style="font-size: 13px; color: #555; margin-bottom: 12px;">
-            <strong>Servicio:</strong> {{ citaSeleccionadaParaFicha?.nombreServicio }}<br>
-            <strong>Barbero:</strong> {{ citaSeleccionadaParaFicha?.nombreBarbero }}<br>
-            <strong>Fecha y Hora:</strong> {{ citaSeleccionadaParaFicha?.fecha }} a las {{ citaSeleccionadaParaFicha?.hora }}
+          <p style="font-size: 13px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.5;">
+            <strong style="color: #c59d5f;">Servicio:</strong> {{ citaSeleccionadaParaFicha?.nombreServicio }}<br>
+            <strong style="color: #c59d5f;">Barbero:</strong> {{ citaSeleccionadaParaFicha?.nombreBarbero }}<br>
+            <strong style="color: #c59d5f;">Fecha y Hora:</strong> {{ citaSeleccionadaParaFicha?.fecha }} a las {{ citaSeleccionadaParaFicha?.hora }}
           </p>
 
-          <div *ngIf="citaSeleccionadaParaFicha?.preferenciasCliente" style="background: #faf9f6; border-radius: 8px; padding: 12px; border: 1px solid rgba(170,133,41,0.2); margin-bottom: 12px;">
-            <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: bold; color: #aa8529;">PREFERENCIAS GUARDADAS EN SU PERFIL:</p>
-            <p style="margin: 2px 0; font-size: 12px; color: #333;"><strong>Estilo Preferido:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.estilo || 'No especificado' }}</p>
-            <p style="margin: 2px 0; font-size: 12px; color: #333;"><strong>Tipo de Cabello:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.tipo_cabello || 'No especificado' }}</p>
-            <p style="margin: 2px 0; font-size: 12px; color: #333;"><strong>Estilo de Barba:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.barba || 'No especificado' }}</p>
-            <p *ngIf="citaSeleccionadaParaFicha?.preferenciasCliente?.notas" style="margin: 4px 0 0; font-size: 12px; color: #666; font-style: italic;">
+          <div *ngIf="citaSeleccionadaParaFicha?.preferenciasCliente" style="background: #141417; border-radius: 10px; padding: 12px; border: 1px solid rgba(197,157,95,0.3); margin-bottom: 12px;">
+            <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 800; color: #c59d5f;">PREFERENCIAS GUARDADAS EN SU PERFIL:</p>
+            <p style="margin: 3px 0; font-size: 12px; color: #ffffff;"><strong>Estilo Preferido:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.estilo || 'No especificado' }}</p>
+            <p style="margin: 3px 0; font-size: 12px; color: #ffffff;"><strong>Tipo de Cabello:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.tipo_cabello || 'No especificado' }}</p>
+            <p style="margin: 3px 0; font-size: 12px; color: #ffffff;"><strong>Estilo de Barba:</strong> {{ citaSeleccionadaParaFicha?.preferenciasCliente?.barba || 'No especificado' }}</p>
+            <p *ngIf="citaSeleccionadaParaFicha?.preferenciasCliente?.notas" style="margin: 4px 0 0; font-size: 12px; color: #a1a1aa; font-style: italic;">
               "{{ citaSeleccionadaParaFicha?.preferenciasCliente?.notas }}"
             </p>
           </div>
 
-          <div *ngIf="citaSeleccionadaParaFicha?.notas_corte" style="background: #fff8e1; border-radius: 8px; padding: 12px; border: 1px solid #ffe082;">
-            <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: bold; color: #8d6e63;">NOTA ESPECÍFICA PARA ESTA CITA:</p>
-            <p style="margin: 0; font-size: 13px; color: #3e2723;">{{ citaSeleccionadaParaFicha?.notas_corte }}</p>
+          <div *ngIf="citaSeleccionadaParaFicha?.notas_corte" style="background: rgba(197, 157, 95, 0.14); border-radius: 10px; padding: 12px; border: 1px solid rgba(197, 157, 95, 0.4);">
+            <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 800; color: #c59d5f;">NOTA ESPECÍFICA PARA ESTA CITA:</p>
+            <p style="margin: 0; font-size: 13px; color: #ffffff;">{{ citaSeleccionadaParaFicha?.notas_corte }}</p>
           </div>
         </div>
 
-        <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 48px; margin-top: 16px;" (click)="isModalFichaClienteOpen = false">
+        <ion-button expand="block" style="--background: #c59d5f; --color: #0b0b0d; --border-radius: 12px; font-weight: 800; height: 48px; margin-top: 16px;" (click)="isModalFichaClienteOpen = false">
           ENTENDIDO
         </ion-button>
       </ion-content>

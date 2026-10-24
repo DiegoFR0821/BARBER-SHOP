@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,7 +7,7 @@ import {
   IonMenuButton, IonSearchbar, IonIcon, IonButton, 
   IonModal, IonInput, IonItem, IonLabel, IonBadge, IonSelect, 
   IonSelectOption, IonSegment, IonSegmentButton, IonAvatar,
-  IonList, IonFab, IonFabButton 
+  IonList, IonFab, IonFabButton, ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -16,6 +16,7 @@ import {
   personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, 
   add, checkmarkCircleOutline, refreshOutline 
 } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 import { SupabaseService, Cita, Barbero, ServicioBarberia } from '../../core/services/supabase.service';
 import { UsuarioPerfil } from '../../services/usuario';
 
@@ -32,7 +33,11 @@ import { UsuarioPerfil } from '../../services/usuario';
     IonList, IonFab, IonFabButton
   ]
 })
-export class CitasPage implements OnInit {
+export class CitasPage implements OnInit, OnDestroy {
+
+  private router = inject(Router);
+  private supabaseService = inject(SupabaseService);
+  private toastCtrl = inject(ToastController);
 
   seccionActiva: string = 'reservas';
   searchTerm: string = '';
@@ -78,20 +83,10 @@ export class CitasPage implements OnInit {
   servicioActual: any = { id: '', nombre: '', categoria: 'Corte', precio: 35, duracion_min: 35, imagen: '' };
   barberoActual: any = { id: '', nombre: '', imagen: '', especialidad: 'Master Barber & Fade Urbano', experiencia: '5 años' };
 
-  ejecutarAccionFab() {
-    if (this.seccionActiva === 'reservas') {
-      this.abrirModalReserva();
-    } else if (this.seccionActiva === 'servicios') {
-      this.abrirModalServicio();
-    } else if (this.seccionActiva === 'barberos') {
-      this.abrirModalBarbero();
-    }
-  }
+  private syncSub?: Subscription;
+  private realtimeChannel: any;
 
-  constructor(
-    private router: Router,
-    private supabaseService: SupabaseService
-  ) {
+  constructor() {
     addIcons({ 
       createOutline, trashOutline, closeOutline, saveOutline, 
       calendarOutline, timeOutline, cameraOutline, imageOutline, 
@@ -102,10 +97,30 @@ export class CitasPage implements OnInit {
 
   ngOnInit() {
     this.cargarTodo();
+    this.syncSub = this.supabaseService.datosActualizados$.subscribe(() => {
+      this.cargarTodo();
+    });
+    this.realtimeChannel = this.supabaseService.suscribirCambiosAdmin(() => {
+      this.cargarTodo();
+    });
   }
 
   ionViewWillEnter() {
     this.cargarTodo();
+  }
+
+  ngOnDestroy() {
+    this.syncSub?.unsubscribe();
+  }
+
+  ejecutarAccionFab() {
+    if (this.seccionActiva === 'reservas') {
+      this.abrirModalReserva();
+    } else if (this.seccionActiva === 'servicios') {
+      this.abrirModalServicio();
+    } else if (this.seccionActiva === 'barberos') {
+      this.abrirModalBarbero();
+    }
   }
 
   irA(ruta: string) {
@@ -189,11 +204,21 @@ export class CitasPage implements OnInit {
 
   async guardarReserva() {
     if (!this.reservaActual.clienteId || !this.reservaActual.servicioId || !this.reservaActual.barberoId || !this.reservaActual.fecha || !this.reservaActual.hora) {
-      alert('Por favor completa todos los campos de la cita.');
+      const t = await this.toastCtrl.create({
+        message: '⚠️ Por favor completa todos los campos de la cita.',
+        duration: 2200,
+        color: 'warning',
+        position: 'bottom'
+      });
+      await t.present();
       return;
     }
 
     try {
+      const clienteObj = this.clientes.find(c => (c.id || c.uid) === this.reservaActual.clienteId);
+      const srvObj = this.servicios.find(s => s.id === this.reservaActual.servicioId);
+      const barbObj = this.barberos.find(b => b.id === this.reservaActual.barberoId);
+
       if (this.modoEdicion && this.reservaActual.id) {
         await this.supabaseService.actualizarEstadoCita(this.reservaActual.id, this.reservaActual.estado);
       } else {
@@ -203,19 +228,28 @@ export class CitasPage implements OnInit {
           servicio_id: this.reservaActual.servicioId,
           fecha: this.reservaActual.fecha,
           hora: this.reservaActual.hora,
-          notas_corte: this.reservaActual.notas_corte
+          notas_corte: this.reservaActual.notas_corte,
+          nombreCliente: clienteObj?.nombre || 'Cliente Barber Shop',
+          nombreServicio: srvObj?.nombre || 'Servicio Barber Shop',
+          precioServicio: srvObj?.precio || 35,
+          nombreBarbero: barbObj?.nombre || 'Barbero Principal'
         });
       }
 
       this.isModalReservaOpen = false;
       await this.cargarCitas();
-      alert('¡Cita registrada correctamente en Supabase!');
+
+      const t = await this.toastCtrl.create({
+        message: '✅ Cita sincronizada correctamente en Supabase.',
+        duration: 2200,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (e: any) {
       console.error('Error al guardar cita:', e);
       if (e?.message?.includes('CONCURRENCY_ERROR') || e?.code === '23505') {
         alert('⚠️ Conflicto de horario: Este barbero ya tiene una cita activa en ese mismo día y hora.');
-      } else {
-        alert('Surgió un error al guardar la cita.');
       }
     }
   }
@@ -224,6 +258,13 @@ export class CitasPage implements OnInit {
     try {
       await this.supabaseService.actualizarEstadoCita(cita.id, nuevoEstado);
       cita.estado = nuevoEstado;
+      const t = await this.toastCtrl.create({
+        message: `Estado actualizado a ${nuevoEstado.toUpperCase()}`,
+        duration: 1600,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (e) {
       console.error('Error cambiando estado:', e);
     }
@@ -263,12 +304,20 @@ export class CitasPage implements OnInit {
     document.getElementById('file-upload-servicio')?.click();
   }
 
-  cargarImagenServicio(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => { this.servicioActual.imagen = reader.result as string; };
+  async cargarImagenServicio(event: any) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+    try {
+      this.servicioActual.imagen = await this.supabaseService.comprimirImagenArchivo(file, 400, 400, 0.7);
+      const t = await this.toastCtrl.create({
+        message: '📸 Fotografía de servicio optimizada.',
+        duration: 1500,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
+    } catch (err) {
+      console.error('Error comprimiendo imagen de servicio:', err);
     }
   }
 
@@ -286,9 +335,15 @@ export class CitasPage implements OnInit {
       }
       this.isModalServicioOpen = false;
       await this.cargarServicios();
+      const t = await this.toastCtrl.create({
+        message: '✅ Servicio guardado en el catálogo.',
+        duration: 2000,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (e) {
       console.error('Error al guardar servicio:', e);
-      alert('Error al guardar el servicio en Supabase.');
     }
   }
 
@@ -304,7 +359,7 @@ export class CitasPage implements OnInit {
   }
 
   // ==========================================
-  // GESTIÓN DE BARBEROS (Reemplaza Estilistas)
+  // GESTIÓN DE BARBEROS
   // ==========================================
   abrirModalBarbero(barbero?: Barbero) {
     if (barbero) {
@@ -327,12 +382,20 @@ export class CitasPage implements OnInit {
     document.getElementById('file-upload-barbero')?.click();
   }
 
-  cargarImagenBarbero(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => { this.barberoActual.imagen = reader.result as string; };
+  async cargarImagenBarbero(event: any) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+    try {
+      this.barberoActual.imagen = await this.supabaseService.comprimirImagenArchivo(file, 400, 400, 0.7);
+      const t = await this.toastCtrl.create({
+        message: '📸 Fotografía del barbero optimizada.',
+        duration: 1500,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
+    } catch (err) {
+      console.error('Error comprimiendo imagen de barbero:', err);
     }
   }
 
@@ -350,9 +413,15 @@ export class CitasPage implements OnInit {
       }
       this.isModalBarberoOpen = false;
       await this.cargarBarberos();
+      const t = await this.toastCtrl.create({
+        message: '✅ Barbero sincronizado en el staff.',
+        duration: 2000,
+        color: 'success',
+        position: 'bottom'
+      });
+      await t.present();
     } catch (e) {
       console.error('Error al guardar barbero:', e);
-      alert('Error al registrar el barbero en Supabase.');
     }
   }
 

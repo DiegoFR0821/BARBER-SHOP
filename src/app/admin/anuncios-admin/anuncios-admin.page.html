@@ -29,7 +29,7 @@
     <div class="minimalist-announcement-card" *ngFor="let promo of anunciosFiltrados">
       
       <div class="announcement-preview-box">
-        <img *ngIf="promo.imagen || promo.imagen_url" [src]="promo.imagen || promo.imagen_url" class="banner-thumb-img" alt="banner">
+        <img *ngIf="promo.imagen || promo.imagen_url" [src]="promo.imagen || promo.imagen_url" (error)="onImagenError(promo)" class="banner-thumb-img" alt="banner">
         <div *ngIf="!promo.imagen && !promo.imagen_url" class="icon-frame-circle bg-gold-light">
           <ion-icon name="megaphone-outline" class="color-gold"></ion-icon>
         </div>
@@ -95,6 +95,12 @@
             <ion-icon name="camera-outline"></ion-icon>
             <span>Toca para cargar banner del Pop-up</span>
           </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 14px;">
+          <ion-button fill="outline" size="small" (click)="abrirSelectorArchivo()" style="--border-color: #c59d5f; --color: #c59d5f; font-weight: 700; font-size: 11px;">
+            <ion-icon name="camera-outline" slot="start"></ion-icon>
+            CAMBIAR IMAGEN DEL BANNER
+          </ion-button>
         </div>
         <input type="file" id="file-upload-anuncio" accept="image/*" style="display: none;" (change)="cargarImagenAnuncio($event)">
 

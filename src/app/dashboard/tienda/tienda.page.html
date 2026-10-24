@@ -4,9 +4,9 @@
       <span style="color: #c59d5f;">BARBER</span> SHOP &bull; TIENDA
     </ion-title>
     <ion-buttons slot="end" class="ion-padding-end">
-      <ion-button (click)="irACarrito()" style="--color: #c59d5f; position: relative;" title="Ver Mi Cesta">
-        <ion-icon name="cart-outline" style="font-size: 24px;"></ion-icon>
-        <ion-badge *ngIf="cantidadCarrito > 0" color="danger" style="position: absolute; top: -2px; right: -2px; font-size: 10px; padding: 3px 6px; border-radius: 50%;">
+      <ion-button (click)="irACarrito()" [routerLink]="['/dashboard/carrito']" style="--color: #c59d5f; position: relative;" title="Ir al Carrito">
+        <ion-icon name="cart-outline" style="font-size: 25px;"></ion-icon>
+        <ion-badge *ngIf="cantidadCarrito > 0" color="danger" style="position: absolute; top: 0px; right: -2px; font-size: 10px; padding: 3px 6px; border-radius: 50%;">
           {{ cantidadCarrito }}
         </ion-badge>
       </ion-button>
@@ -15,7 +15,7 @@
 </ion-header>
 
 <ion-content style="--background: #0b0b0d;">
-  <div class="dashboard-wrapper" style="padding: 16px;">
+  <div class="dashboard-wrapper" style="padding: 16px 16px 88px 16px;">
     
     <!-- BUSCADOR -->
     <ion-searchbar 
@@ -49,12 +49,13 @@
           <div class="product-catalog-card" style="background: #1c1c21; border-radius: 12px; border: 1px solid rgba(197,157,95,0.25); overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: flex; flex-direction: column; height: 100%;">
             
             <div style="width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #141417; position: relative;">
-              <img *ngIf="prod.imagen || prod.imagen_url" [src]="prod.imagen || prod.imagen_url" style="width: 100%; height: 100%; object-fit: cover;" alt="Producto" />
-              <div *ngIf="!prod.imagen && !prod.imagen_url" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #c59d5f;">
-                <ion-icon name="image-outline" style="font-size: 30px;"></ion-icon>
-              </div>
+              <img 
+                [src]="prod.imagen || prod.imagen_url || FOTO_MASCULINA_RESPALDO" 
+                (error)="onImagenError(prod)"
+                style="width: 100%; height: 100%; object-fit: cover;" 
+                alt="Producto Barber Shop" />
               <ion-badge *ngIf="prod.stock <= 0" color="danger" style="position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: bold;">AGOTADO</ion-badge>
-              <span *ngIf="prod.categoria" style="position: absolute; bottom: 6px; left: 6px; background: rgba(11,11,13,0.85); color: #c59d5f; border: 1px solid rgba(197,157,95,0.35); padding: 2px 7px; border-radius: 6px; font-size: 9px; font-weight: 800;">
+              <span *ngIf="prod.categoria" style="position: absolute; bottom: 6px; left: 6px; background: rgba(11,11,13,0.88); color: #c59d5f; border: 1px solid rgba(197,157,95,0.35); padding: 2px 7px; border-radius: 6px; font-size: 9px; font-weight: 800;">
                 {{ prod.categoria }}
               </span>
             </div>
@@ -81,5 +82,23 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+  </div>
+
+  <!-- BARRA FLOTANTE INFERIOR PARA IR DIRECTO AL CARRITO Y PAGAR -->
+  <div 
+    *ngIf="cantidadCarrito > 0" 
+    slot="fixed" 
+    (click)="irACarrito()"
+    style="bottom: 14px; left: 16px; right: 16px; z-index: 999; background: linear-gradient(135deg, #d4af37 0%, #c59d5f 100%); color: #0b0b0d; border-radius: 14px; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75); cursor: pointer; border: 1.5px solid #0b0b0d;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <ion-icon name="cart-outline" style="font-size: 22px; color: #0b0b0d;"></ion-icon>
+      <span style="font-size: 13px; font-weight: 900; letter-spacing: 0.4px;">
+        Ver Carrito ({{ cantidadCarrito }} {{ cantidadCarrito === 1 ? 'producto' : 'productos' }}) &bull; Ir a Pagar
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="font-size: 13px; font-weight: 900;">S/ {{ subtotalCarrito | number:'1.2-2' }}</span>
+      <ion-icon name="arrow-forward-outline" style="font-size: 18px;"></ion-icon>
+    </div>
   </div>
 </ion-content>

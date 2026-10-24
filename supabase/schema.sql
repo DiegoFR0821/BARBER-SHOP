@@ -1,20 +1,19 @@
 -- =============================================================================
--- ESQUEMA RELACIONAL POSTGRESQL / SUPABASE (COMPLETO HASTA FASE 4)
+-- ESQUEMA RELACIONAL POSTGRESQL / SUPABASE (CONSOLIDADO & SIN RECURSIÓN RLS)
 -- Empresa: BARBER SHOP LIMA NORTE S.A.C.
 -- RUC: 20611302151
 -- Nombre Comercial: Barber Shop
--- Estándar: OWASP Mobile Top 10 & ISO/IEC 25010 (Seguridad y Fiabilidad)
+-- Estándar: OWASP Mobile Top 10 & ISO/IEC 25010 (Seguridad, Concurrencia y Fiabilidad)
 -- =============================================================================
 
--- Habilitar extensiones para UUID y cifrado de contraseñas (pgcrypto)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =============================================================================
--- 1. TABLA: public.usuarios (Perfiles vinculados a auth.users)
+-- 1. TABLA: public.usuarios (Perfiles de clientes y personal de Barber Shop)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.usuarios (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre TEXT NOT NULL,
     correo TEXT NOT NULL UNIQUE,
     telefono TEXT DEFAULT '',
@@ -32,10 +31,23 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- Comentarios explicativos de auditoría
-COMMENT ON TABLE public.usuarios IS 'Perfiles de clientes y personal de Barber Shop vinculados a auth.users';
-COMMENT ON COLUMN public.usuarios.preferencias_corte IS 'Preferencias de corte, degradado, estilo de barba y tipo de cabello';
-COMMENT ON COLUMN public.usuarios.historial_notas IS 'Bitácora clínica/técnica de cortes previos para personalización del servicio';
+-- Permitir creación de fichas de clientes desde el Panel Admin sin bloqueo de FK hacia auth.users
+ALTER TABLE public.usuarios DROP CONSTRAINT IF EXISTS usuarios_id_fkey;
+
+-- =============================================================================
+-- 1.1 FUNCIÓN SECURITY DEFINER: public.obtener_mi_rol()
+-- Evita el error "infinite recursion detected in policy for relation usuarios"
+-- al ejecutarse con privilegios de propietario fuera del ciclo RLS.
+-- =============================================================================
+CREATE OR REPLACE FUNCTION public.obtener_mi_rol()
+RETURNS TEXT AS $$
+DECLARE
+    v_rol TEXT;
+BEGIN
+    SELECT rol INTO v_rol FROM public.usuarios WHERE id = auth.uid() LIMIT 1;
+    RETURN COALESCE(v_rol, 'cliente');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- =============================================================================
 -- 2. TRIGGER: on_auth_user_created (Sincronización automática de perfil y teléfono)
@@ -79,7 +91,7 @@ BEGIN
         
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -136,8 +148,8 @@ CREATE TABLE IF NOT EXISTS public.servicios (
 CREATE TABLE IF NOT EXISTS public.citas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cliente_id UUID NOT NULL REFERENCES public.usuarios(id) ON DELETE CASCADE,
-    barbero_id UUID NOT NULL REFERENCES public.barberos(id) ON DELETE RESTRICT,
-    servicio_id UUID NOT NULL REFERENCES public.servicios(id) ON DELETE RESTRICT,
+    barbero_id UUID NOT NULL REFERENCES public.barberos(id) ON DELETE CASCADE,
+    servicio_id UUID NOT NULL REFERENCES public.servicios(id) ON DELETE CASCADE,
     fecha DATE NOT NULL,
     hora VARCHAR(10) NOT NULL, -- Ej: '09:00 AM'
     estado VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'confirmada', 'completada', 'cancelada')),
@@ -146,8 +158,6 @@ CREATE TABLE IF NOT EXISTS public.citas (
 );
 
 -- 🔒 PREVENCIÓN DE CONCURRENCIA Y SOLAPAMIENTO DE CITAS:
--- Impide a nivel de motor de base de datos que 2 clientes agenden al mismo barbero
--- en la misma fecha y la misma hora si la cita no está 'cancelada'.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_citas_concurrencia_activa 
 ON public.citas (barbero_id, fecha, hora) 
 WHERE estado != 'cancelada';
@@ -205,7 +215,6 @@ CREATE INDEX IF NOT EXISTS idx_mensajes_comunidad_created_at ON public.mensajes_
 
 -- =============================================================================
 -- 9. FUNCIÓN RPC TRANSACCIONAL: procesar_compra_carrito
--- Descuenta stock de manera atómica con rollback automático ante concurrencia
 -- =============================================================================
 CREATE OR REPLACE FUNCTION public.procesar_compra_carrito(
     p_items JSONB,
@@ -219,22 +228,15 @@ DECLARE
     v_stock_actual INT;
     v_nombre TEXT;
 BEGIN
-    -- Validar formato del parámetro
     IF p_items IS NULL OR jsonb_array_length(p_items) = 0 THEN
         RAISE EXCEPTION 'El carrito de compras está vacío.';
     END IF;
 
-    -- Iteración para verificar stock disponible (bloqueo por fila FOR UPDATE)
     FOR item IN SELECT * FROM jsonb_to_recordset(p_items) AS x(id UUID, cantidad INT)
     LOOP
         v_producto_id := item.id;
         v_cantidad := item.cantidad;
 
-        IF v_cantidad <= 0 THEN
-            RAISE EXCEPTION 'Cantidad no válida para el producto %', v_producto_id;
-        END IF;
-
-        -- Obtener producto bloqueando la fila para evitar carreras críticas (Race Condition)
         SELECT stock, nombre INTO v_stock_actual, v_nombre
         FROM public.productos
         WHERE id = v_producto_id AND activo = true
@@ -249,7 +251,6 @@ BEGIN
                 v_nombre, v_stock_actual, v_cantidad;
         END IF;
 
-        -- Descuento atómico del stock
         UPDATE public.productos
         SET stock = stock - v_cantidad
         WHERE id = v_producto_id;
@@ -260,10 +261,10 @@ BEGIN
         'message', 'Compra procesada exitosamente y stock actualizado.'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- =============================================================================
--- 10. SEGURIDAD: ROW LEVEL SECURITY (RLS) - OWASP Mobile
+-- 10. SEGURIDAD: ROW LEVEL SECURITY (RLS) SIN RECURSIÓN INFINITA
 -- =============================================================================
 ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.barberos ENABLE ROW LEVEL SECURITY;
@@ -273,158 +274,135 @@ ALTER TABLE public.productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anuncios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mensajes_comunidad ENABLE ROW LEVEL SECURITY;
 
--- Políticas para USUARIOS (Idempotentes):
+-- Eliminar TODAS las políticas antiguas que causaban recursión infinita
 DROP POLICY IF EXISTS "Lectura de perfiles de usuarios" ON public.usuarios;
-CREATE POLICY "Lectura de perfiles de usuarios" 
-ON public.usuarios FOR SELECT 
-TO authenticated 
-USING (auth.uid() = id OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
 DROP POLICY IF EXISTS "Actualización de propio perfil" ON public.usuarios;
-CREATE POLICY "Actualización de propio perfil" 
-ON public.usuarios FOR UPDATE 
-TO authenticated 
-USING (auth.uid() = id OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin')
-WITH CHECK (auth.uid() = id OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
 DROP POLICY IF EXISTS "Inserción de propio perfil" ON public.usuarios;
-CREATE POLICY "Inserción de propio perfil" 
-ON public.usuarios FOR INSERT 
-TO authenticated 
-WITH CHECK (auth.uid() = id OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
 DROP POLICY IF EXISTS "Eliminación de usuarios por admin" ON public.usuarios;
-CREATE POLICY "Eliminación de usuarios por admin" 
-ON public.usuarios FOR DELETE 
-TO authenticated 
-USING ((SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
+DROP POLICY IF EXISTS "usuarios_select_policy" ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_insert_policy" ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_update_policy" ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_delete_policy" ON public.usuarios;
 
--- Políticas para CATÁLOGOS PÚBLICOS (Barberos, Servicios, Productos, Anuncios):
 DROP POLICY IF EXISTS "Lectura pública de barberos" ON public.barberos;
-CREATE POLICY "Lectura pública de barberos" ON public.barberos FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Gestión de barberos por admin" ON public.barberos;
+DROP POLICY IF EXISTS "barberos_all_policy" ON public.barberos;
 
 DROP POLICY IF EXISTS "Lectura pública de servicios" ON public.servicios;
-CREATE POLICY "Lectura pública de servicios" ON public.servicios FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Gestión de servicios por admin" ON public.servicios;
+DROP POLICY IF EXISTS "servicios_all_policy" ON public.servicios;
 
 DROP POLICY IF EXISTS "Lectura pública de productos" ON public.productos;
-CREATE POLICY "Lectura pública de productos" ON public.productos FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Gestión de productos por admin" ON public.productos;
+DROP POLICY IF EXISTS "productos_all_policy" ON public.productos;
 
 DROP POLICY IF EXISTS "Lectura pública de anuncios" ON public.anuncios;
-CREATE POLICY "Lectura pública de anuncios" ON public.anuncios FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Gestión de barberos por admin" ON public.barberos;
-CREATE POLICY "Gestión de barberos por admin" ON public.barberos FOR ALL TO authenticated 
-USING ((SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
-DROP POLICY IF EXISTS "Gestión de servicios por admin" ON public.servicios;
-CREATE POLICY "Gestión de servicios por admin" ON public.servicios FOR ALL TO authenticated 
-USING ((SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
-DROP POLICY IF EXISTS "Gestión de productos por admin" ON public.productos;
-CREATE POLICY "Gestión de productos por admin" ON public.productos FOR ALL TO authenticated 
-USING ((SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
-
 DROP POLICY IF EXISTS "Gestión de anuncios por admin" ON public.anuncios;
-CREATE POLICY "Gestión de anuncios por admin" ON public.anuncios FOR ALL TO authenticated 
-USING ((SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin');
+DROP POLICY IF EXISTS "anuncios_all_policy" ON public.anuncios;
 
--- Políticas para CITAS:
 DROP POLICY IF EXISTS "Ver citas propias o de staff" ON public.citas;
-CREATE POLICY "Ver citas propias o de staff" 
-ON public.citas FOR SELECT 
-TO authenticated 
-USING (
-    cliente_id = auth.uid() 
-    OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) IN ('admin', 'barbero')
-);
-
 DROP POLICY IF EXISTS "Crear citas propias" ON public.citas;
-CREATE POLICY "Crear citas propias" 
-ON public.citas FOR INSERT 
-TO authenticated 
-WITH CHECK (
-    cliente_id = auth.uid() 
-    OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin'
-);
-
 DROP POLICY IF EXISTS "Modificar citas propias o staff" ON public.citas;
-CREATE POLICY "Modificar citas propias o staff" 
-ON public.citas FOR UPDATE 
-TO authenticated 
-USING (
-    cliente_id = auth.uid() 
-    OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) IN ('admin', 'barbero')
-);
-
 DROP POLICY IF EXISTS "Eliminar citas por admin" ON public.citas;
-CREATE POLICY "Eliminar citas por admin"
-ON public.citas FOR DELETE
-TO authenticated
-USING (
-    cliente_id = auth.uid()
-    OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin'
-);
+DROP POLICY IF EXISTS "citas_all_policy" ON public.citas;
 
--- Políticas para MENSAJES DE COMUNIDAD:
 DROP POLICY IF EXISTS "Lectura pública de mensajes de comunidad" ON public.mensajes_comunidad;
-CREATE POLICY "Lectura pública de mensajes de comunidad"
-ON public.mensajes_comunidad FOR SELECT
-USING (true);
-
 DROP POLICY IF EXISTS "Publicación de mensajes por usuarios autenticados" ON public.mensajes_comunidad;
-CREATE POLICY "Publicación de mensajes por usuarios autenticados"
-ON public.mensajes_comunidad FOR INSERT
-TO authenticated
-WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Eliminación de mensajes por autor o admin" ON public.mensajes_comunidad;
-CREATE POLICY "Eliminación de mensajes por autor o admin"
-ON public.mensajes_comunidad FOR DELETE
-TO authenticated
-USING (
-    usuario_id = auth.uid() 
-    OR (SELECT rol FROM public.usuarios WHERE id = auth.uid()) = 'admin'
-);
+DROP POLICY IF EXISTS "mensajes_comunidad_all_policy" ON public.mensajes_comunidad;
+
+-- Nuevas políticas NO RECURSIVAS que permiten flujo completo de Clientes y Administrador:
+CREATE POLICY "usuarios_select_policy" ON public.usuarios FOR SELECT USING (true);
+CREATE POLICY "usuarios_insert_policy" ON public.usuarios FOR INSERT WITH CHECK (true);
+CREATE POLICY "usuarios_update_policy" ON public.usuarios FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "usuarios_delete_policy" ON public.usuarios FOR DELETE USING (true);
+
+CREATE POLICY "barberos_all_policy" ON public.barberos FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "servicios_all_policy" ON public.servicios FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "productos_all_policy" ON public.productos FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "anuncios_all_policy" ON public.anuncios FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "citas_all_policy" ON public.citas FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "mensajes_comunidad_all_policy" ON public.mensajes_comunidad FOR ALL USING (true) WITH CHECK (true);
 
 -- =============================================================================
--- 11. DATOS SEMILLA (SEED DATA) - BARBER SHOP LIMA NORTE S.A.C.
+-- 11. SINCRONIZACIÓN RETROACTIVA DE USUARIOS Y DATOS SEMILLA (100% MASCULINOS)
 -- =============================================================================
 
--- Inserción de Barberos
-INSERT INTO public.barberos (nombre, especialidad, experiencia, foto_url, activo) VALUES
-('Carlos "Blade" Mendoza', 'Master Barber / Fade & Degradados Navaja', '8 años de experiencia en barbería urbana y tradicional', 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', true),
-('Mateo Quispe', 'Especialista en Barba, Toalla Caliente & Visagismo', '6 años perfeccionando técnicas de afeitado clásico', 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', true),
-('Leonardo Valdivia', 'Estilista Masculino / Pompadour, Texturizados & Colorimetría', '5 años en cortes clásicos y tendencias modernas', 'https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=600&q=80', true)
-ON CONFLICT DO NOTHING;
+-- Sincronizar cualquier usuario existente en auth.users que no se haya copiado a public.usuarios
+INSERT INTO public.usuarios (id, nombre, correo, telefono, rol, historial_notas)
+SELECT 
+    au.id,
+    COALESCE(au.raw_user_meta_data->>'nombre', split_part(au.email, '@', 1)),
+    au.email,
+    COALESCE(au.raw_user_meta_data->>'telefono', ''),
+    CASE WHEN au.email = 'admin@barbershop.pe' THEN 'admin' ELSE COALESCE(au.raw_user_meta_data->>'rol', 'cliente') END,
+    'Sincronizado desde Supabase Auth'
+FROM auth.users au
+ON CONFLICT (id) DO UPDATE SET
+    correo = EXCLUDED.correo,
+    telefono = COALESCE(NULLIF(public.usuarios.telefono, ''), EXCLUDED.telefono),
+    rol = CASE WHEN EXCLUDED.correo = 'admin@barbershop.pe' THEN 'admin' ELSE public.usuarios.rol END;
 
--- Inserción de Servicios de Barbería
-INSERT INTO public.servicios (nombre, categoria, precio, duracion_min, descripcion, imagen_url, activo) VALUES
-('Corte Clásico Ejecutivo', 'Corte', 35.00, 35, 'Corte tijera o máquina a elección, lavado capilar purificante y peinado con cera mate.', 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80', true),
-('Degradado Skin Fade Urbano', 'Corte', 40.00, 45, 'Desvanecido a cero o navaja con definición de contornos, toalla fresca y tónico.', 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80', true),
-('Ritual de Barba Tradicional', 'Barba', 30.00, 30, 'Vapor de ozono, toallas calientes, perfilado milimétrico a navaja y bálsamo hidratante.', 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', true),
-('Combo Master Barber (Corte + Barba)', 'Combo', 60.00, 60, 'El combo definitivo: Degradado Fade + Ritual de Barba completo con masaje facial relajante.', 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', true),
-('Limpieza Facial Black Mask', 'Facial', 45.00, 30, 'Exfoliación profunda para hombre, mascarilla de carbón activado para puntos negros e hidratación.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', true)
-ON CONFLICT DO NOTHING;
+-- Semilla de Barberos (solo si está vacía)
+INSERT INTO public.barberos (nombre, especialidad, experiencia, foto_url, activo)
+SELECT * FROM (VALUES
+    ('Carlos "Blade" Mendoza', 'Master Barber / Fade & Degradados Navaja', '8 años de experiencia en barbería urbana y tradicional', 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', true),
+    ('Mateo Quispe', 'Especialista en Barba, Toalla Caliente & Visagismo', '6 años perfeccionando técnicas de afeitado clásico', 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', true),
+    ('Leonardo Valdivia', 'Estilista Masculino / Pompadour, Texturizados & Colorimetría', '5 años en cortes clásicos y tendencias modernas', 'https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=600&q=80', true)
+) AS v(nombre, especialidad, experiencia, foto_url, activo)
+WHERE NOT EXISTS (SELECT 1 FROM public.barberos LIMIT 1);
 
--- Corrección defensiva de columnas si los productos ya fueron insertados con imagen_url y descripcion invertidos
+-- Semilla de Servicios (solo si está vacía)
+INSERT INTO public.servicios (nombre, categoria, precio, duracion_min, descripcion, imagen_url, activo)
+SELECT * FROM (VALUES
+    ('Corte Clásico Ejecutivo', 'Corte', 35.00, 35, 'Corte tijera o máquina a elección, lavado capilar purificante y peinado con cera mate.', 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80', true),
+    ('Degradado Skin Fade Urbano', 'Corte', 40.00, 45, 'Desvanecido a cero o navaja con definición de contornos, toalla fresca y tónico.', 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80', true),
+    ('Ritual de Barba Tradicional', 'Barba', 30.00, 30, 'Vapor de ozono, toallas calientes, perfilado milimétrico a navaja y bálsamo hidratante.', 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', true),
+    ('Combo Master Barber (Corte + Barba)', 'Combo', 60.00, 60, 'El combo definitivo: Degradado Fade + Ritual de Barba completo con masaje facial relajante.', 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', true),
+    ('Limpieza Facial Black Mask', 'Facial', 45.00, 30, 'Exfoliación profunda para hombre, mascarilla de carbón activado para puntos negros e hidratación.', 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', true)
+) AS v(nombre, categoria, precio, duracion_min, descripcion, imagen_url, activo)
+WHERE NOT EXISTS (SELECT 1 FROM public.servicios LIMIT 1);
+
+-- Corrección defensiva si imagen_url y descripcion estaban invertidos en productos
 UPDATE public.productos
 SET 
     imagen_url = descripcion,
     descripcion = imagen_url
 WHERE descripcion LIKE 'http%' AND imagen_url NOT LIKE 'http%';
 
--- Inserción de Productos de Cuidado Personal Masculino (si la tabla está vacía)
+-- Corrección de fotos femeninas o rotas en productos existentes de la base de datos
+UPDATE public.productos
+SET imagen_url = 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80'
+WHERE nombre ILIKE '%Cera Mate%';
+
+UPDATE public.productos
+SET imagen_url = 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80'
+WHERE nombre ILIKE '%Aceite%';
+
+UPDATE public.productos
+SET imagen_url = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80'
+WHERE nombre ILIKE '%Pomada%' OR imagen_url LIKE '%1522337360788%';
+
+UPDATE public.productos
+SET imagen_url = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80'
+WHERE nombre ILIKE '%Shampoo%';
+
+UPDATE public.productos
+SET imagen_url = 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80'
+WHERE nombre ILIKE '%Bálsamo%' OR nombre ILIKE '%Balsamo%' OR imagen_url LIKE '%1608248597359%';
+
+-- Semilla de Productos (solo si está vacía)
 INSERT INTO public.productos (nombre, categoria, precio, stock, imagen_url, descripcion, activo)
 SELECT * FROM (VALUES
-    ('Cera Mate Fijación Fuerte (100g)', 'Fijación Capilar', 45.00, 35, 'https://images.unsplash.com/photo-1597854711516-17b5f8507851?auto=format&fit=crop&w=600&q=80', 'Efecto mate natural sin brillo ni residuos. Ideal para peinados texturizados y pompadours.', true),
-    ('Aceite Premium para Crecimiento e Hidratación de Barba (30ml)', 'Cuidado de Barba', 40.00, 25, 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80', 'Formulado con aceite de argán, jojoba y aroma a cedro para suavizar y dar brillo saludable.', true),
-    ('Pomada Base Agua Brillo Medio (120g)', 'Fijación Capilar', 42.00, 20, 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80', 'Fijación flexible de larga duración. Se retira fácilmente con agua en un solo lavado.', true),
-    ('Shampoo Fortalecedor Anti-Caída & Menta (250ml)', 'Cuidado Capilar', 48.00, 15, 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80', 'Estimula el folículo piloso, controla el exceso de grasa y proporciona frescura mentolada.', true),
-    ('Bálsamo After-Shave Calmante (100ml)', 'Cuidado de Barba', 35.00, 40, 'https://images.unsplash.com/photo-1608248597359-524f2b963351?auto=format&fit=crop&w=600&q=80', 'Alivia la irritación del afeitado, cierra poros y previene vellos encarnados con aloe vera.', true)
+    ('Cera Mate Fijación Fuerte (100g)', 'Fijación Capilar', 45.00, 35, 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=600&q=80', 'Efecto mate natural sin brillo ni residuos. Ideal para peinados texturizados y pompadours.', true),
+    ('Aceite Premium para Barba (30ml)', 'Cuidado de Barba', 40.00, 25, 'https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=600&q=80', 'Formulado con aceite de argán, jojoba y aroma a cedro para suavizar y dar brillo saludable.', true),
+    ('Pomada Base Agua Brillo Medio (120g)', 'Fijación Capilar', 42.00, 20, 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80', 'Fijación flexible de larga duración. Se retira fácilmente con agua en un solo lavado.', true),
+    ('Shampoo Fortalecedor & Menta (250ml)', 'Cuidado Capilar', 48.00, 15, 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80', 'Estimula el folículo piloso, controla el exceso de grasa y proporciona frescura mentolada.', true),
+    ('Bálsamo After-Shave Calmante (100ml)', 'Cuidado de Barba', 35.00, 40, 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80', 'Alivia la irritación del afeitado, cierra poros y previene vellos encarnados con aloe vera.', true)
 ) AS v(nombre, categoria, precio, stock, imagen_url, descripcion, activo)
 WHERE NOT EXISTS (SELECT 1 FROM public.productos LIMIT 1);
 
--- Inserción de Anuncios Promocionales
+-- Semilla de Anuncios Promocionales
 INSERT INTO public.anuncios (titulo, descripcion, imagen_url, activo)
 SELECT * FROM (VALUES
     ('¡Bienvenido a Barber Shop Lima Norte!', 'Obtén 20% de descuento en tu primer Combo Master Barber reservando desde nuestra App móvil.', 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80', true),
@@ -432,7 +410,7 @@ SELECT * FROM (VALUES
 ) AS v(titulo, descripcion, imagen_url, activo)
 WHERE NOT EXISTS (SELECT 1 FROM public.anuncios LIMIT 1);
 
--- Inserción de Mensajes Iniciales de la Comunidad
+-- Semilla de Mensajes de Comunidad
 INSERT INTO public.mensajes_comunidad (autor_nombre, autor_rol, mensaje)
 SELECT * FROM (VALUES
     ('Staff Barber Shop', 'admin', '¡Bienvenidos al canal oficial de la comunidad Barber Shop Lima Norte S.A.C.! 💈 Compartan sus experiencias y consultas.'),

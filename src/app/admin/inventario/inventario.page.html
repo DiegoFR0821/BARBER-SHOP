@@ -5,9 +5,9 @@
     </ion-buttons>
     <ion-title class="clean-title">INVENTARIO Y STOCK</ion-title>
     <ion-buttons slot="end" class="ion-padding-end">
-      <ion-avatar style="width: 32px; height: 32px;">
-        <div class="header-avatar-placeholder">A</div>
-      </ion-avatar>
+      <ion-button fill="clear" (click)="cargarProductos()" title="Refrescar inventario">
+        <ion-icon name="refresh-outline" style="color: #c59d5f; font-size: 20px;"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -33,10 +33,11 @@
           <div class="grid-product-card">
             
             <div class="product-image-container">
-              <img *ngIf="prod.imagen || prod.imagen_url" [src]="prod.imagen || prod.imagen_url" class="product-cover-img" alt="producto">
-              <div *ngIf="!prod.imagen && !prod.imagen_url" class="no-image-placeholder">
-                <ion-icon name="cube-outline"></ion-icon>
-              </div>
+              <img 
+                [src]="prod.imagen || prod.imagen_url || FOTO_RESPALDO" 
+                (error)="onImagenError(prod)"
+                class="product-cover-img" 
+                alt="producto">
               
               <div class="stock-badge" [ngClass]="prod.stock <= 5 ? 'bg-red' : 'bg-gold'">
                 Stock: {{ prod.stock }}
@@ -55,10 +56,10 @@
               </div>
 
               <div class="prod-crud-actions">
-                <ion-button fill="clear" class="btn-crud color-grey" (click)="abrirModalEditar(prod)">
+                <ion-button fill="clear" class="btn-crud color-grey" (click)="abrirModalEditar(prod)" title="Editar producto y foto">
                   <ion-icon name="create-outline" slot="icon-only"></ion-icon>
                 </ion-button>
-                <ion-button fill="clear" class="btn-crud color-red" (click)="eliminarProducto(prod.id)">
+                <ion-button fill="clear" class="btn-crud color-red" (click)="eliminarProducto(prod.id)" title="Eliminar producto">
                   <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
                 </ion-button>
               </div>
@@ -94,14 +95,20 @@
       
       <ion-content class="ion-padding" style="--background: #0b0b0d; --color: #ffffff;">
         
-        <div class="image-upload-wrapper" (click)="abrirSelectorArchivo()">
-          <img *ngIf="productoActual.imagen" [src]="productoActual.imagen" class="preview-img" alt="Preview">
-          <div *ngIf="!productoActual.imagen" class="upload-placeholder">
-            <ion-icon name="camera-outline"></ion-icon>
-            <span>Toca para añadir foto</span>
+        <div style="text-align: center; margin-bottom: 14px;">
+          <div class="image-upload-wrapper" (click)="abrirSelectorArchivo()" style="margin-bottom: 8px;">
+            <img *ngIf="productoActual.imagen" [src]="productoActual.imagen" class="preview-img" alt="Preview">
+            <div *ngIf="!productoActual.imagen" class="upload-placeholder">
+              <ion-icon name="camera-outline"></ion-icon>
+              <span>Toca para subir foto</span>
+            </div>
           </div>
+          <ion-button fill="clear" size="small" style="--color: #c59d5f; font-weight: 800;" (click)="abrirSelectorArchivo()">
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
+            {{ productoActual.imagen ? 'CAMBIAR FOTOGRAFÍA' : 'SELECCIONAR FOTOGRAFÍA' }}
+          </ion-button>
+          <input type="file" id="file-upload-producto" accept="image/*" style="display: none;" (change)="cargarImagenProducto($event)">
         </div>
-        <input type="file" id="file-upload-producto" accept="image/*" style="display: none;" (change)="cargarImagenProducto($event)">
 
         <div class="modal-form-card">
           <ion-item lines="full" class="modal-form-item">
