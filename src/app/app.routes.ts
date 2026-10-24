@@ -53,8 +53,12 @@ export const routes: Routes = [
       {
         // Sub-dirección final mapeada como: /dashboard/reservar
         path: 'reservar',
-        // Inyecta el componente del selector inteligente de citas y estilistas.
         loadComponent: () => import('./dashboard/reservar/reservar.page').then((m) => m.ReservarPage),
+      },
+      {
+        path: 'citas',
+        redirectTo: 'reservar',
+        pathMatch: 'full',
       },
       {
         // Sub-dirección final mapeada como: /dashboard/tienda
@@ -93,6 +97,11 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/citas/citas.page').then( m => m.CitasPage)
       },
       {
+        path: 'citas-admin',
+        redirectTo: 'citas',
+        pathMatch: 'full'
+      },
+      {
         path: 'clientes',
         loadComponent: () => import('./admin/clientes/clientes.page').then( m => m.ClientesPage)
       },
@@ -129,7 +138,12 @@ export const routes: Routes = [
   },
   {
     path: 'citas',
-    loadComponent: () => import('./admin/citas/citas.page').then( m => m.CitasPage)
+        loadComponent: () => import('./admin/citas/citas.page').then( m => m.CitasPage)
+      },
+      {
+        path: 'citas-admin',
+        redirectTo: 'citas',
+        pathMatch: 'full'
   },
   {
     path: 'clientes',

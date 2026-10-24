@@ -11,8 +11,9 @@ import { addIcons } from 'ionicons';
 import { 
   cubeOutline, peopleOutline, calendarOutline, cutOutline, 
   menuOutline, trendingUpOutline, sparklesOutline, arrowForwardOutline, 
-  add, cartOutline, personAddOutline
+  add, cartOutline, personAddOutline, refreshOutline
 } from 'ionicons/icons';
+import { SupabaseService } from '../../core/services/supabase.service';
 
 @Component({
   selector: 'app-resumen-admin',
@@ -28,18 +29,22 @@ import {
 export class ResumenAdminPage implements OnInit {
 
   private router = inject(Router);
+  private supabaseService = inject(SupabaseService);
 
   totalCitas: number = 0;
   totalClientes: number = 0;
   totalProductos: number = 0;
   totalServicios: number = 0;
+  citasPendientes: number = 0;
+  ingresosEstimados: number = 0;
   actividadReciente: any[] = [];
+  cargando: boolean = false;
 
   constructor() {
     addIcons({ 
       cubeOutline, peopleOutline, calendarOutline, cutOutline, 
       menuOutline, trendingUpOutline, sparklesOutline, arrowForwardOutline, 
-      add, cartOutline, personAddOutline
+      add, cartOutline, personAddOutline, refreshOutline
     });
   }
 
@@ -56,15 +61,20 @@ export class ResumenAdminPage implements OnInit {
   }
 
   async cargarDashboardReal() {
-    // TODO: Migrar a Supabase en Fase 2 (consultas de conteo a Supabase: citas, usuarios, productos, servicios)
     try {
-      this.totalCitas = 0;
-      this.totalClientes = 0;
-      this.totalProductos = 0;
-      this.totalServicios = 0;
-      this.actividadReciente = [];
+      this.cargando = true;
+      const metricas = await this.supabaseService.getMetricasDashboardAdmin();
+      this.totalCitas = metricas.totalCitasHoy;
+      this.totalClientes = metricas.totalClientes;
+      this.totalProductos = metricas.bajoStock;
+      this.totalServicios = metricas.totalServicios;
+      this.citasPendientes = metricas.citasPendientes;
+      this.ingresosEstimados = metricas.ingresosEstimados;
+      this.actividadReciente = metricas.actividadReciente || [];
     } catch (error) {
-      console.error('❌ Error cargando métricas:', error);
+      console.error('❌ Error cargando métricas de Supabase:', error);
+    } finally {
+      this.cargando = false;
     }
   }
 }

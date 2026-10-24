@@ -1,16 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
-  IonMenuButton, IonSearchbar, IonIcon, IonButton, IonFooter,
+  IonMenuButton, IonSearchbar, IonIcon, IonButton, 
   IonModal, IonInput, IonItem, IonLabel, IonBadge, IonSelect, 
   IonSelectOption, IonSegment, IonSegmentButton, IonAvatar,
-  IonList, IonFab, IonFabButton, IonFabList 
+  IonList, IonFab, IonFabButton 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { createOutline, trashOutline, closeOutline, saveOutline, calendarOutline, timeOutline, cameraOutline, imageOutline, personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, add } from 'ionicons/icons';
+import { 
+  createOutline, trashOutline, closeOutline, saveOutline, 
+  calendarOutline, timeOutline, cameraOutline, imageOutline, 
+  personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, 
+  add, checkmarkCircleOutline, refreshOutline 
+} from 'ionicons/icons';
+import { SupabaseService, Cita, Barbero, ServicioBarberia } from '../../core/services/supabase.service';
+import { UsuarioPerfil } from '../../services/usuario';
 
 @Component({
   selector: 'app-citas',
@@ -20,59 +27,84 @@ import { createOutline, trashOutline, closeOutline, saveOutline, calendarOutline
   imports: [
     CommonModule, FormsModule, IonContent, IonHeader, IonTitle, 
     IonToolbar, IonButtons, IonMenuButton, IonSearchbar, IonIcon, 
-    IonButton, IonFooter, IonModal, IonInput, IonItem, IonLabel, 
+    IonButton, IonModal, IonInput, IonItem, IonLabel, 
     IonBadge, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonAvatar,
-    IonList, IonFab, IonFabButton, IonFabList
+    IonList, IonFab, IonFabButton
   ]
 })
 export class CitasPage implements OnInit {
 
-  private router = inject(Router);
-
   seccionActiva: string = 'reservas';
   searchTerm: string = '';
-  citasFiltradas: any[] = []; 
+  citasFiltradas: Cita[] = []; 
 
-  citas: any[] = [];
-  servicios: any[] = [];
-  estilistas: any[] = [];
-  clientes: any[] = [];
+  citas: Cita[] = [];
+  servicios: ServicioBarberia[] = [];
+  barberos: Barbero[] = [];
+  clientes: UsuarioPerfil[] = [];
 
-  profesionesSalones: string[] = [
-    'Estilista Principal', 'Colorista Profesional', 'Manicurista / Pedicurista', 
-    'Maquillador Profesional', 'Especialista Capilar', 'Especialista en Peinados', 
-    'Barbero Profesional', 'Especialista en Extensiones'
+  especialidadesBarberia: string[] = [
+    'Master Barber & Fade Urbano',
+    'Especialista en Barba & Navaja',
+    'Cortes Clásicos & Pompadour',
+    'Tratamientos Capilares & Faciales',
+    'Colorimetría & Decoloración Masculina'
   ];
 
   horariosFijos: string[] = [
     '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
-    '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'
+    '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
   ];
 
   isModalReservaOpen: boolean = false;
   isModalServicioOpen: boolean = false;
-  isModalEstilistaOpen: boolean = false;
+  isModalBarberoOpen: boolean = false;
+  isModalFichaClienteOpen: boolean = false;
   modoEdicion: boolean = false;
 
-  reservaActual: any = { id: '', clienteId: '', servicioId: '', estilistaId: '', fecha: '', hora: '', estado: 'pendiente' };
-  servicioActual: any = { id: '', nombre: '', imagen: '' };
-  estilistaActual: any = { id: '', nombre: '', imagen: '', profesion: '' };
+  citaSeleccionadaParaFicha: Cita | null = null;
+
+  reservaActual: any = { 
+    id: '', 
+    clienteId: '', 
+    servicioId: '', 
+    barberoId: '', 
+    fecha: '', 
+    hora: '', 
+    estado: 'pendiente',
+    notas_corte: ''
+  };
+
+  servicioActual: any = { id: '', nombre: '', categoria: 'Corte', precio: 35, duracion_min: 35, imagen: '' };
+  barberoActual: any = { id: '', nombre: '', imagen: '', especialidad: 'Master Barber & Fade Urbano', experiencia: '5 años' };
 
   ejecutarAccionFab() {
     if (this.seccionActiva === 'reservas') {
       this.abrirModalReserva();
     } else if (this.seccionActiva === 'servicios') {
       this.abrirModalServicio();
-    } else if (this.seccionActiva === 'estilistas') {
-      this.abrirModalEstilista();
+    } else if (this.seccionActiva === 'barberos') {
+      this.abrirModalBarbero();
     }
   }
 
-  constructor() {
-    addIcons({ createOutline, trashOutline, closeOutline, saveOutline, calendarOutline, timeOutline, cameraOutline, imageOutline, personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, add });
+  constructor(
+    private router: Router,
+    private supabaseService: SupabaseService
+  ) {
+    addIcons({ 
+      createOutline, trashOutline, closeOutline, saveOutline, 
+      calendarOutline, timeOutline, cameraOutline, imageOutline, 
+      personOutline, cutOutline, gridOutline, peopleOutline, cubeOutline, 
+      add, checkmarkCircleOutline, refreshOutline 
+    });
   }
 
   ngOnInit() {
+    this.cargarTodo();
+  }
+
+  ionViewWillEnter() {
     this.cargarTodo();
   }
 
@@ -84,82 +116,145 @@ export class CitasPage implements OnInit {
     await Promise.all([
       this.cargarCitas(),
       this.cargarServicios(),
-      this.cargarEstilistas(),
+      this.cargarBarberos(),
       this.cargarClientes()
     ]);
   }
 
   async cargarCitas() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('citas').select('*'))
-    this.citas = [];
-    this.filtrarCitas();
+    try {
+      this.citas = await this.supabaseService.getTodasLasCitasAdmin();
+      this.filtrarCitas();
+    } catch (e) {
+      console.error('Error al cargar citas de Supabase:', e);
+    }
   }
 
   filtrarCitas() {
-    if (!this.searchTerm.trim()) {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
       this.citasFiltradas = [...this.citas];
     } else {
       this.citasFiltradas = this.citas.filter(c => 
-        c.nombreCliente && c.nombreCliente.toLowerCase().includes(this.searchTerm.toLowerCase())
+        (c.nombreCliente && c.nombreCliente.toLowerCase().includes(term)) ||
+        (c.nombreBarbero && c.nombreBarbero.toLowerCase().includes(term)) ||
+        (c.nombreServicio && c.nombreServicio.toLowerCase().includes(term))
       );
     }
   }
 
   async cargarServicios() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('servicios').select('*'))
-    this.servicios = [];
+    this.servicios = await this.supabaseService.getServiciosActivos();
   }
 
-  async cargarEstilistas() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('estilistas').select('*'))
-    this.estilistas = [];
+  async cargarBarberos() {
+    this.barberos = await this.supabaseService.getBarberosActivos();
   }
 
   async cargarClientes() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('usuarios').select('*').eq('rol', 'cliente'))
-    this.clientes = [];
+    this.clientes = await this.supabaseService.obtenerUsuarios();
   }
 
-  abrirModalReserva(cita?: any) {
+  // ==========================================
+  // GESTIÓN DE RESERVAS
+  // ==========================================
+  abrirModalReserva(cita?: Cita) {
     if (cita) {
       this.modoEdicion = true;
-      this.reservaActual = { ...cita };
+      this.reservaActual = { 
+        id: cita.id, 
+        clienteId: cita.cliente_id, 
+        servicioId: cita.servicio_id, 
+        barberoId: cita.barbero_id, 
+        fecha: cita.fecha, 
+        hora: cita.hora, 
+        estado: cita.estado,
+        notas_corte: cita.notas_corte || ''
+      };
     } else {
       this.modoEdicion = false;
-      this.reservaActual = { id: '', clienteId: '', servicioId: '', estilistaId: '', fecha: '', hora: '', estado: 'pendiente' };
+      this.reservaActual = { 
+        id: '', 
+        clienteId: this.clientes.length > 0 ? (this.clientes[0].id || this.clientes[0].uid) : '', 
+        servicioId: this.servicios.length > 0 ? this.servicios[0].id : '', 
+        barberoId: this.barberos.length > 0 ? this.barberos[0].id : '', 
+        fecha: new Date().toISOString().split('T')[0], 
+        hora: '10:00 AM', 
+        estado: 'pendiente',
+        notas_corte: ''
+      };
     }
     this.isModalReservaOpen = true;
   }
 
   async guardarReserva() {
-    if (!this.reservaActual.clienteId || !this.reservaActual.servicioId || !this.reservaActual.estilistaId || !this.reservaActual.fecha || !this.reservaActual.hora) {
-      alert('Completa todos los campos de la reserva.'); return;
+    if (!this.reservaActual.clienteId || !this.reservaActual.servicioId || !this.reservaActual.barberoId || !this.reservaActual.fecha || !this.reservaActual.hora) {
+      alert('Por favor completa todos los campos de la cita.');
+      return;
     }
 
-    const diaSemana = new Date(this.reservaActual.fecha + 'T00:00:00').getDay(); 
-    if (diaSemana === 0) { 
-      alert('❌ El local no atiende los domingos. Elige una fecha de Lunes a Sábado.'); return;
-    }
+    try {
+      if (this.modoEdicion && this.reservaActual.id) {
+        await this.supabaseService.actualizarEstadoCita(this.reservaActual.id, this.reservaActual.estado);
+      } else {
+        await this.supabaseService.crearCita({
+          cliente_id: this.reservaActual.clienteId,
+          barbero_id: this.reservaActual.barberoId,
+          servicio_id: this.reservaActual.servicioId,
+          fecha: this.reservaActual.fecha,
+          hora: this.reservaActual.hora,
+          notas_corte: this.reservaActual.notas_corte
+        });
+      }
 
-    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'citas')
-    this.isModalReservaOpen = false;
-    this.cargarCitas();
+      this.isModalReservaOpen = false;
+      await this.cargarCitas();
+      alert('¡Cita registrada correctamente en Supabase!');
+    } catch (e: any) {
+      console.error('Error al guardar cita:', e);
+      if (e?.message?.includes('CONCURRENCY_ERROR') || e?.code === '23505') {
+        alert('⚠️ Conflicto de horario: Este barbero ya tiene una cita activa en ese mismo día y hora.');
+      } else {
+        alert('Surgió un error al guardar la cita.');
+      }
+    }
+  }
+
+  async cambiarEstadoRapido(cita: Cita, nuevoEstado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada') {
+    try {
+      await this.supabaseService.actualizarEstadoCita(cita.id, nuevoEstado);
+      cita.estado = nuevoEstado;
+    } catch (e) {
+      console.error('Error cambiando estado:', e);
+    }
   }
 
   async eliminarReserva(id: string) {
-    if (confirm('¿Eliminar cita?')) {
-      // TODO: Migrar a Supabase en Fase 2 (supabase.from('citas').delete().eq('id', id))
-      this.cargarCitas();
+    if (confirm('¿Eliminar esta cita del sistema?')) {
+      try {
+        await this.supabaseService.eliminarCita(id);
+        await this.cargarCitas();
+      } catch (e) {
+        console.error('Error al eliminar cita:', e);
+      }
     }
   }
 
-  abrirModalServicio(servicio?: any) {
+  verFichaTecnicaCliente(cita: Cita) {
+    this.citaSeleccionadaParaFicha = cita;
+    this.isModalFichaClienteOpen = true;
+  }
+
+  // ==========================================
+  // GESTIÓN DE SERVICIOS
+  // ==========================================
+  abrirModalServicio(servicio?: ServicioBarberia) {
     if (servicio) {
       this.modoEdicion = true;
-      this.servicioActual = { ...servicio };
+      this.servicioActual = { ...servicio, imagen: servicio.imagen_url || servicio.imagen || '' };
     } else {
       this.modoEdicion = false;
-      this.servicioActual = { id: '', nombre: '', imagen: '' };
+      this.servicioActual = { id: '', nombre: '', categoria: 'Corte', precio: 35, duracion_min: 35, imagen: '' };
     }
     this.isModalServicioOpen = true;
   }
@@ -178,56 +273,97 @@ export class CitasPage implements OnInit {
   }
 
   async guardarServicio() {
-    if (!this.servicioActual.nombre) { alert('Ingresa un nombre para el servicio.'); return; }
-    
-    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'servicios')
-    this.isModalServicioOpen = false;
-    this.cargarServicios();
+    if (!this.servicioActual.nombre) { 
+      alert('Ingresa el nombre del servicio.'); 
+      return; 
+    }
+
+    try {
+      if (this.modoEdicion && this.servicioActual.id) {
+        await this.supabaseService.actualizarServicio(this.servicioActual.id, this.servicioActual);
+      } else {
+        await this.supabaseService.crearServicio(this.servicioActual);
+      }
+      this.isModalServicioOpen = false;
+      await this.cargarServicios();
+    } catch (e) {
+      console.error('Error al guardar servicio:', e);
+      alert('Error al guardar el servicio en Supabase.');
+    }
   }
 
   async eliminarServicio(id: string) {
-    if (confirm('¿Eliminar este servicio del catálogo?')) {
-      // TODO: Migrar a Supabase en Fase 2 (supabase.from('servicios').delete().eq('id', id))
-      this.cargarServicios();
+    if (confirm('¿Eliminar este servicio del catálogo de Barber Shop?')) {
+      try {
+        await this.supabaseService.eliminarServicio(id);
+        await this.cargarServicios();
+      } catch (e) {
+        console.error('Error al eliminar servicio:', e);
+      }
     }
   }
 
-  abrirModalEstilista(estilista?: any) {
-    if (estilista) {
+  // ==========================================
+  // GESTIÓN DE BARBEROS (Reemplaza Estilistas)
+  // ==========================================
+  abrirModalBarbero(barbero?: Barbero) {
+    if (barbero) {
       this.modoEdicion = true;
-      this.estilistaActual = { ...estilista };
+      this.barberoActual = { ...barbero, imagen: barbero.foto_url || barbero.imagen || '' };
     } else {
       this.modoEdicion = false;
-      this.estilistaActual = { id: '', nombre: '', imagen: '', profesion: 'Estilista Principal' };
+      this.barberoActual = { 
+        id: '', 
+        nombre: '', 
+        imagen: '', 
+        especialidad: 'Master Barber & Fade Urbano',
+        experiencia: '5 años de experiencia'
+      };
     }
-    this.isModalEstilistaOpen = true;
+    this.isModalBarberoOpen = true;
   }
 
-  abrirSelectorEstilista() {
-    document.getElementById('file-upload-estilista')?.click();
+  abrirSelectorBarbero() {
+    document.getElementById('file-upload-barbero')?.click();
   }
 
-  cargarImagenEstilista(event: any) {
+  cargarImagenBarbero(event: any) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => { this.estilistaActual.imagen = reader.result as string; };
+      reader.onload = () => { this.barberoActual.imagen = reader.result as string; };
     }
   }
 
-  async guardarEstilista() {
-    if (!this.estilistaActual.nombre) { alert('Ingresa el nombre del estilista.'); return; }
+  async guardarBarbero() {
+    if (!this.barberoActual.nombre) { 
+      alert('Ingresa el nombre del barbero.'); 
+      return; 
+    }
 
-    // TODO: Migrar a Supabase en Fase 2 (insert/update en tabla 'estilistas')
-    this.isModalEstilistaOpen = false;
-    this.cargarEstilistas();
+    try {
+      if (this.modoEdicion && this.barberoActual.id) {
+        await this.supabaseService.actualizarBarbero(this.barberoActual.id, this.barberoActual);
+      } else {
+        await this.supabaseService.crearBarbero(this.barberoActual);
+      }
+      this.isModalBarberoOpen = false;
+      await this.cargarBarberos();
+    } catch (e) {
+      console.error('Error al guardar barbero:', e);
+      alert('Error al registrar el barbero en Supabase.');
+    }
   }
 
-  async eliminarEstilista(id: string) {
-    if (confirm('¿Dar de baja a este estilista?')) {
-      // TODO: Migrar a Supabase en Fase 2 (supabase.from('estilistas').delete().eq('id', id))
-      this.cargarEstilistas();
+  async eliminarBarbero(id: string) {
+    if (confirm('¿Dar de baja a este barbero del staff?')) {
+      try {
+        await this.supabaseService.eliminarBarbero(id);
+        await this.cargarBarberos();
+      } catch (e) {
+        console.error('Error al dar de baja al barbero:', e);
+      }
     }
   }
 }

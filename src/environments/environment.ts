@@ -7,8 +7,8 @@ export const environment = {
   appName: 'Barber Shop',
   razonSocial: 'BARBER SHOP LIMA NORTE S.A.C.',
   ruc: '20611302151',
-  supabaseUrl: 'https://TU-PROYECTO.supabase.co',
-  supabaseAnonKey: 'TU_SUPABASE_ANON_KEY',
+  supabaseUrl: 'https://eanfhawxqyvpovrfmtdn.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhbmZoYXd4cXl2cG92cmZtdGRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NTI1ODQsImV4cCI6MjEwODQyODU4NH0.9cp0T4bh60AfRZ4ok3ZaXuMc0OpYis_eCkYFm07A-OA',
   geminiApiKey: 'AQUÍ_VA_TU_CLAVE_SECRETA_DE_GEMINI'
 };
 

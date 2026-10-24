@@ -1,62 +1,239 @@
 <ion-header class="ion-no-border premium-header">
   <ion-toolbar style="--background: #ffffff; padding: 6px 0;">
-    <ion-buttons slot="start"><ion-menu-button style="color: #aa8529;"></ion-menu-button></ion-buttons>
-    <ion-title style="font-weight: bold; color: #111; font-size: 16px;">RESERVA TU CITA</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button style="color: #aa8529;"></ion-menu-button>
+    </ion-buttons>
+    <ion-title style="font-weight: bold; color: #111; font-size: 16px; letter-spacing: 1px;">
+      BARBER SHOP — CITAS
+    </ion-title>
+    <ion-buttons slot="end" class="ion-padding-end">
+      <ion-button fill="clear" (click)="cargarDatos()">
+        <ion-icon slot="icon-only" name="refresh-outline" style="color: #aa8529;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- NAVEGACIÓN ENTRE AGENDAR Y MIS CITAS -->
+  <ion-toolbar style="--background: #ffffff;">
+    <ion-segment [(ngModel)]="vistaActiva" style="--background: #f4f5f8; margin: 0 16px 8px; width: calc(100% - 32px); border-radius: 8px;">
+      <ion-segment-button value="agendar">
+        <ion-label style="font-size: 12px; font-weight: bold;">1. Agendar Cita</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="mis-citas" (click)="cargarMisCitas()">
+        <ion-label style="font-size: 12px; font-weight: bold;">Mis Citas ({{ misCitas.length }})</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="cream-bg">
-  <div class="dashboard-wrapper" style="padding: 16px;">
+
+  <!-- =========================================================================
+       VISTA 1: FLUJO DE AGENDAMIENTO EN 3 PASOS (ISO/IEC 25010)
+       ========================================================================= -->
+  <div class="dashboard-wrapper" style="padding: 16px;" *ngIf="vistaActiva === 'agendar'">
     
-    <h3 class="step-heading">1. SELECCIONA UN SERVICIO</h3>
-    <div class="services-row-grid">
-      <div class="service-option-card" *ngFor="let s of servicios" [class.active-card]="reserva.servicioId === s.id" (click)="seleccionarServicio(s)">
-        <img *ngIf="s.imagen" [src]="s.imagen" class="service-cover-img" />
-        <div class="service-info-box">
-          <h4>{{ s.nombre }}</h4>
-          <span style="font-size: 12px; color: #888;">S/ {{ s.precio }}</span>
+    <!-- PASO 1: SERVICIO & BARBERO -->
+    <div class="step-card-container">
+      <div class="step-title-badge">
+        <span class="step-number">PASO 1</span>
+        <h3 class="step-heading">SELECCIONA TU SERVICIO Y BARBERO</h3>
+      </div>
+
+      <p class="step-subheading">A. Elige el servicio masculino deseado:</p>
+      <div class="services-row-grid">
+        <div class="service-option-card" 
+             *ngFor="let s of servicios" 
+             [class.active-card]="reserva.servicioId === s.id" 
+             (click)="seleccionarServicio(s)">
+          <img [src]="s.imagen_url || s.imagen || 'assets/img/cortes.jpg'" class="service-cover-img" alt="Servicio" />
+          <div class="service-info-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4>{{ s.nombre }}</h4>
+              <ion-badge color="warning" style="font-size: 11px;">S/ {{ s.precio | number:'1.2-2' }}</ion-badge>
+            </div>
+            <p style="margin: 2px 0 0; font-size: 11px; color: #666;">
+              ⏱️ {{ s.duracion_min }} min • Categoría: <strong>{{ s.categoria }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p class="step-subheading" style="margin-top: 18px;">B. Elige tu Barbero de confianza:</p>
+      <div class="services-row-grid">
+        <div class="staff-option-card" 
+             *ngFor="let barb of barberos" 
+             [class.active-card]="reserva.barberoId === barb.id" 
+             (click)="seleccionarBarbero(barb)">
+          <div class="staff-avatar-circle">
+            <img [src]="barb.foto_url || barb.imagen || 'assets/img/barbero1.jpg'" alt="Barbero" />
+          </div>
+          <div class="staff-info-box">
+            <h4>{{ barb.nombre }}</h4>
+            <p>💈 {{ barb.especialidad }}</p>
+            <span style="font-size: 10px; color: #888;">{{ barb.experiencia || 'Especialista en degradados' }}</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <h3 class="step-heading" style="margin-top: 24px;">2. SELECCIONA UN ESTILISTA</h3>
-    <div class="services-row-grid">
-      <div class="staff-option-card" *ngFor="let est of estilistas" [class.active-card]="reserva.estilistaId === est.id" (click)="seleccionarEstilista(est)">
-        <div class="staff-avatar-circle">
-          <img *ngIf="est.imagen" [src]="est.imagen" />
-          <ion-icon *ngIf="!est.imagen" name="person-outline"></ion-icon>
-        </div>
-        <div class="staff-info-box">
-          <h4>{{ est.nombre }}</h4>
-          <p>{{ est.profesion || 'Estilista Profesional' }}</p>
-        </div>
+    <!-- PASO 2: FECHA Y HORA (VERIFICACIÓN REACTIVA DE CONCURRENCIA < 2.0s) -->
+    <div class="step-card-container" style="margin-top: 20px;">
+      <div class="step-title-badge">
+        <span class="step-number">PASO 2</span>
+        <h3 class="step-heading">FECHA Y HORARIO DISPONIBLE</h3>
       </div>
-    </div>
 
-    <h3 class="step-heading" style="margin-top: 24px;">3. FECHA Y HORA DE ATENCIÓN</h3>
-    <ion-datetime presentation="date" [(ngModel)]="reserva.fecha" (ionChange)="verificarDisponibilidad()" style="--background: #ffffff; border-radius: 12px; border: 1px solid rgba(170,133,41,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.02); width: 100%;"></ion-datetime>
-    
-    <div *ngIf="reserva.fecha" style="margin-top: 16px;">
-      <p style="font-size: 12px; font-weight: bold; color: #333; margin-bottom: 10px;">Horarios para el día seleccionado:</p>
+      <p class="step-subheading">Selecciona el día de tu visita (Lun a Sáb):</p>
+      <ion-datetime 
+        presentation="date" 
+        [(ngModel)]="reserva.fecha" 
+        (ionChange)="verificarDisponibilidad()" 
+        style="--background: #ffffff; border-radius: 12px; border: 1px solid rgba(170,133,41,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.02); width: 100%;">
+      </ion-datetime>
       
-      <ion-grid class="ion-no-padding">
-        <ion-row style="margin: 0 -4px;">
-          <ion-col size="4" *ngFor="let hora of horariosFijos" style="padding: 4px;">
-            <button type="button" class="time-cell-btn" 
-                    [disabled]="citasOcupadas.includes(hora)" 
-                    [class.cell-occupied]="citasOcupadas.includes(hora)" 
-                    [class.cell-active]="reserva.hora === hora" 
-                    (click)="reserva.hora = hora">
-              {{ hora }}
-            </button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <div *ngIf="reserva.fecha && reserva.barberoId" style="margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <p style="font-size: 12px; font-weight: bold; color: #333; margin: 0;">
+            Horarios disponibles con {{ barberoSeleccionado?.nombre || 'el barbero' }}:
+          </p>
+          <span *ngIf="cargandoHorarios" style="font-size: 11px; color: #aa8529;">Consultando...</span>
+        </div>
+        
+        <ion-grid class="ion-no-padding">
+          <ion-row style="margin: 0 -4px;">
+            <ion-col size="4" *ngFor="let hora of horariosFijos" style="padding: 4px;">
+              <button type="button" class="time-cell-btn" 
+                      [disabled]="citasOcupadas.includes(hora)" 
+                      [class.cell-occupied]="citasOcupadas.includes(hora)" 
+                      [class.cell-active]="reserva.hora === hora" 
+                      (click)="seleccionarHora(hora)">
+                {{ hora }}
+                <span *ngIf="citasOcupadas.includes(hora)" style="display: block; font-size: 8px; font-weight: normal;">OCUPADO</span>
+              </button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+
+      <div *ngIf="reserva.fecha && !reserva.barberoId" style="margin-top: 12px; padding: 10px; background: #fff8e6; border-radius: 8px; border: 1px solid rgba(170,133,41,0.3);">
+        <p style="margin: 0; font-size: 12px; color: #856404;">
+          👉 <strong>Atención:</strong> Primero selecciona un barbero en el Paso 1 para comprobar sus horarios libres.
+        </p>
+      </div>
     </div>
 
-    <ion-button expand="block" style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 50px; margin-top: 25px;" (click)="guardarReserva()">
-      CONFIRMAR RESERVA
-    </ion-button>
+    <!-- PASO 3: CONFIRMACIÓN Y FICHA TÉCNICA DE CORTE -->
+    <div class="step-card-container" style="margin-top: 20px;">
+      <div class="step-title-badge">
+        <span class="step-number">PASO 3</span>
+        <h3 class="step-heading">CONFIRMACIÓN Y FICHA DE ESTILO</h3>
+      </div>
+
+      <!-- Resumen de selección -->
+      <div style="background: #ffffff; border-radius: 12px; padding: 14px; border: 1px solid rgba(170,133,41,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+        <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #aa8529;">RESUMEN DE TU CITA</h4>
+        
+        <p style="margin: 4px 0; font-size: 13px; color: #333;">
+          ✂️ <strong>Servicio:</strong> {{ servicioSeleccionado?.nombre || 'Pendiente de elegir' }}
+        </p>
+        <p style="margin: 4px 0; font-size: 13px; color: #333;">
+          💈 <strong>Barbero:</strong> {{ barberoSeleccionado?.nombre || 'Pendiente de elegir' }}
+        </p>
+        <p style="margin: 4px 0; font-size: 13px; color: #333;">
+          📅 <strong>Fecha & Hora:</strong> 
+          {{ reserva.fecha ? (reserva.fecha.split('T')[0]) : '—' }} a las {{ reserva.hora || '—' }}
+        </p>
+        <p style="margin: 4px 0; font-size: 13px; color: #aa8529; font-weight: bold;">
+          💰 <strong>Total a pagar en local:</strong> S/ {{ (servicioSeleccionado?.precio || 0) | number:'1.2-2' }}
+        </p>
+
+        <!-- Ficha de preferencias del cliente adjunta automáticamente -->
+        <div *ngIf="usuarioActual?.preferencias_corte" style="margin-top: 12px; padding: 10px; background: #fbf9f4; border-radius: 8px; border: 1px dashed #aa8529;">
+          <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: bold; color: #aa8529;">
+            📋 FICHA ADJUNTA DE TU PERFIL:
+          </p>
+          <p style="margin: 0; font-size: 11px; color: #555;">
+            Estilo: <strong>{{ usuarioActual?.preferencias_corte?.estilo }}</strong> | 
+            Barba: <strong>{{ usuarioActual?.preferencias_corte?.barba }}</strong>
+          </p>
+        </div>
+
+        <!-- Nota rápida opcional -->
+        <ion-item lines="none" style="--background: transparent; --padding-start: 0; margin-top: 10px;">
+          <ion-textarea 
+            label="Nota o indicación especial al barbero (opcional)" 
+            labelPlacement="floating" 
+            [(ngModel)]="reserva.notas" 
+            rows="2" 
+            placeholder="Ej. Dejar un poco largo arriba, perfilado suave con navaja...">
+          </ion-textarea>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" 
+                  style="--background: #aa8529; --border-radius: 12px; font-weight: 700; height: 52px; margin-top: 20px;" 
+                  (click)="confirmarCita()" 
+                  [disabled]="guardandoCita || !reserva.servicioId || !reserva.barberoId || !reserva.fecha || !reserva.hora">
+        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+        {{ guardandoCita ? 'VERIFICANDO DISPONIBILIDAD...' : 'CONFIRMAR RESERVA EN BARBER SHOP' }}
+      </ion-button>
+    </div>
 
   </div>
+
+  <!-- =========================================================================
+       VISTA 2: LISTADO DE MIS CITAS AGENDADAS
+       ========================================================================= -->
+  <div class="dashboard-wrapper" style="padding: 16px;" *ngIf="vistaActiva === 'mis-citas'">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="margin: 0; font-size: 15px; font-weight: bold; color: #111;">Mis Reservas en Barber Shop</h3>
+      <ion-button size="small" fill="outline" style="--color: #aa8529; --border-color: #aa8529;" (click)="cargarMisCitas()">
+        Actualizar
+      </ion-button>
+    </div>
+
+    <div *ngIf="misCitas.length === 0" style="text-align: center; padding: 40px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #f0f0f0;">
+      <ion-icon name="calendar" style="font-size: 48px; color: #d4af37; margin-bottom: 10px;"></ion-icon>
+      <h4 style="margin: 0 0 6px 0; color: #333; font-weight: bold;">Aún no tienes citas agendadas</h4>
+      <p style="margin: 0 0 16px 0; font-size: 13px; color: #888;">Elige tu servicio y barbero favorito para agendar en minutos.</p>
+      <ion-button style="--background: #aa8529; --border-radius: 8px;" (click)="vistaActiva = 'agendar'">
+        Agendar Mi Primera Cita
+      </ion-button>
+    </div>
+
+    <div class="my-appointment-card" *ngFor="let cita of misCitas">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div>
+          <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #111;">{{ cita.nombreServicio }}</h4>
+          <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">
+            💈 Barbero: <strong>{{ cita.nombreBarbero }}</strong>
+          </p>
+        </div>
+        <ion-badge [color]="cita.estado === 'confirmada' ? 'success' : (cita.estado === 'pendiente' ? 'warning' : (cita.estado === 'completada' ? 'primary' : 'medium'))" style="font-size: 11px; text-transform: uppercase;">
+          {{ cita.estado }}
+        </ion-badge>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px; margin: 8px 0; font-size: 13px; color: #444;">
+        <span>📅 {{ cita.fecha }}</span>
+        <span>⏰ {{ cita.hora }}</span>
+        <span style="color: #aa8529; font-weight: bold;">S/ {{ (cita.precioServicio || 0) | number:'1.2-2' }}</span>
+      </div>
+
+      <p *ngIf="cita.notas_corte" style="margin: 4px 0 8px 0; font-size: 11px; color: #777; font-style: italic;">
+        Nota: "{{ cita.notas_corte }}"
+      </p>
+
+      <div *ngIf="cita.estado === 'pendiente'" style="border-top: 1px solid #f2f2f2; padding-top: 8px; text-align: right;">
+        <ion-button size="small" fill="clear" color="danger" (click)="cancelarCita(cita)">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          Cancelar Cita
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+
 </ion-content>

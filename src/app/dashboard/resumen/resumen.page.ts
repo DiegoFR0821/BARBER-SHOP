@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuController } from '@ionic/angular/standalone';
-import { UsuarioService } from '../../services/usuario';
-import { SupabaseService } from '../../core/services/supabase.service';
+import { UsuarioService, UsuarioPerfil } from '../../services/usuario';
+import { SupabaseService, Cita, Anuncio } from '../../core/services/supabase.service';
 import { 
   IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, 
   IonIcon, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, 
@@ -17,7 +17,8 @@ import {
   notificationsOutline, star, calendar, chevronForwardOutline, 
   timeOutline, alertCircleOutline, closeOutline, logoWhatsapp, 
   sparklesOutline, cartOutline, chatbubblesOutline, peopleOutline, 
-  flameOutline, personOutline, logOutOutline, menuOutline
+  flameOutline, personOutline, logOutOutline, menuOutline, calendarOutline, 
+  cutOutline, checkmarkCircleOutline 
 } from 'ionicons/icons';
 
 @Component({
@@ -36,23 +37,27 @@ import {
 export class ResumenPage implements OnInit {
 
   // Datos del cliente
-  nombreCliente: string = 'Invitado'; 
+  usuarioActual: UsuarioPerfil | null = null;
+  nombreCliente: string = 'Cliente'; 
   fotoCliente: string = '';
-  tieneNotificaciones: boolean = true; 
+  tieneNotificaciones: boolean = false; 
 
-  // Sistema de Cola de Promociones
-  anunciosActivos: any[] = [];
-  anuncioActual: any = null;
+  // Próxima cita agendada
+  proximaCita: Cita | null = null;
+
+  // Cola de Promociones / Anuncios desde Supabase
+  anunciosActivos: Anuncio[] = [];
+  anuncioActual: Anuncio | null = null;
   indiceAnuncio: number = 0;
   isPromoOpen: boolean = false;    
 
   numeroWhatsApp: string = '51929727435';
 
   galeriaTrabajos = [
-    { titulo: 'Corte Fade Clásico', categoria: 'CORTES', url: 'assets/img/cortes.jpg' },
-    { titulo: 'Diseño y Perfilado de Barba', categoria: 'BARBA', url: 'assets/img/tintes.jpg' },
-    { titulo: 'Tratamiento Capilar Masculino', categoria: 'TRATAMIENTOS', url: 'assets/img/uñas.jpg' },
-    { titulo: 'Peinado Pompadour con Cera', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
+    { titulo: 'Corte Fade Clásico', categoria: 'DEGRADADOS', url: 'assets/img/cortes.jpg' },
+    { titulo: 'Perfilado de Barba a Navaja', categoria: 'BARBA', url: 'assets/img/tintes.jpg' },
+    { titulo: 'Tratamiento Capilar Purificante', categoria: 'TRATAMIENTOS', url: 'assets/img/uñas.jpg' },
+    { titulo: 'Pompadour con Cera Mate', categoria: 'PEINADOS', url: 'assets/img/peinados.jpg' }
   ];
 
   constructor(
@@ -65,42 +70,70 @@ export class ResumenPage implements OnInit {
       notificationsOutline, star, calendar, chevronForwardOutline, 
       timeOutline, alertCircleOutline, closeOutline, logoWhatsapp, 
       sparklesOutline, cartOutline, chatbubblesOutline, peopleOutline, 
-      flameOutline, personOutline, logOutOutline, menuOutline
+      flameOutline, personOutline, logOutOutline, menuOutline, calendarOutline, 
+      cutOutline, checkmarkCircleOutline
     });
   }
 
   ngOnInit() {
     this.obtenerDatosDeMemoria();
-    this.cargarPromocionesCola();
+    this.cargarDatosSupabase();
   }
 
   ionViewWillEnter() {
     this.obtenerDatosDeMemoria();
+    this.cargarDatosSupabase();
   }
 
   obtenerDatosDeMemoria() {
-    const datosUsuario = this.usuarioService.getUsuario();
-    if (datosUsuario) {
-      if (datosUsuario.nombre) {
-        this.nombreCliente = datosUsuario.nombre.split(' ')[0];
+    this.usuarioActual = this.usuarioService.getUsuario();
+    if (this.usuarioActual) {
+      if (this.usuarioActual.nombre) {
+        this.nombreCliente = this.usuarioActual.nombre.split(' ')[0];
       }
-      if (datosUsuario.imagen) {
-        this.fotoCliente = datosUsuario.imagen;
-      } else {
-        this.fotoCliente = '';
-      }
+      this.fotoCliente = this.usuarioActual.avatar_url || this.usuarioActual.imagen || '';
     }
   }
 
-  // ==============================
-  // LÓGICA DE POP-UPS PROMOCIONALES
-  // ==============================
-  async cargarPromocionesCola() {
-    // TODO: Migrar a Supabase en Fase 2 (supabase.from('anuncios').select('*').eq('activo', true))
+  async cargarDatosSupabase() {
+    await Promise.all([
+      this.cargarProximaCita(),
+      this.cargarPromocionesCola()
+    ]);
+  }
+
+  /**
+   * Consulta la próxima cita real del cliente en Supabase
+   */
+  async cargarProximaCita() {
+    const clienteId = this.usuarioActual?.id || this.usuarioActual?.uid || this.supabaseService.currentUserValue?.id;
+    if (!clienteId) return;
+
     try {
-      this.anunciosActivos = [];
+      const citas = await this.supabaseService.getCitasCliente(clienteId);
+      const hoy = new Date().toISOString().split('T')[0];
+      
+      // Buscar primera cita activa (pendiente o confirmada)
+      const proximas = citas.filter(c => c.estado !== 'cancelada' && c.fecha >= hoy);
+      this.proximaCita = proximas.length > 0 ? proximas[0] : null;
+    } catch (e) {
+      console.warn('Error al consultar próxima cita:', e);
+      this.proximaCita = null;
+    }
+  }
+
+  /**
+   * Carga los anuncios activos desde Supabase
+   */
+  async cargarPromocionesCola() {
+    try {
+      this.anunciosActivos = await this.supabaseService.getAnunciosActivos();
+      if (this.anunciosActivos.length > 0) {
+        this.indiceAnuncio = 0;
+        this.dispararAnuncioModal();
+      }
     } catch (error) {
-      console.error('Error cargando anuncios:', error);
+      console.error('Error cargando anuncios desde Supabase:', error);
     }
   }
 
@@ -116,21 +149,18 @@ export class ResumenPage implements OnInit {
     if (this.indiceAnuncio < this.anunciosActivos.length) {
       setTimeout(() => {
         this.dispararAnuncioModal();
-      }, 6000); 
+      }, 7000); 
     }
   }
 
   contactarWhatsAppPromocion() {
     if (!this.anuncioActual) return;
-    const textoMensaje = `¡Hola Barber Shop! 👋 Me interesa mucho la promoción de: *${this.anuncioActual.titulo}*. ¿Me podrían dar más detalles?`;
+    const textoMensaje = `¡Hola Barber Shop Lima Norte! 👋 Me interesa mucho la promoción de: *${this.anuncioActual.titulo}*. ¿Tienen disponibilidad hoy?`;
     const waUrl = `https://wa.me/${this.numeroWhatsApp}?text=${encodeURIComponent(textoMensaje)}`;
     window.open(waUrl, '_blank');
     this.cerrarYContinuarSecuencia();
   }
 
-  // ==============================
-  // NAVEGACIÓN Y MENÚ
-  // ==============================
   irAPerfil() {
     this.menuCtrl.close('perfil-menu'); 
     this.router.navigate(['/perfil']); 
