@@ -34,6 +34,9 @@ export class ChatbotPage implements OnInit {
   mensajes: ChatMessage[] = [];
   escribiendo: boolean = false;
 
+  public readonly modeloGemini = 'gemini-3.1-flash-lite';
+  private readonly geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
+
   private genAI?: GoogleGenerativeAI;
   private chatSession?: ChatSession;
 
@@ -65,8 +68,7 @@ DATOS OFICIALES DEL NEGOCIO:
     addIcons({ send, 'sparkles-outline': sparklesOutline });
     try {
       const apiKey = (environment.geminiApiKey || '').trim();
-      const esPlaceholder = !apiKey || apiKey.includes('TU_') || apiKey.includes('AQUÍ_VA');
-      if (!esPlaceholder) {
+      if (apiKey && !apiKey.includes('TU_') && !apiKey.includes('AQUÍ_VA')) {
         this.genAI = new GoogleGenerativeAI(apiKey);
       }
     } catch (e) {
@@ -94,7 +96,7 @@ DATOS OFICIALES DEL NEGOCIO:
     try {
       if (this.genAI) {
         const model = this.genAI.getGenerativeModel({
-          model: 'gemini-1.5-flash',
+          model: this.modeloGemini,
           systemInstruction: this.systemInstruction
         });
         this.chatSession = model.startChat({
@@ -131,14 +133,48 @@ DATOS OFICIALES DEL NEGOCIO:
     this.escribiendo = true;
 
     try {
-      if (!this.chatSession) {
-        throw new Error('Activar respaldo local Blade');
+      const apiKey = (environment.geminiApiKey || '').trim();
+      if (!apiKey || apiKey.includes('TU_') || apiKey.includes('AQUÍ_VA')) {
+        throw new Error('API Key de Gemini no definida');
       }
-      const result = await this.chatSession.sendMessage(texto);
-      const respuestaIA = result.response.text();
-      this.mensajes.push({ role: 'model', text: respuestaIA });
+
+      // Petición HTTP al endpoint del modelo gemini-3.1-flash-lite con System Instruction
+      const response = await fetch(`${this.geminiBaseUrl}?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: this.systemInstruction }]
+          },
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: texto }]
+            }
+          ]
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const textoRespuesta = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (textoRespuesta) {
+          this.mensajes.push({ role: 'model', text: textoRespuesta });
+          return;
+        }
+      }
+
+      // Segundo intento mediante el SDK si la sesión está activa
+      if (this.chatSession) {
+        const result = await this.chatSession.sendMessage(texto);
+        const respuestaIA = result.response.text();
+        this.mensajes.push({ role: 'model', text: respuestaIA });
+        return;
+      }
+
+      throw new Error('Activar respaldo local Blade');
     } catch {
-      // Respaldo inteligente local ("Blade") si la API de Gemini falla o no tiene API Key activa
+      // Bloque de respaldo inteligente local ("Blade") si no hay API Key o hay error de red/modelo
       await new Promise(resolve => setTimeout(resolve, 420));
       const respuestaExperta = this.generarRespuestaExpertaLocal(texto);
       this.mensajes.push({

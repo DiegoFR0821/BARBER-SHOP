@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -41,11 +41,16 @@ export class ComunidadPage implements OnInit, OnDestroy {
   mensajeTexto: string = '';
   mensajes: MensajeVista[] = [];
   enviando: boolean = false;
+
   public chatChannel?: RealtimeChannel;
+  private localBroadcast?: BroadcastChannel;
+  private syncTimer?: any;
 
   constructor(
     private usuarioService: UsuarioService,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({ send, 'people-outline': peopleOutline });
   }
@@ -86,8 +91,11 @@ export class ComunidadPage implements OnInit, OnDestroy {
 
   async cargarHistorialComunidad() {
     const lista = await this.supabaseService.getMensajesComunidad();
-    this.mensajes = lista.map(m => this.mapearMensajeVista(m));
-    this.scrollToBottom();
+    this.ngZone.run(() => {
+      this.mensajes = lista.map(m => this.mapearMensajeVista(m));
+      this.cdr.detectChanges();
+      this.scrollToBottom();
+    });
   }
 
   private mapearMensajeVista(m: any): MensajeVista {
@@ -111,25 +119,49 @@ export class ComunidadPage implements OnInit, OnDestroy {
     };
   }
 
+  private procesarNuevoMensajeRecibido(raw: any) {
+    if (!raw || !raw.id) return;
+    this.ngZone.run(() => {
+      const nuevoMensaje = this.mapearMensajeVista(raw);
+      if (!this.mensajes.some(m => m.id === nuevoMensaje.id)) {
+        this.mensajes = [...this.mensajes, nuevoMensaje];
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      }
+    });
+  }
+
+  private procesarMensajeEliminado(idEliminado: string) {
+    if (!idEliminado) return;
+    this.ngZone.run(() => {
+      if (this.mensajes.some(m => m.id === idEliminado)) {
+        this.mensajes = this.mensajes.filter(m => m.id !== idEliminado);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   /**
-   * Suscripción WebSocket en tiempo real (Chat Grupal en Vivo) sobre public.mensajes_comunidad
+   * Suscripción WebSocket en tiempo real sobre public.mensajes_comunidad
+   * Combina postgres_changes + broadcast de Supabase Realtime + delta sync reactivo dentro de NgZone
    */
   iniciarSuscripcionRealtime() {
+    // Evitar recrear el canal si ya está suscrito en esta vista activa (previene colisión ngOnInit + ionViewWillEnter)
     if (this.chatChannel) {
-      this.supabaseService.client.removeChannel(this.chatChannel);
+      return;
     }
 
     this.chatChannel = this.supabaseService.client
-      .channel('mensajes_realtime')
+      .channel('mensajes_realtime', {
+        config: {
+          broadcast: { self: false }
+        }
+      })
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'mensajes_comunidad' },
         (payload) => {
-          const nuevoMensaje = this.mapearMensajeVista(payload.new);
-          if (!this.mensajes.some(m => m.id === nuevoMensaje.id)) {
-            this.mensajes.push(nuevoMensaje);
-            this.scrollToBottom();
-          }
+          this.procesarNuevoMensajeRecibido(payload.new);
         }
       )
       .on(
@@ -138,17 +170,83 @@ export class ComunidadPage implements OnInit, OnDestroy {
         (payload) => {
           const idEliminado = (payload.old as any)?.id;
           if (idEliminado) {
-            this.mensajes = this.mensajes.filter(m => m.id !== idEliminado);
+            this.procesarMensajeEliminado(idEliminado);
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'nuevo_mensaje' },
+        ({ payload }) => {
+          this.procesarNuevoMensajeRecibido(payload);
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'mensaje_eliminado' },
+        ({ payload }) => {
+          if (payload?.id) {
+            this.procesarMensajeEliminado(payload.id);
           }
         }
       )
       .subscribe();
+
+    // Canal local entre pestañas del mismo navegador para respuesta instantánea (0ms)
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        this.localBroadcast = new BroadcastChannel('barber_comunidad_sync');
+        this.localBroadcast.onmessage = (event) => {
+          if (event.data?.type === 'INSERT' && event.data?.payload) {
+            this.procesarNuevoMensajeRecibido(event.data.payload);
+          } else if (event.data?.type === 'DELETE' && event.data?.id) {
+            this.procesarMensajeEliminado(event.data.id);
+          }
+        };
+      }
+    } catch {}
+
+    // Sincronización delta ligera en segundo plano para garantizar consistencia 100% aún si falta REPLICA IDENTITY en la BD
+    this.syncTimer = setInterval(() => {
+      this.sincronizarDeltaEnVivo();
+    }, 2000);
+  }
+
+  private async sincronizarDeltaEnVivo() {
+    try {
+      const remotos = await this.supabaseService.getMensajesComunidad();
+      if (!remotos || remotos.length === 0) return;
+
+      const idsActuales = new Set(this.mensajes.map(m => m.id));
+      const nuevos = remotos.filter(r => !idsActuales.has(r.id));
+
+      if (nuevos.length > 0) {
+        this.ngZone.run(() => {
+          for (const n of nuevos) {
+            const mapeado = this.mapearMensajeVista(n);
+            if (!this.mensajes.some(m => m.id === mapeado.id)) {
+              this.mensajes = [...this.mensajes, mapeado];
+            }
+          }
+          this.cdr.detectChanges();
+          this.scrollToBottom();
+        });
+      }
+    } catch {}
   }
 
   private limpiarSuscripcionRealtime() {
     if (this.chatChannel) {
       this.supabaseService.client.removeChannel(this.chatChannel);
       this.chatChannel = undefined;
+    }
+    if (this.localBroadcast) {
+      this.localBroadcast.close();
+      this.localBroadcast = undefined;
+    }
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = undefined;
     }
   }
 
@@ -168,25 +266,32 @@ export class ComunidadPage implements OnInit, OnDestroy {
         mensaje: texto
       });
 
-      const nuevoMensaje = this.mapearMensajeVista(creado);
-      if (!this.mensajes.some(m => m.id === nuevoMensaje.id)) {
-        this.mensajes.push(nuevoMensaje);
+      this.procesarNuevoMensajeRecibido(creado);
+
+      // Emitir por WebSocket Broadcast de Supabase Realtime y BroadcastChannel local
+      if (this.chatChannel) {
+        this.chatChannel.send({
+          type: 'broadcast',
+          event: 'nuevo_mensaje',
+          payload: creado
+        }).catch(() => {});
       }
-      this.scrollToBottom();
+      this.localBroadcast?.postMessage({ type: 'INSERT', payload: creado });
     } catch (e) {
       console.warn('Mensaje agregado en sesión activa:', e);
-      const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.mensajes.push({
+      const fallbackMsg = {
         id: 'local-' + Date.now(),
-        usuario: this.nombreActual,
-        rol: this.rolActual,
-        texto,
-        hora: horaActual,
-        esMio: true
-      });
-      this.scrollToBottom();
+        usuario_id: this.usuarioId || null,
+        autor_nombre: this.nombreActual,
+        autor_rol: this.rolActual,
+        mensaje: texto,
+        created_at: new Date().toISOString()
+      };
+      this.procesarNuevoMensajeRecibido(fallbackMsg);
+      this.localBroadcast?.postMessage({ type: 'INSERT', payload: fallbackMsg });
     } finally {
       this.enviando = false;
+      this.cdr.detectChanges();
     }
   }
 

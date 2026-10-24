@@ -38,11 +38,14 @@ export class LoginPage implements OnInit {
   ngOnInit() { }
 
   /**
-   * Inicia sesión validando credenciales contra Supabase Auth y recuperando
-   * el perfil relacional del usuario (incluyendo rol y preferencias de corte).
+   * Inicia sesión validando credenciales contra Supabase Auth, consultando el rol
+   * en public.usuarios (o token/metadata) y redirigiendo según rol.
    */
   async iniciarSesion(): Promise<void> {
-    if (!this.credenciales.correo || !this.credenciales.password) {
+    const correoLimpio = (this.credenciales.correo || '').trim().toLowerCase();
+    const password = this.credenciales.password || '';
+
+    if (!correoLimpio || !password) {
       this.mensajeError = 'Por favor, ingresa tu correo y contraseña.';
       return;
     }
@@ -51,26 +54,29 @@ export class LoginPage implements OnInit {
     this.cargando = true;
 
     try {
-      // 1. Autenticación contra Supabase Auth y consulta de la tabla 'usuarios'
-      const { user, perfil } = await this.supabaseService.signIn(
-        this.credenciales.correo.trim(),
-        this.credenciales.password
-      );
+      // 1. Autenticación contra Supabase Auth y consulta de public.usuarios
+      const { user, perfil } = await this.supabaseService.signIn(correoLimpio, password);
 
-      // 2. Almacenamos el perfil recuperado en el servicio de sesión local
+      // 2. Verificación explícita de rol en base de datos o correo administrativo oficial
+      const esAdmin =
+        correoLimpio === 'admin@barbershop.pe' ||
+        correoLimpio === 'admin@barbershop.com' ||
+        perfil?.rol === 'admin' ||
+        user?.user_metadata?.['rol'] === 'admin';
+
+      perfil.rol = esAdmin ? 'admin' : 'cliente';
+
+      // 3. Almacenamos el perfil recuperado en el servicio de sesión local
       this.usuarioService.setUsuario(perfil);
-
-      console.log('✅ Ingreso exitoso a Barber Shop. Rol detectado:', perfil.rol);
-
-      // 3. Enrutamiento según el rol obtenido de la base de datos PostgreSQL
-      if (perfil.rol === 'admin') {
-        this.router.navigate(['/admin/resumen-admin']);
-      } else {
-        this.router.navigate(['/dashboard/resumen']);
-      }
 
       this.cargando = false;
 
+      // 4. Redirección obligatoria según el rol
+      if (esAdmin || perfil.rol === 'admin') {
+        await this.router.navigate(['/admin/resumen-admin']);
+      } else {
+        await this.router.navigate(['/dashboard/resumen']);
+      }
     } catch (error: any) {
       this.cargando = false;
       console.error('Error en autenticación con Supabase:', error);

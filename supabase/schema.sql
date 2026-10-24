@@ -213,6 +213,18 @@ CREATE TABLE IF NOT EXISTS public.mensajes_comunidad (
 
 CREATE INDEX IF NOT EXISTS idx_mensajes_comunidad_created_at ON public.mensajes_comunidad(created_at);
 
+-- Habilitar replicación en tiempo real (Supabase Realtime WebSockets) para mensajes_comunidad
+ALTER TABLE public.mensajes_comunidad REPLICA IDENTITY FULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'mensajes_comunidad'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.mensajes_comunidad;
+  END IF;
+END $$;
+
 -- =============================================================================
 -- 9. FUNCIÓN RPC TRANSACCIONAL: procesar_compra_carrito
 -- =============================================================================
